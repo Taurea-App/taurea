@@ -5,10 +5,7 @@ export type Exercise = {
   measurementType: 'Reps' | 'Time' | 'Distance';
 };
 
-export type ExerciseInRoutine = {
-  exercise_id: string;
-  quantity: string; // Assuming quantity could be reps, time duration, etc.
-};
+export type ExerciseInRoutine = Exercise & { quantity: number };
 
 export type Routine = {
   id: string;

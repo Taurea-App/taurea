@@ -103,6 +103,9 @@ export default function TabOneScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderRoutine}
       />
+      <Link href="/routine/new">
+        <Text>Add New Routine</Text>
+      </Link>
     </View>
   );
 }
