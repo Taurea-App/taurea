@@ -2,10 +2,10 @@ export type Exercise = {
   id: string;
   name: string;
   description: string;
-  measurementType: 'Reps' | 'Time' | 'Distance';
+  measurementType: string;
 };
 
-export type ExerciseInRoutine = Exercise & { quantity: number };
+export type ExerciseInRoutine = Exercise & { quantity: number } & { unit: string };
 
 export type Routine = {
   id: string;
@@ -13,3 +13,4 @@ export type Routine = {
   description: string;
   exercises: ExerciseInRoutine[];
 };
+
