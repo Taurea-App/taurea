@@ -4,6 +4,7 @@ import { Text, View, StyleSheet, TextInput, Modal, TouchableOpacity, ScrollView,
 import { Box, CheckIcon, Select, Input } from "native-base";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { FIRESTORE_DB } from "@/firebaseConfig";
+import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
 
 import {Picker} from '@react-native-picker/picker';
 import { Ionicons } from "@expo/vector-icons";
@@ -67,25 +68,33 @@ export default function Page() {
         </View>
 
         {/* Exercise List */}
-        <FlatList style={style.exerciseList}
+        <DraggableFlatList style={style.exerciseList}
             data={exercises}
-            renderItem={({item}) => (
-                <View style={style.exerciseListItem}>
-                    <Text style={style.exerciseListItemName}>
-                        {item.name}
-                    </Text>
-                    <Text style={style.exerciseListItemQuantity}>
-                        {item.quantity} {item.unit}
-                    </Text>
-                    <TouchableOpacity
-                        style={style.exerciseListItemDelete} 
-                        onPress={() => setExercises(exercises.filter((exercise) => exercise.id !== item.id))}
+            containerStyle={{ flex : 1 }}
+            onDragEnd={({ data }) => setExercises(data) }
+            renderItem={({item, drag, isActive }) => (
+                <ScaleDecorator>      
+                    <TouchableOpacity 
+                        style={style.exerciseListItem}
+                        onLongPress={drag}
+                        disabled={isActive}    
                     >
-                        <Ionicons name="trash" size={24} color="red" />
+                        <Text style={style.exerciseListItemName}>
+                            {item.name}
+                        </Text>
+                        <Text style={style.exerciseListItemQuantity}>
+                            {item.quantity} {item.unit}
+                        </Text>
+                        <TouchableOpacity
+                            style={style.exerciseListItemDelete} 
+                            onPress={() => setExercises(exercises.filter((exercise) => exercise.id !== item.id))}
+                        >
+                            <Ionicons name="trash" size={24} color="red" />
+                        </TouchableOpacity>
                     </TouchableOpacity>
-                </View>
+                </ScaleDecorator>
             )}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(item, index) => index.toString() + item.id}
         />
 
         {/* New Exercise Form */}
@@ -108,7 +117,7 @@ export default function Page() {
                     itemStyle={style.pickerItem}
                     >
                     {[...Array(99).keys()].map((i) => (
-                        <Picker.Item label={(i + 1).toString()} value={i + 1} style={style.pickerItem} />
+                        <Picker.Item label={(i + 1).toString()} value={i + 1} style={style.pickerItem} key={i} />
                         ))}
                 </Picker>
 
@@ -120,7 +129,7 @@ export default function Page() {
                     itemStyle={style.pickerItem}
                     >
                     {meassurementUnits.map((unit) => (
-                        <Picker.Item label={unit} value={unit} />
+                        <Picker.Item label={unit} value={unit} style={style.pickerItem} key={unit} />
                         ))}
                 </Picker>
         
