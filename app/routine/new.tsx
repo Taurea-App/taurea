@@ -71,9 +71,16 @@ export default function Page() {
             data={exercises}
             renderItem={({item}) => (
                 <View style={style.exerciseListItem}>
-                    <Text>{item.name}</Text>
-                    <Text>{item.quantity} {item.unit}</Text>
-                    <TouchableOpacity onPress={() => setExercises(exercises.filter((exercise) => exercise.id !== item.id))}>
+                    <Text style={style.exerciseListItemName}>
+                        {item.name}
+                    </Text>
+                    <Text style={style.exerciseListItemQuantity}>
+                        {item.quantity} {item.unit}
+                    </Text>
+                    <TouchableOpacity
+                        style={style.exerciseListItemDelete} 
+                        onPress={() => setExercises(exercises.filter((exercise) => exercise.id !== item.id))}
+                    >
                         <Ionicons name="trash" size={24} color="red" />
                     </TouchableOpacity>
                 </View>
@@ -201,6 +208,17 @@ const style = StyleSheet.create({
         width: '100%',
         // borderRadius: 10,
         marginBottom: 5,
+    },
+    exerciseListItemName: {
+        fontSize: 16,
+        width: '40%',
+    },
+    exerciseListItemQuantity: {
+        fontSize: 16,
+        width: '20%',
+    },
+    exerciseListItemDelete: {
+        fontSize: 16,
     },
     searchBar: {
         padding: 10,
