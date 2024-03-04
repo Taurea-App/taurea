@@ -1,10 +1,16 @@
 import { Exercise, ExerciseInRoutine } from "@/types";
 import React, { useEffect, useState } from "react";
 import { Text, View, StyleSheet, TextInput, Modal, TouchableOpacity, ScrollView, FlatList } from "react-native";
-import { Box, CheckIcon, Select, Input } from "native-base";
-import { getDocs, collection, query, where } from "firebase/firestore";
+import { getDocs, collection, query, where, addDoc } from "firebase/firestore";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
+import Colors from '@/constants/Colors';
+import { useColorScheme } from "react-native";
+import { useNavigation } from 'expo-router'
+import {
+    SafeAreaProvider,
+    useSafeAreaInsets,
+  } from 'react-native-safe-area-context';
 
 import {Picker} from '@react-native-picker/picker';
 import { Ionicons } from "@expo/vector-icons";
@@ -17,6 +23,10 @@ const meassurementUnits = [
 ];
 
 export default function Page() {
+    const colorScheme = useColorScheme();
+    const insets = useSafeAreaInsets();
+    const navigation = useNavigation();
+
     const [routineName, setRoutineName] = useState('');
     const [routineDescription, setRoutineDescription] = useState('');
 
@@ -31,6 +41,8 @@ export default function Page() {
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [showExerciseSelectModal, setShowExerciseSelectModal] = useState(false);
 
+    const [showAddExercise, setShowAddExercise] = useState(false);
+
     const fetchExercises = async () => {
         const q = query(collection(FIRESTORE_DB, 'Exercises'));
         const querySnapshot = await getDocs(q);
@@ -38,23 +50,48 @@ export default function Page() {
             id: doc.id,
             ...doc.data(),
         })) as Exercise[];
-        setFetchedExercises(exercisesList);    }
+        setFetchedExercises(exercisesList);
+        setFilteredExercises(exercisesList);    
+    }
+
+    const saveRoutine = async () => {
+        const routine = {
+            name: routineName,
+            description: routineDescription,
+            exercises: exercises,
+        }
+        const docRef = await addDoc(collection(FIRESTORE_DB, 'Routines'), routine);
+        console.log('Document written with ID: ', docRef.id);
+        navigation.navigate('index');
+    }
 
     useEffect(() => {
         fetchExercises();
-    }, []);
-
+    }
+    , []);
     useEffect(() => {
         setFilteredExercises(fetchedExercises.filter((exercise) => exercise.name.toLowerCase().includes(searchTerm.toLowerCase())));
     }
     , [searchTerm]);
 
 
-    return <View style={style.container}>
+    return <View style={[style.container, {
+        // Paddings to handle safe area
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+    }
+    ]}>
         {/* Title and description */}
         <View>
             <TextInput
-                style={style.title}
+                style={[
+                    style.title,
+                    {
+                        color: Colors[colorScheme].text
+                    }]
+                }
                 onChangeText={setRoutineName}
                 value={routineName}
                 placeholder="Routine Name"
@@ -63,7 +100,9 @@ export default function Page() {
                 style={style.description} 
                 onChangeText={setRoutineDescription}
                 value={routineDescription}
-                placeholder="Routine Description" multiline={true}
+                placeholder="Routine Description"
+                multiline={true} 
+                numberOfLines={4}
             />
         </View>
 
@@ -75,18 +114,24 @@ export default function Page() {
             renderItem={({item, drag, isActive }) => (
                 <ScaleDecorator>      
                     <TouchableOpacity 
-                        style={style.exerciseListItem}
+                        style={[style.exerciseListItem, {
+                            backgroundColor: Colors[colorScheme].tabBackgroundColor
+                        }]}
                         onLongPress={drag}
                         disabled={isActive}    
                     >
-                        <Text style={style.exerciseListItemName}>
+                        <Text style={[style.exerciseListItemName, {
+                            color: Colors[colorScheme].text,
+                        }]}>
                             {item.name}
                         </Text>
-                        <Text style={style.exerciseListItemQuantity}>
+                        <Text style={[style.exerciseListItemQuantity, {
+                                color: Colors[colorScheme].text,
+                            }]}>
                             {item.quantity} {item.unit}
                         </Text>
                         <TouchableOpacity
-                            style={style.exerciseListItemDelete} 
+                            style={style.exerciseListItemDelete}
                             onPress={() => setExercises(exercises.filter((exercise) => exercise.id !== item.id))}
                         >
                             <Ionicons name="trash" size={24} color="red" />
@@ -97,58 +142,78 @@ export default function Page() {
             keyExtractor={(item, index) => index.toString() + item.id}
         />
 
+        {/* Save Button */}
+        <TouchableOpacity style={style.saveButton} onPress={() => {
+            saveRoutine();
+        }
+        }>
+            <Text>Save</Text>
+        </TouchableOpacity>
+            
+        {/* Add Exercise Button */}
+        <TouchableOpacity style={[style.showAddExerciseButton,
+        ]} onPress={() => setShowAddExercise(!showAddExercise)}>
+            <Text
+                style={{
+                    color: Colors[colorScheme].text,
+                    fontSize: 24,
+                    // fontWeight: 'bold',
+                }}>{showAddExercise ? '-' : '+'}</Text>
+        </TouchableOpacity>
+
         {/* New Exercise Form */}
-        <View style={style.newExerciseForm}>
+        {showAddExercise && 
+            <View style={style.newExerciseForm}>
 
-            <View style={style.newExercisePicker}>
+                <View style={style.newExercisePicker}>
 
-                <TextInput 
-                    style={style.exerciseSelect}
-                    placeholder="Select an exercise"
-                    value={selectedExercise?.name}
-                    onPressIn={() => setShowExerciseSelectModal(true)}
-                    readOnly
-                    />
+                    <TextInput 
+                        style={style.exerciseSelect}
+                        placeholder="Select an exercise"
+                        value={selectedExercise?.name}
+                        onPressIn={() => setShowExerciseSelectModal(true)}
+                        readOnly
+                        />
 
-                <Picker
-                    selectedValue={selectedQuantity}
-                    onValueChange={(itemValue, itemIndex) => setSelectedQuantity(itemValue)}
-                    style={style.quantityInput}
-                    itemStyle={style.pickerItem}
-                    >
-                    {[...Array(99).keys()].map((i) => (
-                        <Picker.Item label={(i + 1).toString()} value={i + 1} style={style.pickerItem} key={i} />
-                        ))}
-                </Picker>
+                    <Picker
+                        selectedValue={selectedQuantity}
+                        onValueChange={(itemValue, itemIndex) => setSelectedQuantity(itemValue)}
+                        style={style.quantityInput}
+                        itemStyle={style.pickerItem}
+                        >
+                        {[...Array(99).keys()].map((i) => (
+                            <Picker.Item label={(i + 1).toString()} value={i + 1} style={style.pickerItem} key={i} />
+                            ))}
+                    </Picker>
 
 
-                <Picker
-                    selectedValue={selectedUnit}
-                    onValueChange={(itemValue, itemIndex) => setSelectedUnit(itemValue)}
-                    style={style.unitSelect}
-                    itemStyle={style.pickerItem}
-                    >
-                    {meassurementUnits.map((unit) => (
-                        <Picker.Item label={unit} value={unit} style={style.pickerItem} key={unit} />
-                        ))}
-                </Picker>
-        
-            </View>
+                    <Picker
+                        selectedValue={selectedUnit}
+                        onValueChange={(itemValue, itemIndex) => setSelectedUnit(itemValue)}
+                        style={style.unitSelect}
+                        itemStyle={style.pickerItem}
+                        >
+                        {meassurementUnits.map((unit) => (
+                            <Picker.Item label={unit} value={unit} style={style.pickerItem} key={unit} />
+                            ))}
+                    </Picker>
+            
+                </View>
 
-            {/* Add Exercise Button */} 
-            <TouchableOpacity style={style.addExerciseButton} onPress={() => {
-                if (selectedExercise) {
-                    setExercises([...exercises, {...selectedExercise, quantity: selectedQuantity, unit: selectedUnit}]);
-                    setSelectedExercise(null);
-                    setSelectedQuantity(1);
-                    setSelectedUnit(meassurementUnits[0]);
+                {/* Add Exercise Button */} 
+                <TouchableOpacity style={style.addExerciseButton} onPress={() => {
+                    if (selectedExercise) {
+                        setExercises([...exercises, {...selectedExercise, quantity: selectedQuantity, unit: selectedUnit}]);
+                        setSelectedExercise(null);
+                        setSelectedQuantity(1);
+                        setSelectedUnit(meassurementUnits[0]);
+                    }
                 }
-            }
-            }>
-                <Text>Add</Text>
-            </TouchableOpacity>
-        </View>
-        
+                }>
+                    <Text>Add</Text>
+                </TouchableOpacity>
+            </View>
+        }    
 
         {/* Exercise Select Modal */}
         <View>
@@ -190,12 +255,13 @@ export default function Page() {
 const style = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
+        // alignItems: 'beginning',
         justifyContent: 'center',
       },
     title: {
         fontSize: 20,
         fontWeight: 'bold',
+        width   : '100%',
       },
       description: {
         fontSize: 18,
@@ -213,7 +279,7 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: 10,
-        backgroundColor: '#f9f9f9',
+        // backgroundColor: '#f9f9f9',
         width: '100%',
         // borderRadius: 10,
         marginBottom: 5,
@@ -295,6 +361,22 @@ const style = StyleSheet.create({
     pickerItem: {
         fontSize: 12,
         },
+    showAddExerciseButton: {
+        padding: 10,
+        // backgroundColor: '#50f950',
+        borderRadius: 10,
+        width: '100%',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+    },
+    saveButton: {
+        padding: 10,
+        backgroundColor: '#50f950',
+        borderRadius: 10,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     addExerciseButton: {
         padding: 10,
         backgroundColor: '#50f950',

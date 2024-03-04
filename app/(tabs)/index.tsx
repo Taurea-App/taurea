@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Button, TextInput, FlatList, TouchableOpacity, View, Text } from 'react-native';
+import { StyleSheet, Button, TextInput, FlatList, TouchableOpacity, View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, doc, onSnapshot, deleteDoc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_DB } from '@/firebaseConfig';
 import { Routine, Exercise } from '@/types';
 import { Link } from 'expo-router';
+import Colors from '@/constants/Colors';
+import { useColorScheme } from '@/components/useColorScheme';
 
-export default function TabOneScreen() {
+export default function MyRoutinesScreen() {
+  const colorScheme = useColorScheme();
+
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [expandedRoutineId, setExpandedRoutineId] = useState<string | null>(null);
   const [exercises, setExercises] = useState<{ [key: string]: Exercise[] }>({});
@@ -63,12 +67,13 @@ export default function TabOneScreen() {
 
   const renderRoutine = ({ item }: { item: Routine }) => {
     const isExpanded = expandedRoutineId === item.id;
-
     return (
-      <View style={styles.todoContainer}>
+      <View style={[styles.routineContainer, 
+        { backgroundColor: Colors[colorScheme ?? 'light'].tabBackgroundColor 
+        }]}>
 
         {/* <TouchableOpacity onPress={() => toggleRoutine(item.id)} style={styles.routineRow}>
-          <Text style={styles.todoText}>{item.name}</Text>
+          <Text style={styles.routineText}>{item.name}</Text>
           <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={24} color="white" />
         </TouchableOpacity>
 
@@ -86,8 +91,12 @@ export default function TabOneScreen() {
         <Link href={{
           pathname: '/routine/[routineId]',
           params: { routineId: item.id}
-        }}>
-          <Text style={styles.todoText}>{item.name}</Text>
+        }} asChild>
+          <TouchableOpacity>
+            <Text style={[styles.routineText,
+              { color: Colors[colorScheme ?? 'light'].text }
+            ]}>{item.name}</Text>
+          </TouchableOpacity>
         </Link>
 
 
@@ -99,11 +108,12 @@ export default function TabOneScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Routines</Text>
       <FlatList
+        style={{ width: '100%' }}
         data={routines}
         keyExtractor={(item) => item.id}
         renderItem={renderRoutine}
       />
-      <Link href="/routine/new">
+      <Link href="/routine/new" style={styles.addRoutineButton}>
         <Text>Add New Routine</Text>
       </Link>
     </View>
@@ -115,33 +125,42 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
   },
-  todoContainer: {
+  routineContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'stretch',
     marginVertical: 5,
+    padding: 10,
+    width: '100%',
   },
   routineRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#333',
     width: '100%',
   },
   exercisesList: {
     padding: 10,
     backgroundColor: '#444',
   },
-  todoText: {
-    color: 'white',
+  routineText: {
+    // color: 'white',
   },
   exerciseText: {
     color: 'lightgrey',
+  },
+  addRoutineButton: {
+    backgroundColor: 'green',
+    padding: 10,
+    borderRadius: 20,
+    color: 'white',
+    margin: 10,
   },
 });
