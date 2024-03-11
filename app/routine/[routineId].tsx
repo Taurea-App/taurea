@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Button, TextInput } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { FIRESTORE_DB } from '@/firebaseConfig'; // Adjust the import path as necessary
-import { Exercise, Routine } from '@/types'; // Adjust the import path as necessary
+import { Exercise, Routine, ExerciseInRoutine } from '@/types'; // Adjust the import path as necessary
 import { useRouter, Stack, useNavigation } from 'expo-router';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { ParamListBase } from '@react-navigation/native';
 
 export default function Page() {
-  const { routineId } = useLocalSearchParams();
+  const { routineId } = useLocalSearchParams<{ routineId: string }>();
   const [routine, setRoutine] = useState<Routine | null>(null);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [exercises, setExercises] = useState<ExerciseInRoutine[]>([]);
   const router = useRouter();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
@@ -58,12 +60,16 @@ export default function Page() {
       {exercises.map((exercise) => (
         <View key={exercise.id} style={styles.exerciseContainer}>
           <Text style={styles.exerciseName}>{exercise.name}</Text>
-          {/* <Text>{exercise.description}</Text> */}
           <Text>{exercise.quantity} {exercise.unit}</Text>
         </View>
       ))}
       {/* Implement navigation or state change for editing here */}
-      <Button title="Edit Routine" onPress={() => {/* Edit logic */}} color="#0099ff" />
+      <Link href={{
+        pathname: '/routine/edit/[routineId]',
+        params: { routineId }
+      }} asChild>
+        <Button title="Edit Routine" />
+      </Link>
       <Button title="Delete Routine" onPress={handleDelete} color="#ff4444" />
     </ScrollView>
   );
