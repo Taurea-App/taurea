@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Button, TextInput, FlatList, TouchableOpacity, View, Text, Pressable } from 'react-native';
+import { StyleSheet, TextInput, FlatList, TouchableOpacity, View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, doc, onSnapshot, deleteDoc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_DB } from '@/firebaseConfig';
 import { Routine, Exercise } from '@/types';
-import { Link } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -46,7 +46,7 @@ export default function MyRoutinesScreen() {
           const exerciseDetails: Exercise[] = [];
 
           for (const exerciseRef of exercisesRefs) {
-            const docRef = doc(FIRESTORE_DB, "Exercises", exerciseRef.exercise_id);
+            const docRef = doc(FIRESTORE_DB, "Exercises", exerciseRef.id);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
               exerciseDetails.push({
@@ -72,22 +72,6 @@ export default function MyRoutinesScreen() {
         { backgroundColor: Colors[colorScheme ?? 'light'].tabBackgroundColor 
         }]}>
 
-        {/* <TouchableOpacity onPress={() => toggleRoutine(item.id)} style={styles.routineRow}>
-          <Text style={styles.routineText}>{item.name}</Text>
-          <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={24} color="white" />
-        </TouchableOpacity>
-
-        {isExpanded && exercises[item.id] && (
-          <View style={styles.exercisesList}>
-            {exercises[item.id].map((exercise) => (
-              <Text key={exercise.id} style={styles.exerciseText}>
-                {exercise.name} - {item.exercises.find((e) => e.exercise_id === exercise.id)?.quantity} {exercise.measurementType}
-              </Text>
-            ))}
-
-          </View>
-        )} */}
-
         <Link href={{
           pathname: '/routine/[routineId]',
           params: { routineId: item.id}
@@ -98,8 +82,6 @@ export default function MyRoutinesScreen() {
             ]}>{item.name}</Text>
           </TouchableOpacity>
         </Link>
-
-
       </View>
     );
   };
@@ -113,8 +95,10 @@ export default function MyRoutinesScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderRoutine}
       />
-      <Link href="/routine/new" style={styles.addRoutineButton}>
-        <Text>Add New Routine</Text>
+      <Link href="/routine/new" asChild>
+        <TouchableOpacity style={styles.addRoutineButton}>
+          <Text>New Routine</Text>
+        </TouchableOpacity>
       </Link>
     </View>
   );
@@ -157,10 +141,9 @@ const styles = StyleSheet.create({
     color: 'lightgrey',
   },
   addRoutineButton: {
-    backgroundColor: 'green',
-    padding: 10,
-    borderRadius: 20,
-    color: 'white',
+    backgroundColor: 'orange',
+    padding: 15,
     margin: 10,
+    borderRadius: 20,
   },
 });

@@ -1,12 +1,12 @@
 import { Exercise, ExerciseInRoutine } from "@/types";
 import React, { useEffect, useState } from "react";
-import { Text, View, StyleSheet, TextInput, Modal, TouchableOpacity, ScrollView, FlatList } from "react-native";
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, ScrollView, FlatList } from "react-native";
 import { getDocs, collection, query, where, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
 import Colors from '@/constants/Colors';
 import { useColorScheme } from "react-native";
-import { useNavigation } from 'expo-router'
+import { Stack, useNavigation } from 'expo-router'
 import {
     SafeAreaProvider,
     useSafeAreaInsets,
@@ -16,6 +16,7 @@ import { ParamListBase } from "@react-navigation/native";
 
 import {Picker} from '@react-native-picker/picker';
 import { Ionicons } from "@expo/vector-icons";
+import { Input, Modal } from "native-base";
 const meassurementUnits = [
     'Reps.',
     'Secs.',
@@ -110,6 +111,35 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
     }
     , [searchTerm]);
 
+    const renderRoutineItem = ({item, drag, isActive}: {item: ExerciseInRoutine, drag: any, isActive: boolean}) => {
+        return (
+            <ScaleDecorator>     
+                <TouchableOpacity 
+                    style={[style.exerciseListItem, {
+                        backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor
+                    }]}
+                    onLongPress={drag}
+                    disabled={isActive}    
+                >
+                    <Text style={[style.exerciseListItemName, {
+                        color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                    }]}>
+                        {item.name}
+                    </Text>
+                    <Text style={[style.exerciseListItemQuantity, {
+                            color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                        }]}>
+                        {item.quantity} {item.unit}
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => setExercises(exercises.filter((exercise) => exercise.id !== item.id))}
+                    >
+                        <Ionicons name="trash" size={24} color="red" />
+                    </TouchableOpacity>
+                </TouchableOpacity>
+                </ScaleDecorator>
+        );  
+    }
 
     return <View style={[style.container, {
         // Paddings to handle safe area
@@ -117,10 +147,14 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
         paddingBottom: insets.bottom,
         paddingLeft: insets.left,
         paddingRight: insets.right,
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     }
     ]}>
+        <Stack.Screen options={{ title: isNewRoutine ? 'New Routine' : 'Edit Routine' }} />
         {/* Title and description */}
-        <View>
+        <View style={{width: '100%', padding: 10}}>
             <TextInput
                 style={[
                     style.title,
@@ -147,36 +181,49 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
             data={exercises}
             containerStyle={{ flex : 1 }}
             onDragEnd={({ data }) => setExercises(data) }
-            renderItem={({item, drag, isActive }) => (
-                <ScaleDecorator>      
-                    <TouchableOpacity 
-                        style={[style.exerciseListItem, {
-                            backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor
-                        }]}
-                        onLongPress={drag}
-                        disabled={isActive}    
-                    >
-                        <Text style={[style.exerciseListItemName, {
-                            color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                        }]}>
-                            {item.name}
-                        </Text>
-                        <Text style={[style.exerciseListItemQuantity, {
-                                color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                            }]}>
-                            {item.quantity} {item.unit}
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => setExercises(exercises.filter((exercise) => exercise.id !== item.id))}
-                        >
-                            <Ionicons name="trash" size={24} color="red" />
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-                </ScaleDecorator>
-            )}
+            renderItem={({item, drag, isActive }) => renderRoutineItem({item, drag, isActive})}
             keyExtractor={(item, index) => index.toString() + item.id}
         />
+        {/* New exercise form */}
+        <View style={style.exerciseList}>
+            <View style={[style.exerciseListItem, {
+                backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
+            }]}>
+                <TextInput 
+                    style={[style.exerciseListItemName, {
+                        color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                    }]}
+                    placeholder="Exercise Name"
+                    value={selectedExercise?.name}
+                    onPressIn={() => setShowExerciseSelectModal(true)}
+                    readOnly
+                />
+                <TextInput 
+                    style={style.exerciseListItemQuantity}
+                    placeholder="Quantity"
+                    value={selectedQuantity.toString()}
+                    onChangeText={(text) => setSelectedQuantity(parseInt(text))}
+                />
+                <TouchableOpacity
+                    onPress={() => {
+                        if (!selectedExercise) return;
+                        const newExercise = {
+                            id: selectedExercise.id,
+                            name: selectedExercise.name,
+                            quantity: selectedQuantity,
+                            unit: selectedUnit,
+                        } as ExerciseInRoutine;
+                        setExercises([...exercises, newExercise]);
+                        setSelectedExercise(null);
+                        setSelectedQuantity(1);
+                    }}
+                >
+                    <Ionicons name="add" size={24} color="green" />
+                </TouchableOpacity>
 
+            </View>
+        </View>
+                
         {/* Save Button */}
         <TouchableOpacity style={style.saveButton} onPress={() => {
             saveRoutine();
@@ -184,103 +231,53 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
         }>
             <Text>Save</Text>
         </TouchableOpacity>
-            
-        {/* Add Exercise Button */}
-        <TouchableOpacity style={[style.showAddExerciseButton,
-        ]} onPress={() => setShowAddExercise(!showAddExercise)}>
-            <Text
-                style={{
-                    color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                    fontSize: 24,
-                    // fontWeight: 'bold',
-                }}>{showAddExercise ? '-' : '+'}</Text>
-        </TouchableOpacity>
-
-        {/* New Exercise Form */}
-        {showAddExercise && 
-            <View style={style.newExerciseForm}>
-
-                <View style={style.newExercisePicker}>
-
-                    <TextInput 
-                        style={style.exerciseSelect}
-                        placeholder="Select an exercise"
-                        value={selectedExercise?.name}
-                        onPressIn={() => setShowExerciseSelectModal(true)}
-                        readOnly
-                        />
-
-                    <Picker
-                        selectedValue={selectedQuantity}
-                        onValueChange={(itemValue, itemIndex) => setSelectedQuantity(itemValue)}
-                        style={style.quantityInput}
-                        itemStyle={style.pickerItem}
-                        >
-                        {[...Array(99).keys()].map((i) => (
-                            <Picker.Item label={(i + 1).toString()} value={i + 1} style={style.pickerItem} key={i} />
-                            ))}
-                    </Picker>
-
-
-                    <Picker
-                        selectedValue={selectedUnit}
-                        onValueChange={(itemValue, itemIndex) => setSelectedUnit(itemValue)}
-                        style={style.unitSelect}
-                        itemStyle={style.pickerItem}
-                        >
-                        {meassurementUnits.map((unit) => (
-                            <Picker.Item label={unit} value={unit} style={style.pickerItem} key={unit} />
-                            ))}
-                    </Picker>
-            
-                </View>
-
-                {/* Add Exercise Button */} 
-                <TouchableOpacity style={style.addExerciseButton} onPress={() => {
-                    if (selectedExercise) {
-                        setExercises([...exercises, {...selectedExercise, quantity: selectedQuantity, unit: selectedUnit}]);
-                        setSelectedExercise(null);
-                        setSelectedQuantity(1);
-                        setSelectedUnit(meassurementUnits[0]);
-                    }
-                }
-                }>
-                    <Text>Add</Text>
-                </TouchableOpacity>
-            </View>
-        }    
 
         {/* Exercise Select Modal */}
         <View>
             <Modal
-                animationType="slide"
-                transparent={true}
-                visible={showExerciseSelectModal}
-                onRequestClose={() => {
+                animationPreset="slide"
+                isOpen={showExerciseSelectModal}
+                size='full'
+                onClose={() => {
                     setSearchTerm('');
                     setShowExerciseSelectModal(false);
                 }}
             >
-                <View style={style.exerciseSelectModalView}>
+                <Modal.Content 
+                    style={[style.exerciseSelectModalView, {
+                        backgroundColor: colorScheme ? Colors[colorScheme].background : Colors.light.background,
+                    }]}
+                    marginBottom={0}
+                    marginTop={'auto'}
+                >
                     <TextInput 
-                        style={style.searchBar}
+                        style={[style.searchBar, {
+                            backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
+                        }]}
                         placeholder="Search Exercises..."
                         value={searchTerm}
                         onChangeText={setSearchTerm}
                     />
                     {filteredExercises.map((exercise) => (
-                        <TouchableOpacity key={exercise.id} style={style.button} onPress={() => {
-                            setSelectedExercise(exercise);
-                            setShowExerciseSelectModal(false);
-                            setSearchTerm('');
-                        }
+                        <TouchableOpacity 
+                            key={exercise.id} 
+                            style={[style.button, {
+                                backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
+                            }]}
+                            onPress={() => {
+                                setSelectedExercise(exercise);
+                                setShowExerciseSelectModal(false);
+                                setSearchTerm('');
+                            }
                         }>
-                            <Text style={style.exerciseSelectItem}>
+                            <Text style={[style.exerciseSelectItem, {
+                                color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                            }]}>
                                 {exercise.name}
                             </Text>
                         </TouchableOpacity>
                     ))}
-                </View>
+                </Modal.Content>
             </Modal>
         </View>
    </View>
@@ -290,8 +287,9 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
 const style = StyleSheet.create({
     container: {
         flex: 1,
-        // alignItems: 'beginning',
+        alignItems: 'center',
         justifyContent: 'center',
+        margin: 10,
       },
     title: {
         fontSize: 20,
@@ -367,12 +365,12 @@ const style = StyleSheet.create({
     },
 
     exerciseSelectModalView: {
-        marginTop: 100,
-        backgroundColor: 'white',
+        // marginTop: 100,
+        // backgroundColor: 'white',
         borderRadius: 20,
         padding: 10,
         alignItems: 'center',
-        shadowColor: '#000',
+        // shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
@@ -398,24 +396,24 @@ const style = StyleSheet.create({
         // backgroundColor: '#50f950',
         borderRadius: 10,
         width: '100%',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
+        // alignItems: 'flex-end',
+        // justifyContent: 'center',
     },
     saveButton: {
         padding: 10,
-        backgroundColor: '#50f950',
-        borderRadius: 10,
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    addExerciseButton: {
-        padding: 10,
-        backgroundColor: '#50f950',
+        backgroundColor: 'orange',
         borderRadius: 10,
         width: '80%',
         alignItems: 'center',
         justifyContent: 'center',
     },
+    addExerciseButton: {
+        padding: 10,
+        backgroundColor: 'orange',
+        borderRadius: 10,
+        width: '80%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    }
 })
 
