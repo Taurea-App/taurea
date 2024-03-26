@@ -1,11 +1,12 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { NativeBaseProvider } from 'native-base';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { DarkTheme, DefaultTheme } from '@/constants/themes';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -53,7 +54,7 @@ function RootLayoutNav() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NativeBaseProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Stack>
+            <Stack>x
               <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Home' }} />
               <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             </Stack>

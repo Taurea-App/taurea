@@ -2,11 +2,7 @@ import { StyleSheet } from 'react-native';
 
 export const editRoutineLayoutStyle = StyleSheet.create({
     container: {
-        flexDirection: 'column',
-        flex: 1,
-        // alignItems: 'center',
-        // justifyContent: 'center',
-        margin: 10,
+        marginBottom: 10,
       },
     title: {
         fontSize: 20,
@@ -20,18 +16,13 @@ export const editRoutineLayoutStyle = StyleSheet.create({
       },
       exerciseList: {
         width: '100%',
-        // padding: 10,
-        // backgroundColor: '#f9f9f9',
-        // borderRadius: 10,
         marginBottom: 5,
     },
     exerciseListItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: 10,
-        // backgroundColor: '#f9f9f9',
         width: '100%',
-        // borderRadius: 10,
         marginBottom: 5,
     },
     exerciseListItemName: {
@@ -52,7 +43,6 @@ export const editRoutineLayoutStyle = StyleSheet.create({
 
     newExerciseForm: {
         alignItems: 'center',
-        // backgroundColor: '#f9f9f9',
         borderRadius: 10,
         margin: 10,
         width: '100%',
@@ -82,12 +72,8 @@ export const editRoutineLayoutStyle = StyleSheet.create({
     },
 
     exerciseSelectModalView: {
-        // marginTop: 100,
-        // backgroundColor: 'white',
         borderRadius: 20,
-        padding: 10,
         alignItems: 'center',
-        // shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
@@ -95,7 +81,6 @@ export const editRoutineLayoutStyle = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        height: '100%',
     },
     button: {
         alignItems: 'center',
@@ -110,11 +95,8 @@ export const editRoutineLayoutStyle = StyleSheet.create({
         },
     showAddExerciseButton: {
         padding: 10,
-        // backgroundColor: '#50f950',
         borderRadius: 10,
         width: '100%',
-        // alignItems: 'flex-end',
-        // justifyContent: 'center',
     },
     saveButton: {
         padding: 10,

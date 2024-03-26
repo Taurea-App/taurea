@@ -4,6 +4,7 @@ const tintColorDark = '#fff';
 export default {
   primary: '#FFA500',
   red: '#FF5050',
+  grey: '#A9A9A9',
   light: {
     text: '#000',
     background: '#eee',

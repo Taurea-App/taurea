@@ -81,7 +81,12 @@ export default function Page() {
         title: 'Routine Details', 
         headerRight: () => (
           <Pressable onPress={() => setShowOptions(true)}>
-            <Text>...</Text>
+            <Text style={{ 
+              color: Colors['primary'], 
+              marginRight: 10,
+              fontSize: 18,
+              fontWeight: 'bold',
+              }}>...</Text>
           </Pressable>
         )
         }} />
@@ -122,11 +127,21 @@ export default function Page() {
           size='full'
           avoidKeyboard
         >
-          <Modal.Content marginBottom={0} marginTop={'auto'}>
+          <Modal.Content 
+            marginBottom={0} 
+            marginTop={'auto'}
+            style={{
+              backgroundColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tabBackgroundColor,
+            }}
+          >
             <Modal.Body>
 
               <Button title="Edit" onPress={handleEdit} />
-              <Button title="Delete" onPress={handleDelete} />
+              <Button 
+                title="Delete" 
+                onPress={handleDelete} 
+                color={Colors['red']}
+              />
               
             </Modal.Body>
           </Modal.Content>
