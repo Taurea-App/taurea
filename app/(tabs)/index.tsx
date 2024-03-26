@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, FlatList, TouchableOpacity, View, Text, Pressable } from 'react-native';
+import { StyleSheet, TextInput, FlatList, TouchableOpacity, View, Text, Pressable, TouchableHighlight } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, doc, onSnapshot, deleteDoc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_DB } from '@/firebaseConfig';
@@ -78,7 +78,7 @@ export default function MyRoutinesScreen() {
         }} asChild>
           <TouchableOpacity>
             <Text style={[styles.routineText,
-              { color: Colors[colorScheme ?? 'light'].text }
+              { color: Colors['primary'] }
             ]}>{item.name}</Text>
           </TouchableOpacity>
         </Link>
@@ -96,9 +96,12 @@ export default function MyRoutinesScreen() {
         renderItem={renderRoutine}
       />
       <Link href="/routine/new" asChild>
-        <TouchableOpacity style={styles.addRoutineButton}>
-          <Text>New Routine</Text>
-        </TouchableOpacity>
+        <TouchableHighlight
+          style={styles.addRoutineButton}
+          underlayColor="darkorange"
+          >
+          <Ionicons name="add" size={24} color={Colors[colorScheme ?? 'light'].text} />
+        </TouchableHighlight>
       </Link>
     </View>
   );
@@ -141,9 +144,14 @@ const styles = StyleSheet.create({
     color: 'lightgrey',
   },
   addRoutineButton: {
+    alignSelf: 'flex-end',
     backgroundColor: 'orange',
-    padding: 15,
     margin: 10,
-    borderRadius: 20,
+    borderRadius: 24,
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOpacity: 0.25,
   },
 });
