@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, Button, TextInput, TouchableOpacity, Alert, Pressable } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Button, TextInput, TouchableOpacity, Alert, Pressable, SafeAreaView, FlatList } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { FIRESTORE_DB } from '@/firebaseConfig'; // Adjust the import path as necessary
@@ -76,9 +76,9 @@ export default function Page() {
   // Consider adding a function for editing that navigates to an edit screen or opens an edit mode
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ 
-        title: 'Routine Details', 
+        title: '', 
         headerRight: () => (
           <Pressable onPress={() => setShowOptions(true)}>
             <Text style={{ 
@@ -92,19 +92,24 @@ export default function Page() {
         }} />
       <Text style={[styles.title, { color: Colors['primary'] }]}>{routine?.name}</Text>
       <Text style={styles.description}>{routine?.description}</Text>
-      {exercises.map((exercise) => (
-        <View key={exercise.id} style={[styles.exerciseContainer, {
-          backgroundColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tabBackgroundColor,
-        }]}>
-          <Text style={[styles.exerciseName,{
-            color: Colors[colorScheme === 'dark' ? 'dark' : 'light'].text,
-          }]}>{exercise.name}</Text>
-          <Text style={{ 
-            color: Colors[colorScheme === 'dark' ? 'dark' : 'light'].text,
-          }}
-          >{exercise.quantity} {exercise.unit}</Text>
-        </View>
-      ))}
+
+      <FlatList
+        data={exercises}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={[styles.exerciseContainer, {
+            backgroundColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tabBackgroundColor,
+          }]}>
+            <Text style={[styles.exerciseName,{
+              color: Colors[colorScheme === 'dark' ? 'dark' : 'light'].text,
+            }]}>{item.name}</Text>
+            <Text style={{ 
+              color: Colors[colorScheme === 'dark' ? 'dark' : 'light'].text,
+            }}
+            >{item.quantity} {item.unit}</Text>
+          </View>
+        )}
+      />
       {/* Implement navigation or state change for editing here */}
 
       <View style={styles.buttonsContainer}>
@@ -147,7 +152,7 @@ export default function Page() {
           </Modal.Content>
         </Modal>
 
-    </ScrollView>
+    </SafeAreaView>
   );
 }
 

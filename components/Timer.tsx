@@ -5,6 +5,7 @@ import { useTimer } from "react-use-precision-timer";
 
 import { Audio } from 'expo-av';
 
+const UPDATE_INTERVAL = 50;
 
 export default function Timer({ initialMilliseconds = 0, callback }: { initialMilliseconds: number, callback?: () => void }) {
     const [timeLeft, setTimeLeft] = useState(initialMilliseconds);
@@ -15,17 +16,20 @@ export default function Timer({ initialMilliseconds = 0, callback }: { initialMi
     const [seconds, setSeconds] = useState(0);
     const [milliseconds, setMilliseconds] = useState(0);
 
-    const countRef = useRef<number | null>(null);
-
     const [sound, setSound] = useState<Audio.Sound | null>(null);
 
     const colorScheme = useColorScheme();
 
+    useEffect(() => {
+        setTimeLeft(initialMilliseconds);
+    }
+    , [initialMilliseconds]);
+
     const updateTime = () => {
-        setTimeLeft((prev) => prev - 10);
+        setTimeLeft((prev) => prev - UPDATE_INTERVAL);
     }
     
-    const timer = useTimer({ delay: 10 }, updateTime);
+    const timer = useTimer({ delay: UPDATE_INTERVAL }, updateTime);
 
     useEffect(() => {
         if (isPaused) {
@@ -54,10 +58,12 @@ export default function Timer({ initialMilliseconds = 0, callback }: { initialMi
 
         if (timeLeft <= 0) {
             setTimeLeft(0);
-            setIsActive(false);
-            playSound();
-            if (callback) {
-                callback();
+            if (isActive) {
+                setIsActive(false);
+                playSound();
+                if (callback) {
+                    callback();
+                }
             }
         }
     }, [timeLeft]);
@@ -78,33 +84,70 @@ export default function Timer({ initialMilliseconds = 0, callback }: { initialMi
     };
 
     async function playSound() {
-        const { sound } = await Audio.Sound.createAsync( require('../assets/sounds/beep.mp3')
-        );
-        setSound(sound);
-    
-        console.log('Playing Sound');
-        await sound.playAsync();
+        const soundObject = new Audio.Sound();
+        try {
+            await soundObject.loadAsync(require('../assets/sounds/beep_beep.mp3'), { shouldPlay: true });
+            await soundObject.setPositionAsync(0);
+            await soundObject.playAsync();
+            // await soundObject.unloadAsync();
+            console.log('Sound played');
+        
+          // Your sound is playing!
+        } catch (error) {
+          console.log('Error playing sound:', error);
+        }
       }
 
     useEffect(() => {
-    return sound
-        ? () => {
-            console.log('Unloading Sound');
-            sound.unloadAsync();
-        }
-        : undefined;
-    }, [sound]);
+        return sound
+            ? () => {
+                console.log('Unloading Sound');
+                // sound.unloadAsync();
+            }
+            : undefined;
+        }, [sound]);
 
     return (
         <View style={[styles.container, {
             backgroundColor: colorScheme === "light" ? Colors.light.background : Colors.dark.background,
         }]}>
-            <Text style={[styles.timer, {
-                color: colorScheme === "light" ? Colors.light.text : Colors.dark.text,
-            }]}>
-                {minutes < 10 ? `0${minutes}`: minutes}:{seconds < 10 ? `0${seconds}` : seconds},{milliseconds < 10 ? `0${milliseconds}` : milliseconds}
-            </Text>
+            <View style={styles.timeContainer}>
+                <Text style={[styles.timeChunk, {
+                    color: colorScheme === "light" ? Colors.light.text : Colors.dark.text,
+                }]}>
+                    {minutes < 10 ? `0${minutes}`: minutes}
+                </Text>
+
+                <Text style={[styles.timeSep, {
+                    color: colorScheme === "light" ? Colors.light.text : Colors.dark.text,
+                }]}>
+                    :
+                </Text>
+
+                <Text style={[styles.timeChunk, {
+                    color: colorScheme === "light" ? Colors.light.text : Colors.dark.text,
+                }]}>
+                    {seconds < 10 ? `0${seconds}` : seconds}
+                </Text>
+
+                <Text style={[styles.timeSep, {
+                    color: colorScheme === "light" ? Colors.light.text : Colors.dark.text,
+                }]}>
+                    ,
+                </Text>
+
+                <Text style={[styles.timeChunk, {
+                    color: colorScheme === "light" ? Colors.light.text : Colors.dark.text,
+                }]}>
+                    {milliseconds < 10 ? `0${milliseconds}` : milliseconds}
+                </Text>
+            </View>
+
+
             <View style={styles.buttons}>
+
+                {/* Start Button */}
+                {!isActive && (
                 <Pressable
                     style={styles.button}
                     onPress={handleStart}
@@ -115,28 +158,56 @@ export default function Timer({ initialMilliseconds = 0, callback }: { initialMi
                         Start
                     </Text>
                 </Pressable>
+                )}
 
-                <Pressable
-                    style={styles.button}
-                    onPress={handlePause}
-                >
-                    <Text style={[styles.buttonText,{
-                        color: Colors.primary,
-                    }]}>
-                        {isPaused ? "Resume" : "Pause"}
-                    </Text>
-                </Pressable>
-                
-                <Pressable
-                    style={styles.button}
-                    onPress={handleReset}
-                >
-                    <Text style={[styles.buttonText,{
-                        color: Colors.primary,
-                    }]}>
-                        Reset
-                    </Text>
-                </Pressable>
+                {/* Pause/Resume Button */}
+                {isActive && (
+                    <Pressable
+                        style={styles.button}
+                        onPress={handlePause}
+                    >
+                        <Text style={[styles.buttonText,{
+                            color: Colors.primary,
+                        }]}>
+                            {isPaused ? "Resume" : "Pause"}
+                        </Text>
+                    </Pressable>
+                )}
+
+                {/* Reset Button */}
+                {(isActive || (timeLeft === 0)) && (
+                    <Pressable
+                        style={styles.button}
+                        onPress={handleReset}
+                    >
+                        <Text style={[styles.buttonText,{
+                            color: Colors.primary,
+                        }]}>
+                            Reset
+                        </Text>
+                    </Pressable>
+                )}
+
+                {/* Skip Button */}
+                {timeLeft > 0 && (
+                    <Pressable
+                        style={styles.button}
+                        onPress={() => {
+                            setIsActive(false);
+                            setTimeLeft(0);
+                            if (callback) {
+                                callback();
+                            }
+                        }}
+                    >
+                        <Text style={[styles.buttonText,{
+                            color: Colors.primary,
+                        }]}>
+                            Skip
+                        </Text>
+                    </Pressable>
+                )}
+
             </View>
         </View>
     );
@@ -147,7 +218,12 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    timer: {
+    timeChunk: {
+        fontSize: 60,
+        width: 75,
+        textAlign: "center",
+    },
+    timeSep: {
         fontSize: 60,
     },
     buttons: {
@@ -159,6 +235,10 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontSize: 20,
+    },
+    timeContainer: {
+        flexDirection: "row",
+        alignItems: "center",
     },
 
 });

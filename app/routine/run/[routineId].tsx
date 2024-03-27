@@ -51,7 +51,7 @@ export default function Page() {
         if (waitingForTimer) {
             return;
         }
-        if (routine && currentIndex === routine?.exercises.length - 1) {
+        if (routine && currentIndex === routine?.exercises.length ) {
             setCurrentIndex(-1);
         } else {
             setCurrentIndex(currentIndex + 1);
@@ -63,6 +63,7 @@ export default function Page() {
             backgroundColor: colorScheme === 'light' ? Colors.light.background : Colors.dark.background,
         }]} >
             <Stack.Screen options={{ title: '', headerBackTitleVisible: false, headerTransparent: true }} />
+
             {/* Start Menu */}
             { currentIndex === -1 &&
                <View style={{
@@ -84,8 +85,9 @@ export default function Page() {
                         <Text style={styles.buttonText}>Start</Text>
                     </Pressable>
                 </View>}
-
-                { currentIndex !== -1 && 
+                
+                {/* Exercise */}
+                { ( routine && currentIndex !== -1 && (currentIndex < routine.exercises.length)) &&
                 <View style={{
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -145,6 +147,30 @@ export default function Page() {
                             Next
                         </Text>
                     </Pressable> 
+                </View>
+            }
+
+            {/* End Menu */}
+            { (routine && currentIndex === routine.exercises.length) &&
+                <View style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    gap: 20,
+                }}>
+                    <Text style={[styles.title,{
+                        color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
+                    }]}>
+                        Routine Completed!
+                    </Text>
+                    <Pressable
+                        style={[styles.button, {
+                            backgroundColor: Colors.primary,
+                        }]}
+                        onPress={() => setCurrentIndex(-1)}
+                    >
+                        <Text style={styles.buttonText}>Restart</Text>
+                    </Pressable>
                 </View>
             }
             

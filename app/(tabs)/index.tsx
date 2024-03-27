@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, FlatList, TouchableOpacity, View, Text, Pressable, TouchableHighlight } from 'react-native';
+import { StyleSheet, TextInput, FlatList, TouchableOpacity, View, Text, Pressable, TouchableHighlight, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, doc, onSnapshot, deleteDoc, getDoc } from 'firebase/firestore';
 import { FIRESTORE_DB } from '@/firebaseConfig';
@@ -87,8 +87,11 @@ export default function MyRoutinesScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Routines</Text>
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Text style={[styles.title,{
+        color: Colors.primary
+      }]}>My Routines</Text>
       <FlatList
         style={{ width: '100%' }}
         data={routines}
@@ -103,7 +106,7 @@ export default function MyRoutinesScreen() {
           <Ionicons name="add" size={24} color={Colors[colorScheme ?? 'light'].text} />
         </TouchableHighlight>
       </Link>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -115,8 +118,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 20,
+    fontSize: 36,
     fontWeight: 'bold',
+    marginVertical: 20,
   },
   routineContainer: {
     flex: 1,
