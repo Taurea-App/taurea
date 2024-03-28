@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, FlatList, TouchableOpacity, View, Text, Pressable, TouchableHighlight, SafeAreaView } from 'react-native';
+import { StyleSheet, TextInput, FlatList, TouchableOpacity, View, Text, Pressable, TouchableHighlight, SafeAreaView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, doc, onSnapshot, deleteDoc, getDoc } from 'firebase/firestore';
-import { FIRESTORE_DB } from '@/firebaseConfig';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '@/firebaseConfig';
 import { Routine, Exercise } from '@/types';
 import { Link, Stack } from 'expo-router';
 import Colors from '@/constants/Colors';
@@ -10,13 +10,14 @@ import { useColorScheme } from '@/components/useColorScheme';
 
 export default function MyRoutinesScreen() {
   const colorScheme = useColorScheme();
+  const auth = FIREBASE_AUTH;
 
   const [routines, setRoutines] = useState<Routine[]>([]);
-  const [expandedRoutineId, setExpandedRoutineId] = useState<string | null>(null);
-  const [exercises, setExercises] = useState<{ [key: string]: Exercise[] }>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const routinesRef = collection(FIRESTORE_DB, "Routines");
+  // Load routines from Firestore, routines, userid, routines
+    const routinesRef = collection(FIRESTORE_DB, "users/" + auth.currentUser?.uid + "/routines");  
     const unsubscribe = onSnapshot(routinesRef, (snapshot) => {
       const loadedRoutines: Routine[] = [];
       snapshot.docs.forEach((doc) => {
@@ -26,47 +27,13 @@ export default function MyRoutinesScreen() {
         } as Routine);
       });
       setRoutines(loadedRoutines);
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const toggleRoutine = async (routineId: string) => {
-    // Expand or collapse routine
-    if (expandedRoutineId === routineId) {
-      setExpandedRoutineId(null); // Collapse if it's already expanded
-    } else {
-      setExpandedRoutineId(routineId); // Expand new routine
-
-      // Fetch exercises for this routine if not already loaded
-      if (!exercises[routineId]) {
-        const routine = routines.find((r) => r.id === routineId);
-        if (routine) {
-          const exercisesRefs = routine.exercises;
-          const exerciseDetails: Exercise[] = [];
-
-          for (const exerciseRef of exercisesRefs) {
-            const docRef = doc(FIRESTORE_DB, "Exercises", exerciseRef.id);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              exerciseDetails.push({
-                id: docSnap.id,
-                ...docSnap.data(),
-              } as Exercise);
-            }
-          }
-
-          setExercises((prevExercises) => ({
-            ...prevExercises,
-            [routineId]: exerciseDetails,
-          }));
-        }
-      }
-    }
-  };
-
   const renderRoutine = ({ item }: { item: Routine }) => {
-    const isExpanded = expandedRoutineId === item.id;
     return (
       <View style={[styles.routineContainer, 
         { backgroundColor: Colors[colorScheme ?? 'light'].tabBackgroundColor 
@@ -92,20 +59,25 @@ export default function MyRoutinesScreen() {
       <Text style={[styles.title,{
         color: Colors.primary
       }]}>My Routines</Text>
-      <FlatList
-        style={{ width: '100%' }}
-        data={routines}
-        keyExtractor={(item) => item.id}
-        renderItem={renderRoutine}
-      />
-      <Link href="/routine/new" asChild>
-        <TouchableHighlight
-          style={styles.addRoutineButton}
-          underlayColor="darkorange"
-          >
-          <Ionicons name="add" size={24} color={Colors[colorScheme ?? 'light'].text} />
-        </TouchableHighlight>
-      </Link>
+      {loading && <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />}
+      {!loading && 
+        <FlatList
+          style={{ width: '100%' }}
+          data={routines}
+          keyExtractor={(item) => item.id}
+          renderItem={renderRoutine}
+        />
+      }
+      {!loading && 
+        <Link href="/routine/new" asChild>
+          <TouchableHighlight
+            style={styles.addRoutineButton}
+            underlayColor="darkorange"
+            >
+            <Ionicons name="add" size={24} color={Colors[colorScheme ?? 'light'].text} />
+          </TouchableHighlight>
+        </Link>
+      }
     </SafeAreaView>
   );
 }

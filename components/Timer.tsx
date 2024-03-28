@@ -89,8 +89,6 @@ export default function Timer({ initialMilliseconds = 0, callback }: { initialMi
             await soundObject.loadAsync(require('../assets/sounds/beep_beep.mp3'), { shouldPlay: true });
             await soundObject.setPositionAsync(0);
             await soundObject.playAsync();
-            // await soundObject.unloadAsync();
-            console.log('Sound played');
         
           // Your sound is playing!
         } catch (error) {

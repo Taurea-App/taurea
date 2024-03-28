@@ -4,11 +4,11 @@ import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import { FIREBASE_AUTH } from '@/firebaseConfig';
 
-export default function TabTwoScreen() {
+export default function ProfileScreen() {
   const auth = FIREBASE_AUTH;
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
+      <Text style={styles.title}>Profile</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <Button title="Sign Out" onPress={() => auth.signOut()} />
     </View>

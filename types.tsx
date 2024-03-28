@@ -5,7 +5,7 @@ export type Exercise = {
   measurementType: string;
 };
 
-export type ExerciseInRoutine = Exercise & { quantity: number } & { unit: string };
+export type ExerciseInRoutine = Exercise & { quantity: number } & { unit: string } & { exerciseId: string };
 
 export type Routine = {
   id: string;

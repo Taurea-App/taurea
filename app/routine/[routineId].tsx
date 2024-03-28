@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, Button, TextInput, TouchableOpacity, Alert, Pressable, SafeAreaView, FlatList } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Button, TextInput, TouchableOpacity, Alert, Pressable, SafeAreaView, FlatList, ActivityIndicator } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
-import { FIRESTORE_DB } from '@/firebaseConfig'; // Adjust the import path as necessary
+import { FIREBASE_AUTH, FIRESTORE_DB } from '@/firebaseConfig'; // Adjust the import path as necessary
 import { Exercise, Routine, ExerciseInRoutine } from '@/types'; // Adjust the import path as necessary
 import { useRouter, Stack, useNavigation } from 'expo-router';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -27,6 +27,9 @@ export default function Page() {
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   
   const [showOptions, setShowOptions] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const auth = FIREBASE_AUTH;
 
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export default function Page() {
       if (!routineId) return;
 
       // Fetch the routine details
-      const routineRef = doc(FIRESTORE_DB, 'Routines', routineId);
+      const routineRef = doc(FIRESTORE_DB, 'users/' + auth.currentUser?.uid + '/routines', routineId);
       const routineSnap = await getDoc(routineRef);
 
       if (routineSnap.exists()) {
@@ -45,6 +48,7 @@ export default function Page() {
         } as Routine);
 
         setExercises(routineSnap.data().exercises);
+        setLoading(false);
       }
     };
 
@@ -67,8 +71,7 @@ export default function Page() {
     setShowOptions(false);
     if (!routineId) return;
 
-    await deleteDoc(doc(FIRESTORE_DB, 'Routines', routineId));
-    console.log('Routine deleted successfully');
+    await deleteDoc(doc(FIRESTORE_DB, 'users/' + auth.currentUser?.uid + '/routines', routineId));
     // After deletion, navigate back or to another screen as needed
     navigation.navigate('index');
   };
@@ -90,40 +93,49 @@ export default function Page() {
           </Pressable>
         )
         }} />
-      <Text style={[styles.title, { color: Colors['primary'] }]}>{routine?.name}</Text>
-      <Text style={styles.description}>{routine?.description}</Text>
-
-      <FlatList
-        data={exercises}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View style={[styles.exerciseContainer, {
-            backgroundColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tabBackgroundColor,
-          }]}>
-            <Text style={[styles.exerciseName,{
-              color: Colors[colorScheme === 'dark' ? 'dark' : 'light'].text,
-            }]}>{item.name}</Text>
-            <Text style={{ 
-              color: Colors[colorScheme === 'dark' ? 'dark' : 'light'].text,
-            }}
-            >{item.quantity} {item.unit}</Text>
-          </View>
-        )}
-      />
-      {/* Implement navigation or state change for editing here */}
-
-      <View style={styles.buttonsContainer}>
-        
-        <Link href={{
-          pathname: '/routine/run/[routineId]',
-          params: { routineId }
-        }} asChild>
-          <TouchableOpacity style={{backgroundColor: Colors['primary'], ...styles.button}}>
-            <Text>Run</Text>
-          </TouchableOpacity>
-        </Link>
-
+      {loading && 
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={Colors[colorScheme === 'dark' ? 'dark' : 'light'].tint} />
         </View>
+      }
+      {!loading &&
+        <View style={{
+          flex: 1,
+        }}>
+          <Text style={[styles.title, { color: Colors['primary'] }]}>{routine?.name}</Text>
+          <Text style={styles.description}>{routine?.description}</Text>
+          <FlatList
+            data={exercises}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View style={[styles.exerciseContainer, {
+                backgroundColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tabBackgroundColor,
+              }]}>
+                <Text style={[styles.exerciseName,{
+                  color: Colors[colorScheme === 'dark' ? 'dark' : 'light'].text,
+                }]}>{item.name}</Text>
+                <Text style={{ 
+                  color: Colors[colorScheme === 'dark' ? 'dark' : 'light'].text,
+                }}
+                >{item.quantity} {item.unit}</Text>
+              </View>
+            )}
+          />
+        {/* Implement navigation or state change for editing here */}
+        <View style={styles.buttonsContainer}>
+          
+          <Link href={{
+            pathname: '/routine/run/[routineId]',
+            params: { routineId }
+          }} asChild>
+            <TouchableOpacity style={{backgroundColor: Colors['primary'], ...styles.button}}>
+              <Text>Run</Text>
+            </TouchableOpacity>
+          </Link>
+
+          </View>
+        </View>
+      }
 
         <Modal 
           isOpen={showOptions} 

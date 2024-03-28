@@ -1,5 +1,5 @@
-import { View, Text, FlatList, TouchableOpacity, Pressable, StyleSheet } from "react-native";
-import { FIRESTORE_DB } from "@/firebaseConfig";
+import { View, Text, FlatList, TouchableOpacity, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { ExerciseInRoutine, Routine } from "@/types";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
@@ -14,6 +14,8 @@ export default function Page() {
     const [currentExercise, setCurrentExercise] = useState<ExerciseInRoutine | null>(null);
     const [currentIndex, setCurrentIndex] = useState<number>(-1);
     const [waitingForTimer, setWaitingForTimer] = useState<boolean>(false);
+    const [loading, setLoading] = useState(true);
+    const auth = FIREBASE_AUTH;
 
     const colorScheme = useColorScheme();
 
@@ -21,7 +23,7 @@ export default function Page() {
     useEffect(() => {
         const fetchRoutine = async () => {
             // Fetch the routine details
-            const routineRef = doc(FIRESTORE_DB, 'Routines', routineId);
+            const routineRef = doc(FIRESTORE_DB, 'users/' + auth.currentUser?.uid + '/routines', routineId);
             const routineSnap = await getDoc(routineRef);
 
             if (routineSnap.exists()) {
@@ -29,6 +31,7 @@ export default function Page() {
                     id: routineSnap.id,
                     ...routineSnap.data(),
                 } as Routine);
+                setLoading(false);
             }
         }
         fetchRoutine();
@@ -41,10 +44,8 @@ export default function Page() {
     }, [routine, currentIndex]);
 
     useEffect(() => {
-        console.log('Current Exercise:', currentExercise);
         if (currentExercise && (['Secs.', 'Mins.'] as const).includes(currentExercise.unit as any)) {
             setWaitingForTimer(true);
-            console.log('Waiting for timer');
         }}, [currentExercise]);
 
     const handleNext = () => {
@@ -64,116 +65,127 @@ export default function Page() {
         }]} >
             <Stack.Screen options={{ title: '', headerBackTitleVisible: false, headerTransparent: true }} />
 
-            {/* Start Menu */}
-            { currentIndex === -1 &&
-               <View style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%',
-                    gap: 20,
+            {loading && 
+                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={Colors[colorScheme === 'dark' ? 'dark' : 'light'].tint} />
+                </View>
+            }
+            {!loading &&
+                <View style= {{
+                    // flex: 1,
                 }}>
-                    <Text style={[styles.title,{
-                        color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
-                    }]}>{routine?.name}</Text>
+                    {/* Start Menu */}
+                    { currentIndex === -1 &&
+                    <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            gap: 20,
+                        }}>
+                            <Text style={[styles.title,{
+                                color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
+                            }]}>{routine?.name}</Text>
 
-                    <Pressable
-                        style={[styles.button, {
-                            backgroundColor:  Colors.primary,
-                        }]}
-                        onPress={handleNext}
-                    >
-                        <Text style={styles.buttonText}>Start</Text>
-                    </Pressable>
-                </View>}
-                
-                {/* Exercise */}
-                { ( routine && currentIndex !== -1 && (currentIndex < routine.exercises.length)) &&
-                <View style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '100%',
-                        gap: 20,
-                    }}>
-
-                    <View>
-                        {/* Title */}
-                        <Text style={[styles.title,{
-                            color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
-                        }]}>
-                            {currentExercise?.name}
-                        </Text>
+                            <Pressable
+                                style={[styles.button, {
+                                    backgroundColor:  Colors.primary,
+                                }]}
+                                onPress={handleNext}
+                            >
+                                <Text style={styles.buttonText}>Start</Text>
+                            </Pressable>
+                        </View>}
                         
-                        {/* Description */}
-                        <Text style={[styles.description,{
-                            color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
-                        }]}>
-                            {currentExercise?.description}
-                        </Text>
-                            
-                        {/* Quantity */}
-                        <Text style={[styles.description,{
-                            color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
-                        }]}>
-                            {currentExercise?.quantity} {currentExercise?.unit}
-                        </Text>
+                        {/* Exercise */}
+                        { ( routine && currentIndex !== -1 && (currentIndex < routine.exercises.length)) &&
+                        <View style={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '100%',
+                                gap: 20,
+                            }}>
 
-                        {/* Timer */}
-                        {(currentExercise?.unit === 'Secs.') && 
-                            <Timer 
-                                initialMilliseconds={currentExercise?.quantity * 1000}
-                                callback={() => setWaitingForTimer(false)}
-                            />
-                        }
+                            <View>
+                                {/* Title */}
+                                <Text style={[styles.title,{
+                                    color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
+                                }]}>
+                                    {currentExercise?.name}
+                                </Text>
+                                
+                                {/* Description */}
+                                <Text style={[styles.description,{
+                                    color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
+                                }]}>
+                                    {currentExercise?.description}
+                                </Text>
+                                    
+                                {/* Quantity */}
+                                <Text style={[styles.description,{
+                                    color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
+                                }]}>
+                                    {currentExercise?.quantity} {currentExercise?.unit}
+                                </Text>
 
-                        {(currentExercise?.unit === 'Mins.') && 
-                            <Timer 
-                                initialMilliseconds={currentExercise?.quantity * 60000}
-                                callback={() => setWaitingForTimer(false)}
-                            />
-                        }
+                                {/* Timer */}
+                                {(currentExercise?.unit === 'Secs.') && 
+                                    <Timer 
+                                        initialMilliseconds={currentExercise?.quantity * 1000}
+                                        callback={() => setWaitingForTimer(false)}
+                                    />
+                                }
 
-                    </View>
+                                {(currentExercise?.unit === 'Mins.') && 
+                                    <Timer 
+                                        initialMilliseconds={currentExercise?.quantity * 60000}
+                                        callback={() => setWaitingForTimer(false)}
+                                    />
+                                }
 
-                    {/* Next Button */}
-                    <Pressable 
-                        onPress={handleNext}
-                        style={[styles.button, {
-                            backgroundColor: waitingForTimer ? Colors.grey : Colors.primary,
-                            shadowOpacity: waitingForTimer ? 0 : 0.25,
-                        }]}
-                        disabled={waitingForTimer}
-                    >
-                        <Text style={styles.buttonText}>
-                            Next
-                        </Text>
-                    </Pressable> 
+                            </View>
+
+                            {/* Next Button */}
+                            <Pressable 
+                                onPress={handleNext}
+                                style={[styles.button, {
+                                    backgroundColor: waitingForTimer ? Colors.grey : Colors.primary,
+                                    shadowOpacity: waitingForTimer ? 0 : 0.25,
+                                }]}
+                                disabled={waitingForTimer}
+                            >
+                                <Text style={styles.buttonText}>
+                                    Next
+                                </Text>
+                            </Pressable> 
+                        </View>
+                    }
+
+                    {/* End Menu */}
+                    { (routine && currentIndex === routine.exercises.length) &&
+                        <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            gap: 20,
+                        }}>
+                            <Text style={[styles.title,{
+                                color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
+                            }]}>
+                                Routine Completed!
+                            </Text>
+                            <Pressable
+                                style={[styles.button, {
+                                    backgroundColor: Colors.primary,
+                                }]}
+                                onPress={() => setCurrentIndex(-1)}
+                            >
+                                <Text style={styles.buttonText}>Restart</Text>
+                            </Pressable>
+                        </View>
+                    }
+                    
                 </View>
             }
-
-            {/* End Menu */}
-            { (routine && currentIndex === routine.exercises.length) &&
-                <View style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%',
-                    gap: 20,
-                }}>
-                    <Text style={[styles.title,{
-                        color: colorScheme === 'light' ? Colors.light.text : Colors.dark.text,
-                    }]}>
-                        Routine Completed!
-                    </Text>
-                    <Pressable
-                        style={[styles.button, {
-                            backgroundColor: Colors.primary,
-                        }]}
-                        onPress={() => setCurrentIndex(-1)}
-                    >
-                        <Text style={styles.buttonText}>Restart</Text>
-                    </Pressable>
-                </View>
-            }
-            
         </View>
     )
 }

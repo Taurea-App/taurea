@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, Redirect, Tabs } from 'expo-router';
 import { Pressable } from 'react-native';
@@ -19,8 +19,6 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const user = useContext(UserContext);
-
-  console.log('user', user);
 
   if (!user) {
     return <Redirect href="/login" />;
@@ -56,9 +54,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="profile"
         options={{
-          title: 'Tab Two',
+          title: 'Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />

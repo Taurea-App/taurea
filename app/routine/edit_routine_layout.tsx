@@ -1,8 +1,8 @@
 import { Exercise, ExerciseInRoutine } from "@/types";
 import React, { useEffect, useState } from "react";
-import { Text, View, TextInput, TouchableOpacity, ScrollView, FlatList, KeyboardAvoidingView, Keyboard } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, ScrollView, FlatList, KeyboardAvoidingView, Keyboard, ActivityIndicator } from "react-native";
 import { getDocs, collection, query, where, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
-import { FIRESTORE_DB } from "@/firebaseConfig";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
 import Colors from '@/constants/Colors';
 import { useColorScheme } from "react-native";
@@ -25,6 +25,7 @@ const meassurementUnits = [
 ];
 import {editRoutineLayoutStyle as style} from './edit_routine_layout_style';
 import KeyboardSpacer from 'react-native-keyboard-spacer'
+import { idGen } from "@/utils/idGen";
 
 export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRoutine: boolean, routineId?: string}) {
     const colorScheme = useColorScheme();
@@ -46,15 +47,19 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
     const [showExerciseSelectModal, setShowExerciseSelectModal] = useState(false);
     const [showUnitSelectModal, setShowUnitSelectModal] = useState(false);
 
+    const [loading, setLoading] = useState(true);
+
+    const auth = FIREBASE_AUTH;
+
     const loadRoutine = async () => {
         if (!routineId) return;
-        const routineRef = doc(FIRESTORE_DB, 'Routines', routineId);
+        const routineRef = doc(FIRESTORE_DB, 'users/' + auth.currentUser?.uid + "/routines", routineId);
         const routineSnap = await getDoc(routineRef);
         if (routineSnap.exists()) {
             setRoutineName(routineSnap.data().name);
             setRoutineDescription(routineSnap.data().description);
             setExercises(routineSnap.data().exercises);
-            console.log('Routine loaded: ', routineSnap.data());
+            setLoading(false);
         }
         else {
             console.log('No such document!');
@@ -73,18 +78,18 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
     }
 
     const saveRoutine = async () => {
+        setLoading(true);
         const routine = {
             name: routineName,
             description: routineDescription,
             exercises: exercises,
         }
         if (isNewRoutine) {    
-            const docRef = await addDoc(collection(FIRESTORE_DB, 'Routines'), routine);
-            console.log('Document written with ID: ', docRef.id);
+            const docRef = await addDoc(collection(FIRESTORE_DB, 'users/' + auth.currentUser?.uid + '/routines'), routine);
         }
         else {
             if (!routineId) return;
-            const routineRef = doc(FIRESTORE_DB, 'Routines', routineId);
+            const routineRef = doc(FIRESTORE_DB, 'users/' + auth.currentUser?.uid + '/routines', routineId);
             await setDoc(routineRef, routine);
         }
         navigation.navigate('index');
@@ -93,13 +98,6 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
     useEffect(() => {
         if (!isNewRoutine) {
             loadRoutine();
-        }
-
-        console.log('isNewRoutine: ', isNewRoutine);
-        if (isNewRoutine) {
-            console.log('New Routine');
-        } else {
-            console.log('Edit Routine');
         }
 
         fetchExercises();
@@ -170,193 +168,209 @@ export default function EditRoutineLayout({isNewRoutine, routineId}: {isNewRouti
         // automaticallyAdjustKeyboardInsets={true}
     >
         <Stack.Screen options={{ title: isNewRoutine ? 'New Routine' : 'Edit Routine' }} />
+
+        {loading && 
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={Colors[colorScheme ? colorScheme : 'light'].tint} />
+            </View>
+        }
         
+        {!loading &&
+            <View style={{
+                flex: 1,
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
         {/* Title and Description */}
-        <View style={{width: '100%', padding: 10}}>
-                <TextInput
-                    style={[
-                        style.title,
-                        {
-                            color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                        }]
-                    }
-                    onChangeText={setRoutineName}
-                    value={routineName}
-                    placeholder="Routine Name"
-                />
-                <TextInput 
-                    style={style.description} 
-                    onChangeText={setRoutineDescription}
-                    value={routineDescription}
-                    placeholder="Routine Description"
-                    blurOnSubmit={true}
-                    multiline={true} 
-                    // numberOfLines={4}
-                />
-            </View>
-
-
-        {/* Exercise List */}
-        <DraggableFlatList style={style.exerciseList}
-            data={exercises}
-            containerStyle={{ flex : 1 }}
-            onDragEnd={({ data }) => setExercises(data) }
-            renderItem={({item, drag, isActive }) => renderRoutineItem({item, drag, isActive})}
-            keyExtractor={(item, index) => index.toString() + item.id}
-            // ListHeaderComponent={TitleAndDescription}
-            // ListFooterComponent={NewExerciseForm}
-        />
-        {/* <NewExerciseForm />
-         */}
-         <View style={style.newExerciseForm}>
-                <View style={[style.exerciseListItem, {
-                    backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
-                }]}>
-                    <TextInput 
-                        style={[style.exerciseListItemName, {
-                            color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                        }]}
-                        placeholder="Select Exercise"
-                        value={selectedExercise?.name}
-                        onPressIn={() => {
-                            setShowExerciseSelectModal(true)
-                            // Hide the keyboard
-                            Keyboard.dismiss();
-                        }}
-
-                        readOnly
-                    />
-                    <TextInput 
-                        style={[style.exerciseListItemQuantity, {
-                            color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                        }]}
-                        placeholder="Quantity"
-                        value={selectedQuantity ? selectedQuantity.toString() : ''}
-                        onChangeText={(text) => setSelectedQuantity(isNaN(parseInt(text)) ? null : parseInt(text))}
-                        inputMode="decimal"
-                    />
+            <View style={{width: '100%', padding: 10}}>
                     <TextInput
-                        style={[style.exerciseListItemQuantity, {
-                            color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                        }]}
-                        placeholder="Unit"
-                        value={selectedUnit}
-                        onPressIn={() => {
-                            setShowUnitSelectModal(true)
-                            // Hide the keyboard
-                            Keyboard.dismiss();
-                        }}
-                        readOnly
+                        style={[
+                            style.title,
+                            {
+                                color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                            }]
+                        }
+                        onChangeText={setRoutineName}
+                        value={routineName}
+                        placeholder="Routine Name"
                     />
-                    <TouchableOpacity
-                        onPress={() => {
-                            if ( (!selectedExercise) || (!selectedQuantity) ) return;
-                            const newExercise = {
-                                id: selectedExercise.id,
-                                name: selectedExercise.name,
-                                quantity: selectedQuantity,
-                                unit: selectedUnit,
-                            } as ExerciseInRoutine;
-                            setExercises([...exercises, newExercise]);
-                            setSelectedExercise(null);
-                            setSelectedQuantity(null)
-                            setSelectedUnit(meassurementUnits[0]);
-                        }}
-                    >
-                        <Ionicons name="add" size={24} color="green" />
-                    </TouchableOpacity>
-    
-                </View>
-            </View>
-
-        {/* Exercise Select Modal */}
-        <Modal
-                animationPreset="slide"
-                isOpen={showExerciseSelectModal}
-                size='full'
-                onClose={() => {
-                    setSearchTerm('');
-                    setShowExerciseSelectModal(false);
-                }}
-            >
-                <Modal.Content 
-                    style={[style.exerciseSelectModalView, {
-                        backgroundColor: colorScheme ? Colors[colorScheme].background : Colors.light.background,
-                    }]}
-                    marginBottom={0}
-                    marginTop={'auto'}
-                >
                     <TextInput 
-                        style={[style.searchBar, {
-                            backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
-                            color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                        }]}
-                        placeholder="Search Exercises..."
-                        value={searchTerm}
-                        onChangeText={setSearchTerm}
+                        style={style.description} 
+                        onChangeText={setRoutineDescription}
+                        value={routineDescription}
+                        placeholder="Routine Description"
+                        blurOnSubmit={true}
+                        multiline={true} 
+                        // numberOfLines={4}
                     />
-                    <ScrollView style={{width: '100%'}}>
-                    {filteredExercises.map((exercise) => (
-                        <TouchableOpacity 
-                            key={exercise.id} 
-                            style={[style.button, {
-                                backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
-                            }]}
-                            onPress={() => {
-                                setSelectedExercise(exercise);
-                                setShowExerciseSelectModal(false);
-                                setSearchTerm('');
-                            }
-                        }>
-                            <Text style={[style.exerciseSelectItem, {
+                </View>
+
+
+            {/* Exercise List */}
+            <DraggableFlatList style={style.exerciseList}
+                data={exercises}
+                containerStyle={{ flex : 1 }}
+                onDragEnd={({ data }) => setExercises(data) }
+                renderItem={({item, drag, isActive }) => renderRoutineItem({item, drag, isActive})}
+                keyExtractor={(item, index) => index.toString() + item.id}
+                // ListHeaderComponent={TitleAndDescription}
+                // ListFooterComponent={NewExerciseForm}
+            />
+            {/* <NewExerciseForm />
+            */}
+            <View style={style.newExerciseForm}>
+                    <View style={[style.exerciseListItem, {
+                        backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
+                    }]}>
+                        <TextInput 
+                            style={[style.exerciseListItemName, {
                                 color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                            }]}>
-                                {exercise.name}
-                            </Text>
+                            }]}
+                            placeholder="Select Exercise"
+                            value={selectedExercise?.name}
+                            onPressIn={() => {
+                                setShowExerciseSelectModal(true)
+                                // Hide the keyboard
+                                Keyboard.dismiss();
+                            }}
+
+                            readOnly
+                        />
+                        <TextInput 
+                            style={[style.exerciseListItemQuantity, {
+                                color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                            }]}
+                            placeholder="Quantity"
+                            value={selectedQuantity ? selectedQuantity.toString() : ''}
+                            onChangeText={(text) => setSelectedQuantity(isNaN(parseInt(text)) ? null : parseInt(text))}
+                            inputMode="decimal"
+                        />
+                        <TextInput
+                            style={[style.exerciseListItemQuantity, {
+                                color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                            }]}
+                            placeholder="Unit"
+                            value={selectedUnit}
+                            onPressIn={() => {
+                                setShowUnitSelectModal(true)
+                                // Hide the keyboard
+                                Keyboard.dismiss();
+                            }}
+                            readOnly
+                        />
+                        <TouchableOpacity
+                            onPress={() => {
+                                if ( (!selectedExercise) || (!selectedQuantity) ) return;
+                                const newExercise = {
+                                    id: idGen(),
+                                    exerciseId: selectedExercise.id,
+                                    name: selectedExercise.name,
+                                    quantity: selectedQuantity,
+                                    unit: selectedUnit,
+                                } as ExerciseInRoutine;
+                                setExercises([...exercises, newExercise]);
+                                setSelectedExercise(null);
+                                setSelectedQuantity(null)
+                                setSelectedUnit(meassurementUnits[0]);
+                            }}
+                        >
+                            <Ionicons name="add" size={24} color="green" />
                         </TouchableOpacity>
-                    ))}
-                    </ScrollView>
-                    <KeyboardSpacer />
-                </Modal.Content>
-        </Modal>
+        
+                    </View>
+                </View>
 
-        <KeyboardSpacer />
-
-        <SaveButton />
-
-        {/* Unit Select Modal */}
-        <Modal
-                animationPreset="slide"
-                isOpen={showUnitSelectModal}
-                size='full'
-                onClose={() => setShowUnitSelectModal(false)}
-            >
-                <Modal.Content 
-                    style={[style.exerciseSelectModalView, {
-                        backgroundColor: colorScheme ? Colors[colorScheme].background : Colors.light.background,
-                    }]}
-                    marginBottom={0}
-                    marginTop={'auto'}
+            {/* Exercise Select Modal */}
+            <Modal
+                    animationPreset="slide"
+                    isOpen={showExerciseSelectModal}
+                    size='full'
+                    onClose={() => {
+                        setSearchTerm('');
+                        setShowExerciseSelectModal(false);
+                    }}
                 >
-                    {meassurementUnits.map((unit) => (
-                        <TouchableOpacity 
-                            key={unit} 
-                            style={[style.button, {
+                    <Modal.Content 
+                        style={[style.exerciseSelectModalView, {
+                            backgroundColor: colorScheme ? Colors[colorScheme].background : Colors.light.background,
+                        }]}
+                        marginBottom={0}
+                        marginTop={'auto'}
+                    >
+                        <TextInput 
+                            style={[style.searchBar, {
                                 backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
-                            }]}
-                            onPress={() => {
-                                setSelectedUnit(unit);
-                                setShowUnitSelectModal(false);
-                            }
-                        }>
-                            <Text style={[style.exerciseSelectItem, {
                                 color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-                            }]}>
-                                {unit}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </Modal.Content>
-        </Modal>
+                            }]}
+                            placeholder="Search Exercises..."
+                            value={searchTerm}
+                            onChangeText={setSearchTerm}
+                        />
+                        <ScrollView style={{width: '100%'}}>
+                        {filteredExercises.map((exercise) => (
+                            <TouchableOpacity 
+                                key={exercise.id} 
+                                style={[style.button, {
+                                    backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
+                                }]}
+                                onPress={() => {
+                                    setSelectedExercise(exercise);
+                                    setShowExerciseSelectModal(false);
+                                    setSearchTerm('');
+                                }
+                            }>
+                                <Text style={[style.exerciseSelectItem, {
+                                    color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                                }]}>
+                                    {exercise.name}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                        </ScrollView>
+                        <KeyboardSpacer />
+                    </Modal.Content>
+            </Modal>
+
+            <KeyboardSpacer />
+
+            <SaveButton />
+
+            {/* Unit Select Modal */}
+            <Modal
+                    animationPreset="slide"
+                    isOpen={showUnitSelectModal}
+                    size='full'
+                    onClose={() => setShowUnitSelectModal(false)}
+                >
+                    <Modal.Content 
+                        style={[style.exerciseSelectModalView, {
+                            backgroundColor: colorScheme ? Colors[colorScheme].background : Colors.light.background,
+                        }]}
+                        marginBottom={0}
+                        marginTop={'auto'}
+                    >
+                        {meassurementUnits.map((unit) => (
+                            <TouchableOpacity 
+                                key={unit} 
+                                style={[style.button, {
+                                    backgroundColor: colorScheme ? Colors[colorScheme].tabBackgroundColor : Colors.light.tabBackgroundColor,
+                                }]}
+                                onPress={() => {
+                                    setSelectedUnit(unit);
+                                    setShowUnitSelectModal(false);
+                                }
+                            }>
+                                <Text style={[style.exerciseSelectItem, {
+                                    color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+                                }]}>
+                                    {unit}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </Modal.Content>
+            </Modal>
+            </View>
+        }
    </View>
     }

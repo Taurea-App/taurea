@@ -59,7 +59,6 @@ function RootLayoutNav() {
   useEffect(() => {
     onAuthStateChanged(FIREBASE_AUTH, (authUser) => {
       setUser(authUser);
-      console.log('User state changed:', authUser);
     });
   }, []);
 
