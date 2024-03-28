@@ -1,16 +1,17 @@
-import React, { useContext, useState } from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Redirect, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Link, Redirect, Tabs } from "expo-router";
+import React, { useContext } from "react";
+import { Pressable } from "react-native";
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-import { UserContext } from '../_layout';
+import { UserContext } from "../_layout";
+
+import { useClientOnlyValue } from "@/components/useClientOnlyValue";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
+  name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
@@ -19,6 +20,7 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const user = useContext(UserContext);
+  const headerShown = useClientOnlyValue(true, false);
 
   if (!user) {
     return <Redirect href="/login" />;
@@ -27,15 +29,16 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
+        headerShown,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'My Routines',
+          title: "My Routines",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
@@ -44,7 +47,7 @@ export default function TabLayout() {
                   <FontAwesome
                     name="info-circle"
                     size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
+                    color={Colors[colorScheme ?? "light"].text}
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
                   />
                 )}
@@ -56,7 +59,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: "Profile",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
