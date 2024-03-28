@@ -5,9 +5,10 @@ import { useContext, useState } from "react";
 import { Button, Pressable, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
 import { UserContext } from "./_layout";
 import { Redirect } from "expo-router";
+import Colors from "@/constants/Colors";
 
 export default function Login() {
-  const colorScheme = useColorScheme
+  const colorScheme = useColorScheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,9 +24,8 @@ export default function Login() {
   const signIn = async () => {
     setLoading(true);
     try {
-      const response = await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
-      console.error(error);
       alert('Sign in failed. Please try again.');
     } finally {
       setLoading(false);
@@ -35,24 +35,26 @@ export default function Login() {
   const signUp = async () => {
     setLoading(true);
     try {
-      const response = await createUserWithEmailAndPassword(auth, email, password
+      await createUserWithEmailAndPassword(auth, email, password
       );
     } catch (error: any) {
-      console.error(error);
       alert('Sign up failed. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
-  
-
   return (
     <KeyboardAvoidingView behavior="padding"style={styles.container}>
-        <Text style={styles.title}>Login</Text>
+        <Text style={[styles.title,{
+          color: Colors[colorScheme === 'light' ? 'light' : 'dark'].text,
+        }]}>Login</Text>
 
         <TextInput
-          style={styles.input}
+          style={[styles.input,{
+            color: Colors[colorScheme === 'light' ? 'light' : 'dark'].text,
+            backgroundColor: Colors[colorScheme === 'light' ? 'light' : 'dark'].tabBackgroundColor,
+          }]}
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
@@ -60,7 +62,10 @@ export default function Login() {
         />
 
         <TextInput
-          style={styles.input}
+          style={[styles.input,{
+            color: Colors[colorScheme === 'light' ? 'light' : 'dark'].text,
+            backgroundColor: Colors[colorScheme === 'light' ? 'light' : 'dark'].tabBackgroundColor,
+          }]}
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
@@ -70,7 +75,9 @@ export default function Login() {
         <Pressable
           onPress={signIn}
           disabled={loading}
-          style={styles.button}
+          style={[styles.button,{
+            backgroundColor: Colors.primary,
+          }]}
         >
           <Text>Login</Text>
         </Pressable>
@@ -78,7 +85,9 @@ export default function Login() {
         <Pressable
           onPress={signUp}
           disabled={loading}
-          style={styles.button}
+          style={[styles.button,{
+            backgroundColor: Colors.primary,
+          }]}
         >
           <Text>Sign Up</Text>
         </Pressable>
@@ -102,10 +111,14 @@ const styles = StyleSheet.create({
     margin: 12,
     padding: 8,
     borderWidth: 1,
+    borderRadius: 20,
   },
   button: {
     width: '80%',
-    margin: 12,
+    margin: 6,
+    padding: 12,
+    alignItems: 'center',
+    borderRadius: 20,
   },
   error: {
     color: 'red',

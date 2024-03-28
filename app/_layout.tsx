@@ -70,7 +70,7 @@ function RootLayoutNav() {
           <UserContext.Provider value={user}>
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Home' }} />
-              <Stack.Screen name="login" options={{ title: 'Login' }} />
+              <Stack.Screen name="login" options={{ title: 'Login', headerShown: false }} />
             </Stack>
           </UserContext.Provider>
         </ThemeProvider>
