@@ -1,13 +1,16 @@
-import { StyleSheet } from 'react-native';
+import { Button, StyleSheet } from 'react-native';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
+import { FIREBASE_AUTH } from '@/firebaseConfig';
 
 export default function TabTwoScreen() {
+  const auth = FIREBASE_AUTH;
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tab Two</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+      <Button title="Sign Out" onPress={() => auth.signOut()} />
       <EditScreenInfo path="app/(tabs)/two.tsx" />
     </View>
   );
