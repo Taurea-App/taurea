@@ -1,16 +1,15 @@
-import { Link, Redirect } from "expo-router";
+import { Link, Redirect, Stack } from "expo-router";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
-  View,
   useColorScheme,
 } from "react-native";
 
@@ -19,30 +18,21 @@ import { UserContext } from "./_layout";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH } from "@/firebaseConfig";
 
-export default function Login() {
+export default function Signup() {
   const colorScheme = useColorScheme();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
+
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [invalidEmail, setInvalidEmail] = useState(false);
+
   const auth = FIREBASE_AUTH;
 
   const user = useContext(UserContext);
-
-  if (user) {
-    return <Redirect href="/(tabs)" />;
-  }
-
-  const signIn = async () => {
-    setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch {
-      alert("Sign in failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const signUp = async () => {
     setLoading(true);
@@ -55,8 +45,31 @@ export default function Login() {
     }
   };
 
+  useEffect(() => {
+    if (password !== confirmPassword) {
+      setPasswordMessage("Passwords do not match");
+    } else {
+      setPasswordMessage("");
+    }
+  }, [password, confirmPassword]);
+
+  useEffect(() => {
+    if (email === "") {
+      setInvalidEmail(false);
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setInvalidEmail(!emailRegex.test(email));
+    }
+  }, [email]);
+
+  if (user) {
+    return <Redirect href="/(tabs)" />;
+  }
+
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
+      <Stack.Screen options={{ title: "Register" }} />
+
       <Text
         style={[
           styles.title,
@@ -65,7 +78,7 @@ export default function Login() {
           },
         ]}
       >
-        Login
+        Enter your details
       </Text>
 
       <TextInput
@@ -100,9 +113,30 @@ export default function Login() {
         secureTextEntry
       />
 
+      <TextInput
+        style={[
+          styles.input,
+          {
+            color: Colors[colorScheme === "light" ? "light" : "dark"].text,
+            backgroundColor:
+              Colors[colorScheme === "light" ? "light" : "dark"]
+                .tabBackgroundColor,
+          },
+        ]}
+        placeholder="Repeat Password"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+      />
+
       <Pressable
-        onPress={signIn}
-        disabled={loading}
+        onPress={signUp}
+        disabled={
+          loading ||
+          email === "" ||
+          password === "" ||
+          password !== confirmPassword
+        }
         style={[
           styles.button,
           {
@@ -110,42 +144,13 @@ export default function Login() {
           },
         ]}
       >
-        <Text>Login</Text>
+        <Text>Register</Text>
       </Pressable>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View
-          style={[
-            styles.separator,
-            {
-              backgroundColor: Colors.grey,
-            },
-          ]}
-        />
-        <Text
-          style={{
-            color: Colors[colorScheme === "light" ? "light" : "dark"].text,
-            marginHorizontal: 10,
-          }}
-        >
-          or
-        </Text>
-        <View
-          style={[
-            styles.separator,
-            {
-              backgroundColor: Colors.grey,
-            },
-          ]}
-        />
-      </View>
-      <Link
-        href="/signup"
-        style={{
-          color: Colors.primary,
-        }}
-      >
-        Register
-      </Link>
+
+      {invalidEmail && <Text style={styles.error}>Invalid email</Text>}
+      {passwordMessage !== "" && (
+        <Text style={{ color: Colors.red }}>{passwordMessage}</Text>
+      )}
     </KeyboardAvoidingView>
   );
 }

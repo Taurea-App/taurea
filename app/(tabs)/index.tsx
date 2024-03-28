@@ -92,6 +92,18 @@ export default function MyRoutinesScreen() {
           color={Colors[colorScheme ?? "light"].tint}
         />
       )}
+
+      {!loading && routines.length === 0 && (
+        <View>
+          <Text style={{ color: Colors[colorScheme ?? "light"].text }}>
+            You have no routines yet
+          </Text>
+          <Text style={{ color: Colors[colorScheme ?? "light"].text }}>
+            Click the + button to add one.
+          </Text>
+        </View>
+      )}
+
       {!loading && (
         <FlatList
           style={{ width: "100%" }}
@@ -106,11 +118,7 @@ export default function MyRoutinesScreen() {
             style={styles.addRoutineButton}
             underlayColor="darkorange"
           >
-            <Ionicons
-              name="add"
-              size={24}
-              color={Colors[colorScheme ?? "light"].text}
-            />
+            <Ionicons name="add" size={24} color="black" />
           </TouchableHighlight>
         </Link>
       )}

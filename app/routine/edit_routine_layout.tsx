@@ -156,9 +156,8 @@ export default function EditRoutineLayout({
           style={[
             style.exerciseListItem,
             {
-              backgroundColor: colorScheme
-                ? Colors[colorScheme].tabBackgroundColor
-                : Colors.light.tabBackgroundColor,
+              backgroundColor:
+                Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
             },
           ]}
           onLongPress={drag}
