@@ -65,7 +65,7 @@ export default function EditRoutineLayout({
   const [showExerciseSelectModal, setShowExerciseSelectModal] = useState(false);
   const [showUnitSelectModal, setShowUnitSelectModal] = useState(false);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isNewRoutine);
 
   const auth = FIREBASE_AUTH;
 
@@ -231,9 +231,7 @@ export default function EditRoutineLayout({
           flex: 1,
           // height: '100%',
         },
-      ]}
-      // automaticallyAdjustKeyboardInsets={true}
-    >
+      ]}    >
       <Stack.Screen
         options={{ title: isNewRoutine ? "New Routine" : "Edit Routine" }}
       />
