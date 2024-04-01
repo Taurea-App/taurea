@@ -2,23 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { ParamListBase } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Stack, useNavigation } from "expo-router";
-import {
-  getDocs,
-  collection,
-  query,
-  addDoc,
-  doc,
-  getDoc,
-  setDoc,
-} from "firebase/firestore";
-import { Modal } from "native-base";
+import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
   Text,
   View,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   Keyboard,
   ActivityIndicator,
   useColorScheme,
@@ -29,12 +19,16 @@ import DraggableFlatList, {
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import ExerciseInRoutineModal from "./ExerciseInRoutineModal";
 import { editRoutineLayoutStyle as style } from "./edit_routine_layout_style";
 
+import ExerciseSelectModal from "@/components/ExerciseSelectmodal";
+import UnitSelectModal from "@/components/UnitSelectModal";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise, ExerciseInRoutine } from "@/types";
 import { idGen } from "@/utils/idGen";
+
 const meassurementUnits = ["Reps.", "Secs.", "Mins.", "Meters", "Km"];
 
 export default function EditRoutineLayout({
@@ -53,9 +47,6 @@ export default function EditRoutineLayout({
 
   const [exercises, setExercises] = useState<ExerciseInRoutine[]>([]);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [fetchedExercises, setFetchedExercises] = useState<Exercise[]>([]);
-  const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
   );
@@ -66,6 +57,10 @@ export default function EditRoutineLayout({
   const [showUnitSelectModal, setShowUnitSelectModal] = useState(false);
 
   const [loading, setLoading] = useState(!isNewRoutine);
+
+  const [showEditExerciseModal, setShowEditExerciseModal] = useState(false);
+  const [exerciseToEdit, setExerciseToEdit] =
+    useState<ExerciseInRoutine | null>(null);
 
   const auth = FIREBASE_AUTH;
 
@@ -85,17 +80,6 @@ export default function EditRoutineLayout({
     } else {
       console.log("No such document!");
     }
-  };
-
-  const fetchExercises = async () => {
-    const q = query(collection(FIRESTORE_DB, "Exercises"));
-    const querySnapshot = await getDocs(q);
-    const exercisesList = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Exercise[];
-    setFetchedExercises(exercisesList);
-    setFilteredExercises(exercisesList);
   };
 
   const saveRoutine = async () => {
@@ -125,21 +109,23 @@ export default function EditRoutineLayout({
     navigation.navigate("index");
   };
 
+  const saveEditedExercise = () => {
+    if (!exerciseToEdit) return;
+    console.log("Saving edited exercise", exerciseToEdit);
+    console.log("Exercises", exercises);
+    setExercises(
+      exercises.map((exercise) =>
+        exercise.id === exerciseToEdit.id ? exerciseToEdit : exercise,
+      ),
+    );
+    setShowEditExerciseModal(false);
+  };
+
   useEffect(() => {
     if (!isNewRoutine) {
       loadRoutine();
     }
-
-    fetchExercises();
   }, []);
-
-  useEffect(() => {
-    setFilteredExercises(
-      fetchedExercises.filter((exercise) =>
-        exercise.name.toLowerCase().includes(searchTerm.toLowerCase()),
-      ),
-    );
-  }, [searchTerm]);
 
   const renderRoutineItem = ({
     item,
@@ -162,6 +148,10 @@ export default function EditRoutineLayout({
           ]}
           onLongPress={drag}
           disabled={isActive}
+          onPress={() => {
+            setShowEditExerciseModal(true);
+            setExerciseToEdit(item);
+          }}
         >
           <Text
             style={[
@@ -187,15 +177,6 @@ export default function EditRoutineLayout({
           >
             {item.quantity} {item.unit}
           </Text>
-          <TouchableOpacity
-            onPress={() =>
-              setExercises(
-                exercises.filter((exercise) => exercise.id !== item.id),
-              )
-            }
-          >
-            <Ionicons name="trash" size={24} color="red" />
-          </TouchableOpacity>
         </TouchableOpacity>
       </ScaleDecorator>
     );
@@ -228,9 +209,9 @@ export default function EditRoutineLayout({
           justifyContent: "space-between",
           alignItems: "center",
           flex: 1,
-          // height: '100%',
         },
-      ]}    >
+      ]}
+    >
       <Stack.Screen
         options={{ title: isNewRoutine ? "New Routine" : "Edit Routine" }}
       />
@@ -277,7 +258,6 @@ export default function EditRoutineLayout({
               placeholder="Routine Description"
               blurOnSubmit
               multiline
-              // numberOfLines={4}
             />
           </View>
 
@@ -291,11 +271,8 @@ export default function EditRoutineLayout({
               renderRoutineItem({ item, drag, isActive })
             }
             keyExtractor={(item, index) => index.toString() + item.id}
-            // ListHeaderComponent={TitleAndDescription}
-            // ListFooterComponent={NewExerciseForm}
           />
-          {/* <NewExerciseForm />
-           */}
+
           <View style={style.newExerciseForm}>
             <View
               style={[
@@ -356,7 +333,6 @@ export default function EditRoutineLayout({
                 value={selectedUnit}
                 onPressIn={() => {
                   setShowUnitSelectModal(true);
-                  // Hide the keyboard
                   Keyboard.dismiss();
                 }}
                 readOnly
@@ -382,136 +358,60 @@ export default function EditRoutineLayout({
             </View>
           </View>
 
-          {/* Exercise Select Modal */}
-          <Modal
-            animationPreset="slide"
-            isOpen={showExerciseSelectModal}
-            size="full"
-            onClose={() => {
-              setSearchTerm("");
-              setShowExerciseSelectModal(false);
-            }}
-          >
-            <Modal.Content
-              style={[
-                style.exerciseSelectModalView,
-                {
-                  backgroundColor: colorScheme
-                    ? Colors[colorScheme].background
-                    : Colors.light.background,
-                },
-              ]}
-              marginBottom={0}
-              marginTop="auto"
-            >
-              <TextInput
-                style={[
-                  style.searchBar,
-                  {
-                    backgroundColor: colorScheme
-                      ? Colors[colorScheme].tabBackgroundColor
-                      : Colors.light.tabBackgroundColor,
-                    color: colorScheme
-                      ? Colors[colorScheme].text
-                      : Colors.light.text,
-                  },
-                ]}
-                placeholder="Search Exercises..."
-                value={searchTerm}
-                onChangeText={setSearchTerm}
-              />
-              <ScrollView style={{ width: "100%" }}>
-                {filteredExercises.map((exercise) => (
-                  <TouchableOpacity
-                    key={exercise.id}
-                    style={[
-                      style.button,
-                      {
-                        backgroundColor: colorScheme
-                          ? Colors[colorScheme].tabBackgroundColor
-                          : Colors.light.tabBackgroundColor,
-                      },
-                    ]}
-                    onPress={() => {
-                      setSelectedExercise(exercise);
-                      setShowExerciseSelectModal(false);
-                      setSearchTerm("");
-                    }}
-                  >
-                    <Text
-                      style={[
-                        style.exerciseSelectItem,
-                        {
-                          color: colorScheme
-                            ? Colors[colorScheme].text
-                            : Colors.light.text,
-                        },
-                      ]}
-                    >
-                      {exercise.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              <KeyboardSpacer />
-            </Modal.Content>
-          </Modal>
-
           <KeyboardSpacer />
 
           <SaveButton />
 
+          {/* Edit Exercise Modal */}
+          <ExerciseInRoutineModal
+            setExercise={setExerciseToEdit}
+            exercise={exerciseToEdit}
+            isOpen={showEditExerciseModal}
+            closeModal={() => setShowEditExerciseModal(false)}
+            showUnitSelectModal={() => setShowUnitSelectModal(true)}
+            showExerciseSelectModal={() => setShowExerciseSelectModal(true)}
+            onSave={saveEditedExercise}
+          />
+
+          {/* Exercise Select Modal */}
+          <ExerciseSelectModal
+            showModal={showExerciseSelectModal}
+            closeModal={() => setShowExerciseSelectModal(false)}
+            setSelectedExercise={
+              showEditExerciseModal
+                ? (exercise: Exercise) => {
+                    setExerciseToEdit(
+                      exerciseToEdit
+                        ? {
+                            ...exerciseToEdit,
+                            exerciseId: exercise.id,
+                            name: exercise.name,
+                            description: exercise.description,
+                          }
+                        : null,
+                    );
+                    console.log("Exercise to edit", exerciseToEdit);
+                    console.log("Selected exercise", exercise);
+                  }
+                : setSelectedExercise
+            }
+          />
+
           {/* Unit Select Modal */}
-          <Modal
-            animationPreset="slide"
-            isOpen={showUnitSelectModal}
-            size="full"
-            onClose={() => setShowUnitSelectModal(false)}
-          >
-            <Modal.Content
-              style={[
-                style.exerciseSelectModalView,
-                {
-                  backgroundColor: colorScheme
-                    ? Colors[colorScheme].background
-                    : Colors.light.background,
-                },
-              ]}
-              marginBottom={0}
-              marginTop="auto"
-            >
-              {meassurementUnits.map((unit) => (
-                <TouchableOpacity
-                  key={unit}
-                  style={[
-                    style.button,
-                    {
-                      backgroundColor: colorScheme
-                        ? Colors[colorScheme].tabBackgroundColor
-                        : Colors.light.tabBackgroundColor,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedUnit(unit);
-                    setShowUnitSelectModal(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      style.exerciseSelectItem,
-                      {
-                        color: colorScheme
-                          ? Colors[colorScheme].text
-                          : Colors.light.text,
-                      },
-                    ]}
-                  >
-                    {unit}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </Modal.Content>
-          </Modal>
+          <UnitSelectModal
+            showModal={showUnitSelectModal}
+            closeModal={() => setShowUnitSelectModal(false)}
+            selectedUnit={selectedUnit}
+            setSelectedUnit={
+              showEditExerciseModal
+                ? (unit: string) => {
+                    setExerciseToEdit(
+                      exerciseToEdit ? { ...exerciseToEdit, unit } : null,
+                    );
+                  }
+                : setSelectedUnit
+            }
+          />
         </View>
       )}
     </View>

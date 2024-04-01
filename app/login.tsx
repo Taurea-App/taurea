@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Touchable,
   View,
   useColorScheme,
 } from "react-native";
@@ -18,6 +19,7 @@ import { UserContext } from "./_layout";
 
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH } from "@/firebaseConfig";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function Login() {
   const colorScheme = useColorScheme();
@@ -39,17 +41,6 @@ export default function Login() {
       await signInWithEmailAndPassword(auth, email, password);
     } catch {
       alert("Sign in failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signUp = async () => {
-    setLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-    } catch {
-      alert("Sign up failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -100,7 +91,7 @@ export default function Login() {
         secureTextEntry
       />
 
-      <Pressable
+      <TouchableOpacity
         onPress={signIn}
         disabled={loading}
         style={[
@@ -111,7 +102,7 @@ export default function Login() {
         ]}
       >
         <Text>Login</Text>
-      </Pressable>
+      </TouchableOpacity>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <View
           style={[
