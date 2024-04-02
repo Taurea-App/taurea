@@ -5,7 +5,6 @@ This mobile App helps you create, manage and track your calisthenics workouts. I
 Run the following commands to get started:
 ```bash
 npm install
-npm start
 ```
 
 ### Run the code

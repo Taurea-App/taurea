@@ -23,7 +23,9 @@ export const editRoutineLayoutStyle = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     width: "100%",
-    marginBottom: 5,
+    // marginBottom: 5,
+    borderRadius: 10,
+    borderBottomWidth: 1,
   },
   exerciseListItemName: {
     fontSize: 16,
@@ -113,5 +115,25 @@ export const editRoutineLayoutStyle = StyleSheet.create({
     width: "80%",
     alignItems: "center",
     justifyContent: "center",
+  },
+  leftAction: {
+    backgroundColor: "red",
+    alignItems: "flex-start",
+    borderRadius: 10,
+    width: "100%",
+    justifyContent: "center",
+  },
+  leftActionText: {
+    color: "white",
+  },
+  rightAction: {
+    backgroundColor: "blue",
+    alignItems: "flex-end",
+    borderRadius: 10,
+    width: "100%",
+    justifyContent: "center",
+  },
+  rightActionText: {
+    color: "white",
   },
 });

@@ -13,4 +13,3 @@ export type Routine = {
   description: string;
   exercises: ExerciseInRoutine[];
 };
-
