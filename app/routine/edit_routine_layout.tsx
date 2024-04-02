@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { ParamListBase } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Stack, useNavigation } from "expo-router";
@@ -12,6 +13,7 @@ import {
   Keyboard,
   ActivityIndicator,
   useColorScheme,
+  Animated,
 } from "react-native";
 import DraggableFlatList, {
   ScaleDecorator,
@@ -28,6 +30,7 @@ import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise, ExerciseInRoutine } from "@/types";
 import { idGen } from "@/utils/idGen";
+import { RectButton } from "react-native-gesture-handler";
 
 const meassurementUnits = ["Reps.", "Secs.", "Mins.", "Meters", "Km"];
 
@@ -63,6 +66,8 @@ export default function EditRoutineLayout({
     useState<ExerciseInRoutine | null>(null);
 
   const auth = FIREBASE_AUTH;
+
+  const swipeableRefs = new Map();
 
   const loadRoutine = async () => {
     if (!routineId) return;
@@ -121,11 +126,77 @@ export default function EditRoutineLayout({
     setShowEditExerciseModal(false);
   };
 
+  const deleteExercise = (exerciseId: string) => {
+    setExercises(exercises.filter((exercise) => exercise.id !== exerciseId));
+  };
+
+  const duplicateExercise = (exerciseId: string) => {
+    const exercise = exercises.find((exercise) => exercise.id === exerciseId);
+    if (!exercise) return;
+    const newExercise = {
+      id: idGen(),
+      exerciseId: exercise.exerciseId,
+      name: exercise.name,
+      quantity: exercise.quantity,
+      unit: exercise.unit,
+    } as ExerciseInRoutine;
+    setExercises([...exercises, newExercise]);
+  };
+
   useEffect(() => {
     if (!isNewRoutine) {
       loadRoutine();
     }
   }, []);
+
+  const renderLeftActions = (progress, dragX) => {
+    const trans = dragX.interpolate({
+      inputRange: [0, 50, 100, 101],
+      outputRange: [-20, 0, 0, 1],
+    });
+    return (
+      <RectButton style={style.leftAction}>
+        <Animated.Text
+          style={[
+            style.leftActionText,
+            {
+              transform: [{ translateX: trans }],
+            },
+          ]}
+        >
+          <Ionicons name="trash" size={24} color="white" />
+        </Animated.Text>
+      </RectButton>
+    );
+  };
+
+  const renderRightActions = (progress, dragX) => {
+    const trans = dragX.interpolate({
+      inputRange: [-101, -100, -50, 0],
+      outputRange: [-1, 0, 0, 20],
+    });
+    return (
+      <RectButton style={style.rightAction}>
+        <Animated.Text
+          style={[
+            style.rightActionText,
+            {
+              transform: [{ translateX: trans }],
+            },
+          ]}
+        >
+          <Ionicons name="copy" size={24} color="white" />
+        </Animated.Text>
+      </RectButton>
+    );
+  };
+
+  const closeSwipeable = (exerciseId: string) => {
+    const swipeable = swipeableRefs.get(exerciseId);
+    if (swipeable) {
+      swipeable.close();
+    }
+  };
 
   const renderRoutineItem = ({
     item,
@@ -137,48 +208,68 @@ export default function EditRoutineLayout({
     isActive: boolean;
   }) => {
     return (
-      <ScaleDecorator>
-        <TouchableOpacity
-          style={[
-            style.exerciseListItem,
-            {
-              backgroundColor:
-                Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
-            },
-          ]}
-          onLongPress={drag}
-          disabled={isActive}
-          onPress={() => {
-            setShowEditExerciseModal(true);
-            setExerciseToEdit(item);
-          }}
-        >
-          <Text
+      <Swipeable
+        ref={(ref) => {
+          if (ref) {
+            swipeableRefs.set(item.id, ref);
+          }
+        }}
+        renderLeftActions={renderLeftActions}
+        renderRightActions={renderRightActions}
+        onSwipeableOpen={(direction) => {
+          if (direction === "left") {
+            deleteExercise(item.id);
+          } else {
+            duplicateExercise(item.id);
+          }
+          // Close the swipeable
+          closeSwipeable(item.id);
+        }}
+      >
+        <ScaleDecorator>
+          <TouchableOpacity
             style={[
-              style.exerciseListItemName,
+              style.exerciseListItem,
               {
-                color: colorScheme
-                  ? Colors[colorScheme].text
-                  : Colors.light.text,
+                backgroundColor:
+                  Colors[colorScheme ? colorScheme : "light"]
+                    .tabBackgroundColor,
               },
             ]}
+            onLongPress={drag}
+            disabled={isActive}
+            onPress={() => {
+              setShowEditExerciseModal(true);
+              setExerciseToEdit(item);
+            }}
           >
-            {item.name}
-          </Text>
-          <Text
-            style={[
-              style.exerciseListItemQuantity,
-              {
-                color: colorScheme
-                  ? Colors[colorScheme].text
-                  : Colors.light.text,
-              },
-            ]}
-          >
-            {item.quantity} {item.unit}
-          </Text>
-        </TouchableOpacity>
-      </ScaleDecorator>
+            <Text
+              style={[
+                style.exerciseListItemName,
+                {
+                  color: colorScheme
+                    ? Colors[colorScheme].text
+                    : Colors.light.text,
+                },
+              ]}
+            >
+              {item.name}
+            </Text>
+            <Text
+              style={[
+                style.exerciseListItemQuantity,
+                {
+                  color: colorScheme
+                    ? Colors[colorScheme].text
+                    : Colors.light.text,
+                },
+              ]}
+            >
+              {item.quantity} {item.unit}
+            </Text>
+          </TouchableOpacity>
+        </ScaleDecorator>
+      </Swipeable>
     );
   };
 
@@ -390,8 +481,6 @@ export default function EditRoutineLayout({
                           }
                         : null,
                     );
-                    console.log("Exercise to edit", exerciseToEdit);
-                    console.log("Selected exercise", exercise);
                   }
                 : setSelectedExercise
             }
