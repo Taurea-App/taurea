@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { ParamListBase } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Stack, useNavigation } from "expo-router";
@@ -18,6 +17,8 @@ import {
 import DraggableFlatList, {
   ScaleDecorator,
 } from "react-native-draggable-flatlist";
+import { RectButton } from "react-native-gesture-handler";
+import Swipeable from "react-native-gesture-handler/Swipeable";
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -30,7 +31,6 @@ import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise, ExerciseInRoutine } from "@/types";
 import { idGen } from "@/utils/idGen";
-import { RectButton } from "react-native-gesture-handler";
 
 const meassurementUnits = ["Reps.", "Secs.", "Mins.", "Meters", "Km"];
 
@@ -149,7 +149,12 @@ export default function EditRoutineLayout({
     }
   }, []);
 
-  const renderLeftActions = (progress, dragX) => {
+  // types:
+  // (property) renderLeftActions?: ((progressAnimatedValue: Animated.AnimatedInterpolation<string | number>, dragAnimatedValue: Animated.AnimatedInterpolation<string | number>, swipeable: Swipeable) => React.ReactNode) | undefined
+  const renderLeftActions = (
+    _progress: Animated.AnimatedInterpolation<string | number>,
+    dragX: Animated.AnimatedInterpolation<string | number>,
+  ) => {
     const trans = dragX.interpolate({
       inputRange: [0, 50, 100, 101],
       outputRange: [-20, 0, 0, 1],
@@ -170,7 +175,10 @@ export default function EditRoutineLayout({
     );
   };
 
-  const renderRightActions = (progress, dragX) => {
+  const renderRightActions = (
+    _progress: Animated.AnimatedInterpolation<string | number>,
+    dragX: Animated.AnimatedInterpolation<string | number>,
+  ) => {
     const trans = dragX.interpolate({
       inputRange: [-101, -100, -50, 0],
       outputRange: [-1, 0, 0, 20],

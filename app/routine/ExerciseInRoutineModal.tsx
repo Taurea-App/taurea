@@ -1,6 +1,13 @@
 import { Modal } from "native-base";
 import React from "react";
-import { Button, Keyboard, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Button,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -63,7 +70,8 @@ export default function ExerciseInRoutineModal({
                   styles.input,
                   {
                     backgroundColor:
-                      Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
+                      Colors[colorScheme ? colorScheme : "light"]
+                        .tabBackgroundColor,
                     color: Colors[colorScheme ? colorScheme : "light"].text,
                   },
                 ]}
@@ -75,15 +83,19 @@ export default function ExerciseInRoutineModal({
                 onChangeText={(text: string) =>
                   setExercise({
                     ...exercise,
-                    quantity: isNaN(parseInt(text, 10)) ? 0 : parseInt(text, 10),
-                  })}
+                    quantity: isNaN(parseInt(text, 10))
+                      ? 0
+                      : parseInt(text, 10),
+                  })
+                }
                 inputMode="numeric"
                 keyboardType="numeric"
                 style={[
                   styles.input,
                   {
                     backgroundColor:
-                      Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
+                      Colors[colorScheme ? colorScheme : "light"]
+                        .tabBackgroundColor,
                     color: Colors[colorScheme ? colorScheme : "light"].text,
                   },
                 ]}
@@ -101,7 +113,8 @@ export default function ExerciseInRoutineModal({
                   styles.input,
                   {
                     backgroundColor:
-                      Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
+                      Colors[colorScheme ? colorScheme : "light"]
+                        .tabBackgroundColor,
                     color: Colors[colorScheme ? colorScheme : "light"].text,
                   },
                 ]}
@@ -122,7 +135,6 @@ export default function ExerciseInRoutineModal({
     </Modal>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
