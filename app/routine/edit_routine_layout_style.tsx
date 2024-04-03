@@ -136,4 +136,17 @@ export const editRoutineLayoutStyle = StyleSheet.create({
   rightActionText: {
     color: "white",
   },
+  subroutineListItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+    width: "100%",
+    borderRadius: 10,
+    borderBottomWidth: 1,
+  },
+
+  subroutineName: {
+    fontSize: 16,
+    width: "40%",
+  },
 });

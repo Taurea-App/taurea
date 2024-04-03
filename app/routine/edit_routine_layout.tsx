@@ -14,6 +14,7 @@ import {
   useColorScheme,
   Animated,
 } from "react-native";
+import Collapsible from "react-native-collapsible";
 import DraggableFlatList, {
   ScaleDecorator,
 } from "react-native-draggable-flatlist";
@@ -29,7 +30,7 @@ import ExerciseSelectModal from "@/components/ExerciseSelectmodal";
 import UnitSelectModal from "@/components/UnitSelectModal";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
-import { Exercise, ExerciseInRoutine } from "@/types";
+import { Exercise, ExerciseInRoutine, RoutineItem, Subroutine } from "@/types";
 import { idGen } from "@/utils/idGen";
 
 const meassurementUnits = ["Reps.", "Secs.", "Mins.", "Meters", "Km"];
@@ -48,7 +49,7 @@ export default function EditRoutineLayout({
   const [routineName, setRoutineName] = useState("");
   const [routineDescription, setRoutineDescription] = useState("");
 
-  const [exercises, setExercises] = useState<ExerciseInRoutine[]>([]);
+  const [exercises, setExercises] = useState<RoutineItem[]>([]);
 
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
@@ -65,9 +66,33 @@ export default function EditRoutineLayout({
   const [exerciseToEdit, setExerciseToEdit] =
     useState<ExerciseInRoutine | null>(null);
 
+  const [collapsedSubroutines, setCollapsedSubroutines] = useState<
+    Map<string, boolean>
+  >(new Map());
+
   const auth = FIREBASE_AUTH;
 
   const swipeableRefs = new Map();
+
+  function isExerciseInRoutine(
+    item: ExerciseInRoutine | Subroutine,
+  ): item is ExerciseInRoutine {
+    return (item as ExerciseInRoutine).exerciseId !== undefined;
+  }
+
+  useEffect(() => {
+    if (!exercises) return;
+
+    exercises.forEach((item) => {
+      if (!(item as Subroutine).exercises) return;
+
+      setCollapsedSubroutines((prevState) => {
+        const newState = new Map(prevState);
+        newState.set(item.id, true);
+        return newState;
+      });
+    });
+  }, [exercises]);
 
   const loadRoutine = async () => {
     if (!routineId) return;
@@ -118,9 +143,11 @@ export default function EditRoutineLayout({
     if (!exerciseToEdit) return;
     console.log("Saving edited exercise", exerciseToEdit);
     console.log("Exercises", exercises);
+
     setExercises(
-      exercises.map((exercise) =>
-        exercise.id === exerciseToEdit.id ? exerciseToEdit : exercise,
+      exercises.map((exercise) => ( isExerciseInRoutine(exercise) && exercise.id === exerciseToEdit.id ) ?
+        exerciseToEdit : 
+        exercise,
       ),
     );
     setShowEditExerciseModal(false);
@@ -132,7 +159,7 @@ export default function EditRoutineLayout({
 
   const duplicateExercise = (exerciseId: string) => {
     const exercise = exercises.find((exercise) => exercise.id === exerciseId);
-    if (!exercise) return;
+    if (!exercise || !isExerciseInRoutine(exercise)) return;
     const newExercise = {
       id: idGen(),
       exerciseId: exercise.exerciseId,
@@ -149,8 +176,6 @@ export default function EditRoutineLayout({
     }
   }, []);
 
-  // types:
-  // (property) renderLeftActions?: ((progressAnimatedValue: Animated.AnimatedInterpolation<string | number>, dragAnimatedValue: Animated.AnimatedInterpolation<string | number>, swipeable: Swipeable) => React.ReactNode) | undefined
   const renderLeftActions = (
     _progress: Animated.AnimatedInterpolation<string | number>,
     dragX: Animated.AnimatedInterpolation<string | number>,
@@ -211,7 +236,7 @@ export default function EditRoutineLayout({
     drag,
     isActive,
   }: {
-    item: ExerciseInRoutine;
+    item: RoutineItem;
     drag: any;
     isActive: boolean;
   }) => {
@@ -235,47 +260,156 @@ export default function EditRoutineLayout({
         }}
       >
         <ScaleDecorator>
-          <TouchableOpacity
-            style={[
-              style.exerciseListItem,
-              {
+          {isExerciseInRoutine(item) ? (
+            <TouchableOpacity
+              style={[
+                style.exerciseListItem,
+                {
+                  backgroundColor:
+                    Colors[colorScheme ? colorScheme : "light"]
+                      .tabBackgroundColor,
+                },
+              ]}
+              onLongPress={drag}
+              disabled={isActive}
+              onPress={() => {
+                if (!isExerciseInRoutine(item)) return;
+                setShowEditExerciseModal(true);
+                setExerciseToEdit(item);
+              }}
+            >
+              <Text
+                style={[
+                  style.exerciseListItemName,
+                  {
+                    color: colorScheme
+                      ? Colors[colorScheme].text
+                      : Colors.light.text,
+                  },
+                ]}
+              >
+                {item.name}
+              </Text>
+              <Text
+                style={[
+                  style.exerciseListItemQuantity,
+                  {
+                    color: colorScheme
+                      ? Colors[colorScheme].text
+                      : Colors.light.text,
+                  },
+                ]}
+              >
+                {item.quantity} {item.unit}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View
+              style={{
                 backgroundColor:
                   Colors[colorScheme ? colorScheme : "light"]
                     .tabBackgroundColor,
-              },
-            ]}
-            onLongPress={drag}
-            disabled={isActive}
-            onPress={() => {
-              setShowEditExerciseModal(true);
-              setExerciseToEdit(item);
-            }}
-          >
-            <Text
-              style={[
-                style.exerciseListItemName,
-                {
-                  color: colorScheme
-                    ? Colors[colorScheme].text
-                    : Colors.light.text,
-                },
-              ]}
-            >
-              {item.name}
-            </Text>
-            <Text
-              style={[
-                style.exerciseListItemQuantity,
-                {
-                  color: colorScheme
-                    ? Colors[colorScheme].text
-                    : Colors.light.text,
-                },
-              ]}
-            >
-              {item.quantity} {item.unit}
-            </Text>
-          </TouchableOpacity>
+                borderRadius: 10,
+            }}>
+              <TouchableOpacity
+                style={[
+                  style.subroutineListItem,
+                  {
+                    backgroundColor:
+                      Colors[colorScheme ? colorScheme : "light"]
+                        .tabBackgroundColor,
+                  },
+                ]}
+                onLongPress={drag}
+                disabled={isActive}
+                onPress={() => {
+                  setCollapsedSubroutines((prevState) => {
+                    const newState = new Map(prevState);
+                    newState.set(item.id, !newState.get(item.id));
+                    return newState;
+                  });
+                }}
+              >
+                <Ionicons
+                  name="chevron-down"
+                  size={24}
+                  color={colorScheme ? Colors[colorScheme].text : Colors.light.text}
+                />
+
+                <Text
+                  style={[
+                    style.subroutineName,
+                    {
+                      color: colorScheme
+                        ? Colors[colorScheme].text
+                        : Colors.light.text,
+                    },
+                  ]}
+                >
+                  Subroutine
+                </Text>
+                
+                <Text style={{ color: colorScheme ? Colors[colorScheme].text : Colors.light.text }}>
+                  {item.quantity} {item.unit}
+                </Text>
+
+              </TouchableOpacity>
+
+              <Collapsible
+                collapsed={collapsedSubroutines.get(item.id)}
+                align="center"
+              >
+                <View style={{ marginLeft: 20 }}>
+                  {item.exercises.map((exercise) => (
+                    <TouchableOpacity
+                      style={[
+                        style.exerciseListItem,
+                        {
+                          backgroundColor:
+                            Colors[colorScheme ? colorScheme : "light"]
+                              .tabBackgroundColor,
+                        },
+                      ]}
+                      onLongPress={drag}
+                      disabled={isActive}
+                      onPress={() => {
+                        setShowEditExerciseModal(true);
+                        setExerciseToEdit(exercise);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          style.exerciseListItemName,
+                          {
+                            color: colorScheme
+                              ? Colors[colorScheme].text
+                              : Colors.light.text,
+                          },
+                        ]}
+                      >
+                        {exercise.name}
+                      </Text>
+                      <Text
+                        style={[
+                          style.exerciseListItemQuantity,
+                          {
+                            color: colorScheme
+                              ? Colors[colorScheme].text
+                              : Colors.light.text,
+                          },
+                        ]}
+                      >
+                        {exercise.quantity} {exercise.unit}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                
+
+              </Collapsible>
+            </View>
+          )}
+
         </ScaleDecorator>
       </Swipeable>
     );

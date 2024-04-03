@@ -20,9 +20,12 @@ export type Subroutine = {
   exercises: ExerciseInRoutine[];
 };
 
+export type RoutineItem = ExerciseInRoutine | Subroutine;
+
 export type Routine = {
   id: string;
   name: string;
   description: string;
-  exercises: ExerciseInRoutine[] | Subroutine[];
+  exercises: RoutineItem[];
 };
+
