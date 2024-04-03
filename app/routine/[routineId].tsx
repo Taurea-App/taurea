@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { ParamListBase } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
@@ -21,22 +22,29 @@ import {
   FlatList,
   ActivityIndicator,
 } from "react-native";
+import Collapsible from "react-native-collapsible";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig"; // Adjust the import path as necessary
-import { Routine, ExerciseInRoutine } from "@/types"; // Adjust the import path as necessary
+import { Routine, ExerciseInRoutine, Subroutine } from "@/types"; // Adjust the import path as necessary
 
 export default function Page() {
   const colorScheme = useColorScheme();
 
   const { routineId } = useLocalSearchParams<{ routineId: string }>();
   const [routine, setRoutine] = useState<Routine | null>(null);
-  const [exercises, setExercises] = useState<ExerciseInRoutine[]>([]);
+  const [exercises, setExercises] = useState<
+    ExerciseInRoutine[] | Subroutine[]
+  >();
   const router = useRouter();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const [showOptions, setShowOptions] = useState(false);
+  const [collapsedSubroutines, setCollapsedSubroutines] = useState<
+    Map<string, boolean>
+  >(new Map());
+
   const [loading, setLoading] = useState(true);
 
   const auth = FIREBASE_AUTH;
@@ -67,6 +75,28 @@ export default function Page() {
     fetchRoutineDetails();
   }, [routineId]);
 
+  useEffect(() => {
+    if (!exercises) return;
+
+    exercises.forEach((item) => {
+      if (!(item as Subroutine).exercises) return;
+
+      setCollapsedSubroutines((prevState) => {
+        const newState = new Map(prevState);
+        newState.set(item.id, true);
+        return newState;
+      });
+    });
+  }, [exercises]);
+
+  const toggleSubroutine = (subroutineId: string) => {
+    setCollapsedSubroutines((prevState) => {
+      const newState = new Map(prevState);
+      newState.set(subroutineId, !newState.get(subroutineId));
+      return newState;
+    });
+  };
+
   const handleEdit = () => {
     setShowOptions(false);
     // navigate to the edit screen
@@ -92,6 +122,105 @@ export default function Page() {
     // After deletion, navigate back or to another screen as needed
     navigation.navigate("index");
   };
+
+  function isExerciseInRoutine(
+    item: ExerciseInRoutine | Subroutine,
+  ): item is ExerciseInRoutine {
+    return (item as ExerciseInRoutine).exerciseId !== undefined;
+  }
+
+  const renderRoutineItem = ({
+    item,
+  }: {
+    item: ExerciseInRoutine | Subroutine;
+  }) => (
+    <View>
+      {isExerciseInRoutine(item) ? (
+        <View
+          style={[
+            styles.exerciseContainer,
+            {
+              backgroundColor:
+                Colors[colorScheme === "dark" ? "dark" : "light"]
+                  .tabBackgroundColor,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.exerciseName,
+              {
+                color: Colors[colorScheme === "dark" ? "dark" : "light"].text,
+              },
+            ]}
+          >
+            {item.name}
+          </Text>
+          <Text
+            style={{
+              color: Colors[colorScheme === "dark" ? "dark" : "light"].text,
+            }}
+          >
+            {item.quantity} {item.unit}
+          </Text>
+        </View>
+      ) : (
+        <View
+          style={{
+            backgroundColor:
+              Colors[colorScheme === "dark" ? "dark" : "light"]
+                .tabBackgroundColor,
+            // borderRadius: 10,
+            borderTopWidth: 1,
+            borderTopColor: "#888888",
+          }}
+        >
+          <Pressable onPress={() => toggleSubroutine(item.id)}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 10,
+                marginBottom: 10,
+              }}
+            >
+              <Ionicons
+                name={
+                  collapsedSubroutines.get(item.id)
+                    ? "chevron-down"
+                    : "chevron-up"
+                }
+                size={24}
+                color={Colors["primary"]}
+              />
+              <Text
+                style={{
+                  color: Colors["primary"],
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              >
+                {item.quantity} {item.unit}
+              </Text>
+            </View>
+          </Pressable>
+
+          <Collapsible
+            collapsed={collapsedSubroutines.get(item.id)}
+            align="center"
+          >
+            <FlatList
+              data={item.exercises}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderRoutineItem}
+              style={{ marginLeft: 20 }}
+            />
+          </Collapsible>
+        </View>
+      )}
+    </View>
+  );
 
   // Consider adding a function for editing that navigates to an edit screen or opens an edit mode
 
@@ -139,38 +268,7 @@ export default function Page() {
           <FlatList
             data={exercises}
             keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              <View
-                style={[
-                  styles.exerciseContainer,
-                  {
-                    backgroundColor:
-                      Colors[colorScheme === "dark" ? "dark" : "light"]
-                        .tabBackgroundColor,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.exerciseName,
-                    {
-                      color:
-                        Colors[colorScheme === "dark" ? "dark" : "light"].text,
-                    },
-                  ]}
-                >
-                  {item.name}
-                </Text>
-                <Text
-                  style={{
-                    color:
-                      Colors[colorScheme === "dark" ? "dark" : "light"].text,
-                  }}
-                >
-                  {item.quantity} {item.unit}
-                </Text>
-              </View>
-            )}
+            renderItem={renderRoutineItem}
           />
           {/* Implement navigation or state change for editing here */}
           <View style={styles.buttonsContainer}>
@@ -237,9 +335,12 @@ const styles = StyleSheet.create({
     color: "#666666",
   },
   exerciseContainer: {
-    marginBottom: 10,
+    // marginBottom: 5,
     padding: 10,
     backgroundColor: "#f0f0f0",
+    // borderRadius: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#888888",
   },
   exerciseName: {
     fontSize: 18,

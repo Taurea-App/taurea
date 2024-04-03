@@ -5,11 +5,24 @@ export type Exercise = {
   measurementType: string;
 };
 
-export type ExerciseInRoutine = Exercise & { quantity: number } & { unit: string } & { exerciseId: string };
+export type ExerciseInRoutine = Exercise & {
+  quantity: number;
+} & {
+  unit: string;
+} & {
+  exerciseId: string;
+};
+
+export type Subroutine = {
+  id: string;
+  quantity: number;
+  unit: string;
+  exercises: ExerciseInRoutine[];
+};
 
 export type Routine = {
   id: string;
   name: string;
   description: string;
-  exercises: ExerciseInRoutine[];
+  exercises: ExerciseInRoutine[] | Subroutine[];
 };
