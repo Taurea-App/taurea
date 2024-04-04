@@ -89,8 +89,6 @@ export default function EditRoutineLayout({
 
       setCollapsedSubroutines((prevState) => {
         const newState = new Map(prevState);
-        console.log("Setting collapsed state for", item.id);
-        console.log("New state", newState);
         const value = newState.get(item.id);
         newState.set(item.id, value ?? true);
         return newState;
@@ -147,15 +145,11 @@ export default function EditRoutineLayout({
     exerciseId: string,
     itemsList: RoutineItem[],
   ) => {
-    console.log("Checking if exercise", exerciseId, "is in the routine");
-    console.log("Items list", itemsList);
     return itemsList.some((exercise) => exercise.id === exerciseId);
   };
 
   const saveEditedExercise = () => {
     if (!exerciseToEdit) return;
-    console.log("Saving edited exercise", exerciseToEdit);
-    console.log("Exercises", routineItems);
 
     if (isExerciseInRoutine(exerciseToEdit.id, routineItems)) {
       setRoutineItems(
@@ -262,13 +256,31 @@ export default function EditRoutineLayout({
     }
   };
 
+  const deleteSubroutine = (subroutineId: string) => {
+    setRoutineItems(routineItems.filter((item) => item.id !== subroutineId));
+  };
+
+  const duplicateSubroutine = (subroutineId: string) => {
+    const subroutine = routineItems.find(
+      (item) => !isExercise(item) && item.id === subroutineId,
+    ) as Subroutine;
+    if (!subroutine) return;
+    const newSubroutine = {
+      id: idGen(),
+      quantity: subroutine.quantity,
+      unit: subroutine.unit,
+      exercises: subroutine.exercises,
+    } as Subroutine;
+    setRoutineItems([...routineItems, newSubroutine]);
+  };
+
   useEffect(() => {
     if (!isNewRoutine) {
       loadRoutine();
     }
   }, []);
 
-  const renderLeftActions = (
+  const renderDeleteSwipe = (
     _progress: Animated.AnimatedInterpolation<string | number>,
     dragX: Animated.AnimatedInterpolation<string | number>,
   ) => {
@@ -277,7 +289,7 @@ export default function EditRoutineLayout({
       outputRange: [-20, 0, 0, 1],
     });
     return (
-      <RectButton style={style.leftAction}>
+      <RectButton style={style.deleteSwipe}>
         <Animated.Text
           style={[
             style.leftActionText,
@@ -292,7 +304,7 @@ export default function EditRoutineLayout({
     );
   };
 
-  const renderRightActions = (
+  const renderDuplicateSwipe = (
     _progress: Animated.AnimatedInterpolation<string | number>,
     dragX: Animated.AnimatedInterpolation<string | number>,
   ) => {
@@ -301,7 +313,7 @@ export default function EditRoutineLayout({
       outputRange: [-1, 0, 0, 20],
     });
     return (
-      <RectButton style={style.rightAction}>
+      <RectButton style={style.duplicateSwipe}>
         <Animated.Text
           style={[
             style.rightActionText,
@@ -314,6 +326,41 @@ export default function EditRoutineLayout({
         </Animated.Text>
       </RectButton>
     );
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const renderNewSubroutineSwipe = (
+    _progress: Animated.AnimatedInterpolation<string | number>,
+    dragX: Animated.AnimatedInterpolation<string | number>,
+  ) => {
+    const trans = dragX.interpolate({
+      inputRange: [0, 50, 100, 101],
+      outputRange: [-20, 2, 0, 1],
+    });
+    return (
+      <RectButton style={style.createSwipe}>
+        <Animated.Text
+          style={[
+            style.leftActionText,
+            {
+              transform: [{ translateX: trans }],
+            },
+          ]}
+        >
+          <Text>New Subroutine</Text>
+        </Animated.Text>
+      </RectButton>
+    );
+  };
+
+  const createEmptySubroutine = (quantity: number, unit: string) => {
+    const newSubroutine = {
+      id: idGen(),
+      quantity,
+      unit,
+      exercises: [],
+    } as Subroutine;
+    setRoutineItems([...routineItems, newSubroutine]);
   };
 
   const closeSwipeable = (exerciseId: string) => {
@@ -341,8 +388,8 @@ export default function EditRoutineLayout({
                 swipeableRefs.set(item.id, ref);
               }
             }}
-            renderLeftActions={renderLeftActions}
-            renderRightActions={renderRightActions}
+            renderLeftActions={renderDeleteSwipe}
+            renderRightActions={renderDuplicateSwipe}
             onSwipeableOpen={(direction) => {
               if (direction === "left") {
                 deleteExercise(item.id);
@@ -404,55 +451,70 @@ export default function EditRoutineLayout({
               borderRadius: 10,
             }}
           >
-            <TouchableOpacity
-              style={[
-                style.subroutineListItem,
-                {
-                  backgroundColor:
-                    Colors[colorScheme ? colorScheme : "light"]
-                      .tabBackgroundColor,
-                },
-              ]}
-              onLongPress={drag}
-              disabled={isActive}
-              onPress={() => {
-                setCollapsedSubroutines((prevState) => {
-                  const newState = new Map(prevState);
-                  newState.set(item.id, !newState.get(item.id));
-                  return newState;
-                });
+            <Swipeable
+              ref={(ref) => {
+                if (ref) {
+                  swipeableRefs.set(item.id, ref);
+                }
+              }}
+              renderLeftActions={renderDeleteSwipe}
+              renderRightActions={renderDuplicateSwipe}
+              onSwipeableOpen={(direction) => {
+                if (direction === "left") {
+                  deleteSubroutine(item.id);
+                } else {
+                  duplicateSubroutine(item.id);
+                }
+                // Close the swipeable
+                closeSwipeable(item.id);
               }}
             >
-              <Ionicons
-                name="chevron-down"
-                size={24}
-                color={
-                  colorScheme ? Colors[colorScheme].text : Colors.light.text
-                }
-              />
-
-              <Text
+              <TouchableOpacity
                 style={[
-                  style.subroutineName,
+                  style.subroutineListItem,
                   {
+                    backgroundColor:
+                      Colors[colorScheme ? colorScheme : "light"]
+                        .tabBackgroundColor,
+                  },
+                ]}
+                onLongPress={drag}
+                disabled={isActive}
+                onPress={() => {
+                  setCollapsedSubroutines((prevState) => {
+                    const newState = new Map(prevState);
+                    newState.set(item.id, !newState.get(item.id));
+                    return newState;
+                  });
+                }}
+              >
+                <Ionicons
+                  name="chevron-down"
+                  size={24}
+                  color={
+                    colorScheme ? Colors[colorScheme].text : Colors.light.text
+                  }
+                />
+                <Text
+                  style={{
                     color: colorScheme
                       ? Colors[colorScheme].text
                       : Colors.light.text,
-                  },
-                ]}
-              >
-                Subroutine
-              </Text>
-              <Text
-                style={{
-                  color: colorScheme
-                    ? Colors[colorScheme].text
-                    : Colors.light.text,
-                }}
-              >
-                {item.quantity} {item.unit}
-              </Text>
-            </TouchableOpacity>
+                  }}
+                >
+                  {item.exercises.length} Exercises
+                </Text>
+                <Text
+                  style={{
+                    color: colorScheme
+                      ? Colors[colorScheme].text
+                      : Colors.light.text,
+                  }}
+                >
+                  {item.quantity} {item.unit}
+                </Text>
+              </TouchableOpacity>
+            </Swipeable>
 
             <Collapsible collapsed={collapsedSubroutines.get(item.id)}>
               <View style={{ marginLeft: 20 }}>
@@ -463,6 +525,100 @@ export default function EditRoutineLayout({
                   }
                   keyExtractor={(item) => item.id}
                 />
+                {/* Item to add exercise */}
+                <View
+                  style={[
+                    style.exerciseListItem,
+                    {
+                      backgroundColor: colorScheme
+                        ? Colors[colorScheme].tabBackgroundColor
+                        : Colors.light.tabBackgroundColor,
+                    },
+                  ]}
+                >
+                  <TextInput
+                    style={[
+                      style.exerciseListItemName,
+                      {
+                        color: colorScheme
+                          ? Colors[colorScheme].text
+                          : Colors.light.text,
+                      },
+                    ]}
+                    placeholder="Select Exercise"
+                    value={selectedExercise?.name}
+                    onPressIn={() => {
+                      setShowExerciseSelectModal(true);
+                      // Hide the keyboard
+                      Keyboard.dismiss();
+                    }}
+                    readOnly
+                  />
+                  <TextInput
+                    style={[
+                      style.exerciseListItemQuantity,
+                      {
+                        color: colorScheme
+                          ? Colors[colorScheme].text
+                          : Colors.light.text,
+                      },
+                    ]}
+                    placeholder="Quantity"
+                    value={selectedQuantity ? selectedQuantity.toString() : ""}
+                    onChangeText={(text) =>
+                      setSelectedQuantity(
+                        isNaN(parseInt(text, 10)) ? null : parseInt(text, 10),
+                      )
+                    }
+                    inputMode="decimal"
+                  />
+                  <TextInput
+                    style={[
+                      style.exerciseListItemQuantity,
+                      {
+                        color: colorScheme
+                          ? Colors[colorScheme].text
+                          : Colors.light.text,
+                      },
+                    ]}
+                    placeholder="Unit"
+                    value={selectedUnit}
+                    onPressIn={() => {
+                      setShowUnitSelectModal(true);
+                      Keyboard.dismiss();
+                    }}
+                    readOnly
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (!selectedExercise || !selectedQuantity) return;
+                      const newExercise = {
+                        id: idGen(),
+                        exerciseId: selectedExercise.id,
+                        name: selectedExercise.name,
+                        quantity: selectedQuantity,
+                        unit: selectedUnit,
+                      } as ExerciseInRoutine;
+                      const newExercises = [...(item as Subroutine).exercises];
+                      newExercises.push(newExercise);
+                      const newSubroutine = {
+                        ...item,
+                        exercises: newExercises,
+                      };
+                      const newRoutineItems = routineItems.map((routineItem) =>
+                        routineItem.id === item.id
+                          ? newSubroutine
+                          : routineItem,
+                      );
+                      setRoutineItems(newRoutineItems);
+                      setSelectedExercise(null);
+                      setSelectedQuantity(null);
+                      setSelectedUnit(meassurementUnits[0]);
+                    }}
+                  >
+                    <Ionicons name="add" size={24} color="green" />
+                  </TouchableOpacity>
+                </View>
               </View>
             </Collapsible>
           </View>
@@ -626,8 +782,18 @@ export default function EditRoutineLayout({
                 }}
                 readOnly
               />
+
               <TouchableOpacity
                 onPress={() => {
+                  if (!selectedExercise || !selectedQuantity) return;
+                  if (selectedExercise.id === "new_subroutine") {
+                    if (!selectedQuantity || !selectedUnit) return;
+                    createEmptySubroutine(selectedQuantity, selectedUnit);
+                    setSelectedExercise(null);
+                    setSelectedQuantity(null);
+                    setSelectedUnit(meassurementUnits[0]);
+                    return;
+                  }
                   if (!selectedExercise || !selectedQuantity) return;
                   const newExercise = {
                     id: idGen(),
