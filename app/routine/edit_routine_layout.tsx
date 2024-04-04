@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   useColorScheme,
   Animated,
+  FlatList,
 } from "react-native";
 import Collapsible from "react-native-collapsible";
 import DraggableFlatList, {
@@ -49,7 +50,7 @@ export default function EditRoutineLayout({
   const [routineName, setRoutineName] = useState("");
   const [routineDescription, setRoutineDescription] = useState("");
 
-  const [exercises, setExercises] = useState<RoutineItem[]>([]);
+  const [routineItems, setRoutineItems] = useState<RoutineItem[]>([]);
 
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
@@ -81,9 +82,9 @@ export default function EditRoutineLayout({
   }
 
   useEffect(() => {
-    if (!exercises) return;
+    if (!routineItems) return;
 
-    exercises.forEach((item) => {
+    routineItems.forEach((item) => {
       if (!(item as Subroutine).exercises) return;
 
       setCollapsedSubroutines((prevState) => {
@@ -95,7 +96,7 @@ export default function EditRoutineLayout({
         return newState;
       });
     });
-  }, [exercises]);
+  }, [routineItems]);
 
   const loadRoutine = async () => {
     if (!routineId) return;
@@ -108,7 +109,7 @@ export default function EditRoutineLayout({
     if (routineSnap.exists()) {
       setRoutineName(routineSnap.data().name);
       setRoutineDescription(routineSnap.data().description);
-      setExercises(routineSnap.data().exercises);
+      setRoutineItems(routineSnap.data().exercises);
       setLoading(false);
     } else {
       console.log("No such document!");
@@ -120,7 +121,7 @@ export default function EditRoutineLayout({
     const routine = {
       name: routineName,
       description: routineDescription,
-      exercises,
+      routineItems,
     };
     if (isNewRoutine) {
       await addDoc(
@@ -145,10 +146,10 @@ export default function EditRoutineLayout({
   const saveEditedExercise = () => {
     if (!exerciseToEdit) return;
     console.log("Saving edited exercise", exerciseToEdit);
-    console.log("Exercises", exercises);
+    console.log("Exercises", routineItems);
 
-    setExercises(
-      exercises.map((exercise) =>
+    setRoutineItems(
+      routineItems.map((exercise) =>
         isExercise(exercise) && exercise.id === exerciseToEdit.id
           ? exerciseToEdit
           : exercise,
@@ -169,12 +170,12 @@ export default function EditRoutineLayout({
   const deleteExercise = (exerciseId: string) => {
     // Check if the exercise is in the outer routine, if not, check in the subroutines
     // start iterating over every routine item
-    for (let i = 0; i < exercises.length; i++) {
-      const item = exercises[i];
+    for (let i = 0; i < routineItems.length; i++) {
+      const item = routineItems[i];
       if (isExercise(item)) {
         if (item.id === exerciseId) {
-          setExercises(
-            exercises.filter((exercise) => exercise.id !== exerciseId),
+          setRoutineItems(
+            routineItems.filter((exercise) => exercise.id !== exerciseId),
           );
           return;
         }
@@ -182,14 +183,17 @@ export default function EditRoutineLayout({
         // If the item is a subroutine, iterate over its exercises
         for (let j = 0; j < item.exercises.length; j++) {
           if (item.exercises[j].id === exerciseId) {
-            const newExercises = [...exercises];
+            const newExercises = [...routineItems];
 
-            const newSubroutine = item as Subroutine;
-            newSubroutine.exercises = newSubroutine.exercises.filter(
+            const newSubroutineExercises = item.exercises.filter(
               (exercise) => exercise.id !== exerciseId,
             );
+            const newSubroutine = {
+              ...item,
+              exercises: newSubroutineExercises,
+            };
             newExercises[i] = newSubroutine;
-            setExercises(newExercises);
+            setRoutineItems(newExercises);
             return;
           }
         }
@@ -197,8 +201,10 @@ export default function EditRoutineLayout({
     }
   };
 
-  const duplicateExercise = (exerciseId: string) => {
-    let exercise = exercises.find((exercise) => exercise.id === exerciseId);
+  const duplicateExercise = (exerciseUniqueId: string) => {
+    let exercise = routineItems.find(
+      (exercise) => exercise.id === exerciseUniqueId,
+    );
     if (exercise && isExercise(exercise)) {
       const newExercise = {
         id: idGen(),
@@ -207,17 +213,16 @@ export default function EditRoutineLayout({
         quantity: exercise.quantity,
         unit: exercise.unit,
       } as ExerciseInRoutine;
-      setExercises([...exercises, newExercise]);
+      setRoutineItems([...routineItems, newExercise]);
     } else {
-      console.log("Exercise is in a subroutine");
-
-      for (let i = 0; i < exercises.length; i++) {
-        const item = exercises[i];
+      for (let i = 0; i < routineItems.length; i++) {
+        const item = routineItems[i];
         if (isExercise(item)) continue;
-        if (isExerciseInRoutine(exerciseId, item.exercises)) {
+        if (isExerciseInRoutine(exerciseUniqueId, item.exercises)) {
           exercise = item.exercises.find(
-            (exercise) => exercise.id === exerciseId,
+            (exercise) => exercise.id === exerciseUniqueId,
           );
+
           if (!exercise) return;
           const newExercise = {
             id: idGen(),
@@ -226,17 +231,14 @@ export default function EditRoutineLayout({
             quantity: exercise.quantity,
             unit: exercise.unit,
           } as ExerciseInRoutine;
-          
-          const newSubroutine = item as Subroutine;
-          console.log("New Subroutine", newSubroutine);
-          console.log("New Exercise", newExercise);
-          newSubroutine.exercises = [...newSubroutine.exercises, newExercise];
-          console.log("New Subroutine with new exercise ", newSubroutine);
-          
-          const newExercises = [...exercises];
-          newExercises[i] = newSubroutine;
-          setExercises(newExercises);
-          return;
+          let newSubroutineExercises = item.exercises;
+          newSubroutineExercises = [...newSubroutineExercises, newExercise];
+
+          const newSubroutine = { ...item, exercises: newSubroutineExercises };
+          const newRoutineItems = routineItems.map((routineItem, index) =>
+            index === i ? newSubroutine : routineItem,
+          );
+          setRoutineItems(newRoutineItems);
         }
       }
     }
@@ -434,73 +436,15 @@ export default function EditRoutineLayout({
               </Text>
             </TouchableOpacity>
 
-            <Collapsible
-              collapsed={collapsedSubroutines.get(item.id)}
-              align="center"
-            >
+            <Collapsible collapsed={collapsedSubroutines.get(item.id)}>
               <View style={{ marginLeft: 20 }}>
-                {item.exercises.map((exercise) => (
-                  <Swipeable
-                    ref={(ref) => {
-                      if (ref) {
-                        swipeableRefs.set(exercise.id, ref);
-                      }
-                    }}
-                    renderLeftActions={renderLeftActions}
-                    renderRightActions={renderRightActions}
-                    onSwipeableOpen={(direction) => {
-                      if (direction === "left") {
-                        deleteExercise(exercise.id);
-                      } else {
-                        duplicateExercise(exercise.id);
-                      }
-                      // Close the swipeable
-                      closeSwipeable(exercise.id);
-                    }}
-                  >
-                    <TouchableOpacity
-                      style={[
-                        style.exerciseListItem,
-                        {
-                          backgroundColor:
-                            Colors[colorScheme ? colorScheme : "light"]
-                              .tabBackgroundColor,
-                        },
-                      ]}
-                      onLongPress={drag}
-                      disabled={isActive}
-                      onPress={() => {
-                        setShowEditExerciseModal(true);
-                        setExerciseToEdit(exercise);
-                      }}
-                    >
-                      <Text
-                        style={[
-                          style.exerciseListItemName,
-                          {
-                            color: colorScheme
-                              ? Colors[colorScheme].text
-                              : Colors.light.text,
-                          },
-                        ]}
-                      >
-                        {exercise.name}
-                      </Text>
-                      <Text
-                        style={[
-                          style.exerciseListItemQuantity,
-                          {
-                            color: colorScheme
-                              ? Colors[colorScheme].text
-                              : Colors.light.text,
-                          },
-                        ]}
-                      >
-                        {exercise.quantity} {exercise.unit}
-                      </Text>
-                    </TouchableOpacity>
-                  </Swipeable>
-                ))}
+                <FlatList
+                  data={(item as Subroutine).exercises}
+                  renderItem={({ item }) =>
+                    renderRoutineItem({ item, drag, isActive })
+                  }
+                  keyExtractor={(item) => item.id}
+                />
               </View>
             </Collapsible>
           </View>
@@ -591,9 +535,9 @@ export default function EditRoutineLayout({
           {/* Exercise List */}
           <DraggableFlatList
             style={style.exerciseList}
-            data={exercises}
+            data={routineItems}
             containerStyle={{ flex: 1 }}
-            onDragEnd={({ data }) => setExercises(data)}
+            onDragEnd={({ data }) => setRoutineItems(data)}
             renderItem={({ item, drag, isActive }) =>
               renderRoutineItem({ item, drag, isActive })
             }
@@ -674,7 +618,7 @@ export default function EditRoutineLayout({
                     quantity: selectedQuantity,
                     unit: selectedUnit,
                   } as ExerciseInRoutine;
-                  setExercises([...exercises, newExercise]);
+                  setRoutineItems([...routineItems, newExercise]);
                   setSelectedExercise(null);
                   setSelectedQuantity(null);
                   setSelectedUnit(meassurementUnits[0]);
