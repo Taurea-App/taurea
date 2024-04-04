@@ -109,7 +109,7 @@ export default function EditRoutineLayout({
     if (routineSnap.exists()) {
       setRoutineName(routineSnap.data().name);
       setRoutineDescription(routineSnap.data().description);
-      setRoutineItems(routineSnap.data().exercises);
+      setRoutineItems(routineSnap.data().routineItems);
       setLoading(false);
     } else {
       console.log("No such document!");
@@ -143,21 +143,6 @@ export default function EditRoutineLayout({
     navigation.navigate("index");
   };
 
-  const saveEditedExercise = () => {
-    if (!exerciseToEdit) return;
-    console.log("Saving edited exercise", exerciseToEdit);
-    console.log("Exercises", routineItems);
-
-    setRoutineItems(
-      routineItems.map((exercise) =>
-        isExercise(exercise) && exercise.id === exerciseToEdit.id
-          ? exerciseToEdit
-          : exercise,
-      ),
-    );
-    setShowEditExerciseModal(false);
-  };
-
   const isExerciseInRoutine = (
     exerciseId: string,
     itemsList: RoutineItem[],
@@ -165,6 +150,39 @@ export default function EditRoutineLayout({
     console.log("Checking if exercise", exerciseId, "is in the routine");
     console.log("Items list", itemsList);
     return itemsList.some((exercise) => exercise.id === exerciseId);
+  };
+
+  const saveEditedExercise = () => {
+    if (!exerciseToEdit) return;
+    console.log("Saving edited exercise", exerciseToEdit);
+    console.log("Exercises", routineItems);
+
+    if (isExerciseInRoutine(exerciseToEdit.id, routineItems)) {
+      setRoutineItems(
+        routineItems.map((exercise) =>
+          isExercise(exercise) && exercise.id === exerciseToEdit.id
+            ? exerciseToEdit
+            : exercise,
+        ),
+      );
+    } else {
+      // Exercise is in a subroutine
+      for (let i = 0; i < routineItems.length; i++) {
+        const item = routineItems[i];
+        if (isExercise(item)) continue;
+        if (isExerciseInRoutine(exerciseToEdit.id, item.exercises)) {
+          const newExercises = item.exercises.map((exercise) =>
+            exercise.id === exerciseToEdit.id ? exerciseToEdit : exercise,
+          );
+          const newSubroutine = { ...item, exercises: newExercises };
+          const newRoutineItems = routineItems.map((routineItem, index) =>
+            index === i ? newSubroutine : routineItem,
+          );
+          setRoutineItems(newRoutineItems);
+        }
+      }
+    }
+    setShowEditExerciseModal(false);
   };
 
   const deleteExercise = (exerciseId: string) => {

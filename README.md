@@ -24,6 +24,7 @@ npm run lint:fix
 ## Useful Links
 - [Fix ViewTypes error](
 https://stackoverflow.com/questions/72755476/invariant-violation-viewproptypes-has-been-removed-from-react-native-migrate-t)
+- [Fix SSRProvider Warning](https://stackoverflow.com/questions/76579391/in-react-18-ssrprovider-is-not-necessary-and-is-a-noop-you-can-remove-it-from-y)
 
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
 

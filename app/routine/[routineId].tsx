@@ -34,7 +34,7 @@ export default function Page() {
 
   const { routineId } = useLocalSearchParams<{ routineId: string }>();
   const [routine, setRoutine] = useState<Routine | null>(null);
-  const [exercises, setExercises] = useState<
+  const [routineItems, setRoutineItems] = useState<
     ExerciseInRoutine[] | Subroutine[]
   >();
   const router = useRouter();
@@ -67,7 +67,7 @@ export default function Page() {
           ...routineSnap.data(),
         } as Routine);
 
-        setExercises(routineSnap.data().exercises);
+        setRoutineItems(routineSnap.data().routineItems);
         setLoading(false);
       }
     };
@@ -76,9 +76,9 @@ export default function Page() {
   }, [routineId]);
 
   useEffect(() => {
-    if (!exercises) return;
+    if (!routineItems) return;
 
-    exercises.forEach((item) => {
+    routineItems.forEach((item) => {
       if (!(item as Subroutine).exercises) return;
 
       setCollapsedSubroutines((prevState) => {
@@ -87,7 +87,7 @@ export default function Page() {
         return newState;
       });
     });
-  }, [exercises]);
+  }, [routineItems]);
 
   const toggleSubroutine = (subroutineId: string) => {
     setCollapsedSubroutines((prevState) => {
@@ -266,7 +266,7 @@ export default function Page() {
           </Text>
           <Text style={styles.description}>{routine?.description}</Text>
           <FlatList
-            data={exercises}
+            data={routineItems}
             keyExtractor={(item, index) => index.toString()}
             renderItem={renderRoutineItem}
           />
