@@ -8,12 +8,14 @@ import {
   useColorScheme,
   Text,
   StyleSheet,
+  View,
 } from "react-native";
 import KeyboardSpacer from "react-native-keyboard-spacer";
 
 import Colors from "@/constants/Colors";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise } from "@/types";
+import { NEW_SUBROUTINE_ITEM, REST_ITEM } from "@/constants";
 
 export default function ExerciseSelectModal({
   showModal,
@@ -28,6 +30,9 @@ export default function ExerciseSelectModal({
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const EXTRA_ITEMS = [NEW_SUBROUTINE_ITEM, REST_ITEM];
+  // yellow for new subroutines, blue for rest
 
   useEffect(() => {
     const fetchExercises = async () => {
@@ -78,6 +83,51 @@ export default function ExerciseSelectModal({
           value={searchTerm}
           onChangeText={setSearchTerm}
         />
+
+        {/* Extra items */}
+        {EXTRA_ITEMS.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            style={[
+              style.button,
+              {
+                backgroundColor: Colors[colorScheme ? colorScheme : "light"][item.color]
+              },
+            ]}
+            onPress={() => {
+              setSelectedExercise(item);
+              console.log("Selected exercise", item);
+              setSearchTerm("");
+              closeModal();
+            }}
+          >
+            <Text
+              style={[
+                style.exerciseSelectItem,
+                {
+                  color: colorScheme
+                    ? Colors[colorScheme].text
+                    : Colors.light.text,
+                },
+              ]}
+            >
+              {item.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+
+        {/* Separator */}
+        <View
+          style={{
+            borderBottomColor: colorScheme
+              ? Colors[colorScheme].tabBackgroundColor
+              : Colors.light.tabBackgroundColor,
+            // borderBottomWidth: 1,
+            width: "100%",
+            marginVertical: 10,
+          }}
+        />
+
         {loading ? (
           <ActivityIndicator />
         ) : (

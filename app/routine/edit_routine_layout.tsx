@@ -24,17 +24,17 @@ import Swipeable from "react-native-gesture-handler/Swipeable";
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import ExerciseInRoutineModal from "./ExerciseInRoutineModal";
+import EditExerciseModal from "./EditExerciseModal";
+import EditSubroutineModal from "./EditSubroutineModal";
 import { editRoutineLayoutStyle as style } from "./edit_routine_layout_style";
 
 import ExerciseSelectModal from "@/components/ExerciseSelectmodal";
 import UnitSelectModal from "@/components/UnitSelectModal";
+import { EXERCISE_UNITS, NEW_SUBROUTINE_ID, SUBROUTINE_UNITS } from "@/constants";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise, ExerciseInRoutine, RoutineItem, Subroutine } from "@/types";
 import { idGen } from "@/utils/idGen";
-
-const meassurementUnits = ["Reps.", "Secs.", "Mins.", "Meters", "Km"];
 
 export default function EditRoutineLayout({
   isNewRoutine,
@@ -55,17 +55,23 @@ export default function EditRoutineLayout({
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
   );
-  const [selectedUnit, setSelectedUnit] = useState(meassurementUnits[0]);
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [isSubroutine, setIsSubroutine] = useState(false);
 
   const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
   const [showExerciseSelectModal, setShowExerciseSelectModal] = useState(false);
   const [showUnitSelectModal, setShowUnitSelectModal] = useState(false);
+  const [showEditSubroutineModal, setShowEditSubroutineModal] = useState(false);
 
   const [loading, setLoading] = useState(!isNewRoutine);
 
   const [showEditExerciseModal, setShowEditExerciseModal] = useState(false);
   const [exerciseToEdit, setExerciseToEdit] =
     useState<ExerciseInRoutine | null>(null);
+
+  const [subroutineToEdit, setSubroutineToEdit] = useState<Subroutine | null>(
+    null,
+  );
 
   const [collapsedSubroutines, setCollapsedSubroutines] = useState<
     Map<string, boolean>
@@ -80,6 +86,11 @@ export default function EditRoutineLayout({
   ): item is ExerciseInRoutine {
     return (item as ExerciseInRoutine).exerciseId !== undefined;
   }
+
+  useEffect(() => {
+    setIsSubroutine(selectedExercise?.id === NEW_SUBROUTINE_ID);
+    setSelectedUnit(null);
+  }, [selectedExercise]);
 
   useEffect(() => {
     if (!routineItems) return;
@@ -177,6 +188,17 @@ export default function EditRoutineLayout({
       }
     }
     setShowEditExerciseModal(false);
+  };
+
+  const saveEditedSubroutine = () => {
+    if (!subroutineToEdit) return;
+
+    setRoutineItems(
+      routineItems.map((item) =>
+        item.id === subroutineToEdit.id ? subroutineToEdit : item,
+      ),
+    );
+    setShowEditSubroutineModal(false);
   };
 
   const deleteExercise = (exerciseId: string) => {
@@ -370,6 +392,282 @@ export default function EditRoutineLayout({
     }
   };
 
+  const renderExercise = ({
+    item,
+    drag,
+    isActive,
+  }: {
+    item: ExerciseInRoutine;
+    drag: any;
+    isActive: boolean;
+  }) => {
+    return (
+      <Swipeable
+        ref={(ref) => {
+          if (ref) {
+            swipeableRefs.set(item.id, ref);
+          }
+        }}
+        renderLeftActions={renderDeleteSwipe}
+        renderRightActions={renderDuplicateSwipe}
+        onSwipeableOpen={(direction) => {
+          if (direction === "left") {
+            deleteExercise(item.id);
+          } else {
+            duplicateExercise(item.id);
+          }
+          // Close the swipeable
+          closeSwipeable(item.id);
+        }}
+      >
+        <TouchableOpacity
+          style={[
+            style.exerciseListItem,
+            {
+              backgroundColor:
+                Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
+            },
+          ]}
+          onLongPress={drag}
+          disabled={isActive}
+          onPress={() => {
+            setShowEditExerciseModal(true);
+            setIsSubroutine(false);
+            setExerciseToEdit(item);
+          }}
+        >
+          <Text
+            style={[
+              style.exerciseListItemName,
+              {
+                color: colorScheme
+                  ? Colors[colorScheme].text
+                  : Colors.light.text,
+              },
+            ]}
+          >
+            {item.name}
+          </Text>
+          <Text
+            style={[
+              style.exerciseListItemQuantity,
+              {
+                color: colorScheme
+                  ? Colors[colorScheme].text
+                  : Colors.light.text,
+              },
+            ]}
+          >
+            {item.quantity} {item.unit}
+          </Text>
+        </TouchableOpacity>
+      </Swipeable>
+    );
+  };
+
+  const renderSubroutine = ({
+    item,
+    drag,
+    isActive,
+  }: {
+    item: Subroutine;
+    drag: any;
+    isActive: boolean;
+  }) => {
+    return (
+      <View
+        style={{
+          backgroundColor:
+            Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
+          borderRadius: 10,
+        }}
+      >
+        <Swipeable
+          ref={(ref) => {
+            if (ref) {
+              swipeableRefs.set(item.id, ref);
+            }
+          }}
+          renderLeftActions={renderDeleteSwipe}
+          renderRightActions={renderDuplicateSwipe}
+          onSwipeableOpen={(direction) => {
+            if (direction === "left") {
+              deleteSubroutine(item.id);
+            } else {
+              duplicateSubroutine(item.id);
+            }
+            // Close the swipeable
+            closeSwipeable(item.id);
+          }}
+        >
+          <TouchableOpacity
+            style={[
+              style.subroutineListItem,
+              {
+                backgroundColor:
+                  Colors[colorScheme ? colorScheme : "light"]
+                    .tabBackgroundColor,
+              },
+            ]}
+            onLongPress={drag}
+            disabled={isActive}
+            onPress={() => {
+              setShowEditSubroutineModal(true);
+              setIsSubroutine(true);
+              setSubroutineToEdit(item);
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                setCollapsedSubroutines((prevState) => {
+                  const newState = new Map(prevState);
+                  newState.set(item.id, !newState.get(item.id));
+                  return newState;
+                });
+              }}
+            >
+              <Ionicons
+                name={
+                  collapsedSubroutines.get(item.id)
+                    ? "chevron-forward"
+                    : "chevron-down"
+                }
+                size={24}
+                color={
+                  colorScheme ? Colors[colorScheme].text : Colors.light.text
+                }
+              />
+            </TouchableOpacity>
+
+            <Text
+              style={{
+                color: colorScheme
+                  ? Colors[colorScheme].text
+                  : Colors.light.text,
+              }}
+            >
+              {item.exercises.length} Exercises
+            </Text>
+            <Text
+              style={{
+                color: colorScheme
+                  ? Colors[colorScheme].text
+                  : Colors.light.text,
+              }}
+            >
+              {item.quantity} {item.unit}
+            </Text>
+          </TouchableOpacity>
+        </Swipeable>
+
+        <Collapsible collapsed={collapsedSubroutines.get(item.id)}>
+          <View style={{ marginLeft: 20 }}>
+            <FlatList
+              data={item.exercises}
+              renderItem={({ item }) =>
+                renderExercise({ item, drag, isActive })
+              }
+              keyExtractor={(item) => item.id}
+            />
+            {/* Item to add exercise */}
+            <View
+              style={[
+                style.exerciseListItem,
+                {
+                  backgroundColor: colorScheme
+                    ? Colors[colorScheme].tabBackgroundColor
+                    : Colors.light.tabBackgroundColor,
+                },
+              ]}
+            >
+              <TextInput
+                style={[
+                  style.exerciseListItemName,
+                  {
+                    color: colorScheme
+                      ? Colors[colorScheme].text
+                      : Colors.light.text,
+                  },
+                ]}
+                placeholder="Select
+                Exercise"
+                value={selectedExercise?.name}
+                onPressIn={() => {
+                  setShowExerciseSelectModal(true);
+                  // Hide the keyboard
+                  Keyboard.dismiss();
+                }}
+                readOnly
+              />
+              <TextInput
+                style={[
+                  style.exerciseListItemQuantity,
+                  {
+                    color: colorScheme
+                      ? Colors[colorScheme].text
+                      : Colors.light.text,
+                  },
+                ]}
+                placeholder="Quantity"
+                value={selectedQuantity ? selectedQuantity.toString() : ""}
+                onChangeText={(text) =>
+                  setSelectedQuantity(
+                    isNaN(parseInt(text, 10)) ? null : parseInt(text, 10),
+                  )
+                }
+                inputMode="decimal"
+              />
+              <TextInput
+                style={[
+                  style.exerciseListItemQuantity,
+                  {
+                    color: colorScheme
+                      ? Colors[colorScheme].text
+                      : Colors.light.text,
+                  },
+                ]}
+                placeholder="Unit"
+                value={selectedUnit ?? ""}
+                onPressIn={() => {
+                  setShowUnitSelectModal(true);
+                  Keyboard.dismiss();
+                }}
+                readOnly
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  if (!selectedExercise || !selectedQuantity) return;
+                  const newExercise = {
+                    id: idGen(),
+                    exerciseId: selectedExercise.id,
+                    name: selectedExercise.name,
+                    quantity: selectedQuantity,
+                    unit: selectedUnit,
+                  } as ExerciseInRoutine;
+                  const newExercises = [...item.exercises];
+                  newExercises.push(newExercise);
+                  const newSubroutine = {
+                    ...item,
+                    exercises: newExercises,
+                  };
+                  const newRoutineItems = routineItems.map((routineItem) =>
+                    routineItem.id === item.id ? newSubroutine : routineItem,
+                  );
+                  setRoutineItems(newRoutineItems);
+                  setSelectedExercise(null);
+                  setSelectedQuantity(null);
+                  setSelectedUnit(null);
+                }}
+              >
+                <Ionicons name="add" size={24} color="green" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Collapsible>
+      </View>
+    );
+  };
+
   const renderRoutineItem = ({
     item,
     drag,
@@ -381,248 +679,9 @@ export default function EditRoutineLayout({
   }) => {
     return (
       <ScaleDecorator>
-        {isExercise(item) ? (
-          <Swipeable
-            ref={(ref) => {
-              if (ref) {
-                swipeableRefs.set(item.id, ref);
-              }
-            }}
-            renderLeftActions={renderDeleteSwipe}
-            renderRightActions={renderDuplicateSwipe}
-            onSwipeableOpen={(direction) => {
-              if (direction === "left") {
-                deleteExercise(item.id);
-              } else {
-                duplicateExercise(item.id);
-              }
-              // Close the swipeable
-              closeSwipeable(item.id);
-            }}
-          >
-            <TouchableOpacity
-              style={[
-                style.exerciseListItem,
-                {
-                  backgroundColor:
-                    Colors[colorScheme ? colorScheme : "light"]
-                      .tabBackgroundColor,
-                },
-              ]}
-              onLongPress={drag}
-              disabled={isActive}
-              onPress={() => {
-                if (!isExercise(item)) return;
-                setShowEditExerciseModal(true);
-                setExerciseToEdit(item);
-              }}
-            >
-              <Text
-                style={[
-                  style.exerciseListItemName,
-                  {
-                    color: colorScheme
-                      ? Colors[colorScheme].text
-                      : Colors.light.text,
-                  },
-                ]}
-              >
-                {item.name}
-              </Text>
-              <Text
-                style={[
-                  style.exerciseListItemQuantity,
-                  {
-                    color: colorScheme
-                      ? Colors[colorScheme].text
-                      : Colors.light.text,
-                  },
-                ]}
-              >
-                {item.quantity} {item.unit}
-              </Text>
-            </TouchableOpacity>
-          </Swipeable>
-        ) : (
-          <View
-            style={{
-              backgroundColor:
-                Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
-              borderRadius: 10,
-            }}
-          >
-            <Swipeable
-              ref={(ref) => {
-                if (ref) {
-                  swipeableRefs.set(item.id, ref);
-                }
-              }}
-              renderLeftActions={renderDeleteSwipe}
-              renderRightActions={renderDuplicateSwipe}
-              onSwipeableOpen={(direction) => {
-                if (direction === "left") {
-                  deleteSubroutine(item.id);
-                } else {
-                  duplicateSubroutine(item.id);
-                }
-                // Close the swipeable
-                closeSwipeable(item.id);
-              }}
-            >
-              <TouchableOpacity
-                style={[
-                  style.subroutineListItem,
-                  {
-                    backgroundColor:
-                      Colors[colorScheme ? colorScheme : "light"]
-                        .tabBackgroundColor,
-                  },
-                ]}
-                onLongPress={drag}
-                disabled={isActive}
-                onPress={() => {
-                  setCollapsedSubroutines((prevState) => {
-                    const newState = new Map(prevState);
-                    newState.set(item.id, !newState.get(item.id));
-                    return newState;
-                  });
-                }}
-              >
-                <Ionicons
-                  name="chevron-down"
-                  size={24}
-                  color={
-                    colorScheme ? Colors[colorScheme].text : Colors.light.text
-                  }
-                />
-                <Text
-                  style={{
-                    color: colorScheme
-                      ? Colors[colorScheme].text
-                      : Colors.light.text,
-                  }}
-                >
-                  {item.exercises.length} Exercises
-                </Text>
-                <Text
-                  style={{
-                    color: colorScheme
-                      ? Colors[colorScheme].text
-                      : Colors.light.text,
-                  }}
-                >
-                  {item.quantity} {item.unit}
-                </Text>
-              </TouchableOpacity>
-            </Swipeable>
-
-            <Collapsible collapsed={collapsedSubroutines.get(item.id)}>
-              <View style={{ marginLeft: 20 }}>
-                <FlatList
-                  data={(item as Subroutine).exercises}
-                  renderItem={({ item }) =>
-                    renderRoutineItem({ item, drag, isActive })
-                  }
-                  keyExtractor={(item) => item.id}
-                />
-                {/* Item to add exercise */}
-                <View
-                  style={[
-                    style.exerciseListItem,
-                    {
-                      backgroundColor: colorScheme
-                        ? Colors[colorScheme].tabBackgroundColor
-                        : Colors.light.tabBackgroundColor,
-                    },
-                  ]}
-                >
-                  <TextInput
-                    style={[
-                      style.exerciseListItemName,
-                      {
-                        color: colorScheme
-                          ? Colors[colorScheme].text
-                          : Colors.light.text,
-                      },
-                    ]}
-                    placeholder="Select Exercise"
-                    value={selectedExercise?.name}
-                    onPressIn={() => {
-                      setShowExerciseSelectModal(true);
-                      // Hide the keyboard
-                      Keyboard.dismiss();
-                    }}
-                    readOnly
-                  />
-                  <TextInput
-                    style={[
-                      style.exerciseListItemQuantity,
-                      {
-                        color: colorScheme
-                          ? Colors[colorScheme].text
-                          : Colors.light.text,
-                      },
-                    ]}
-                    placeholder="Quantity"
-                    value={selectedQuantity ? selectedQuantity.toString() : ""}
-                    onChangeText={(text) =>
-                      setSelectedQuantity(
-                        isNaN(parseInt(text, 10)) ? null : parseInt(text, 10),
-                      )
-                    }
-                    inputMode="decimal"
-                  />
-                  <TextInput
-                    style={[
-                      style.exerciseListItemQuantity,
-                      {
-                        color: colorScheme
-                          ? Colors[colorScheme].text
-                          : Colors.light.text,
-                      },
-                    ]}
-                    placeholder="Unit"
-                    value={selectedUnit}
-                    onPressIn={() => {
-                      setShowUnitSelectModal(true);
-                      Keyboard.dismiss();
-                    }}
-                    readOnly
-                  />
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (!selectedExercise || !selectedQuantity) return;
-                      const newExercise = {
-                        id: idGen(),
-                        exerciseId: selectedExercise.id,
-                        name: selectedExercise.name,
-                        quantity: selectedQuantity,
-                        unit: selectedUnit,
-                      } as ExerciseInRoutine;
-                      const newExercises = [...(item as Subroutine).exercises];
-                      newExercises.push(newExercise);
-                      const newSubroutine = {
-                        ...item,
-                        exercises: newExercises,
-                      };
-                      const newRoutineItems = routineItems.map((routineItem) =>
-                        routineItem.id === item.id
-                          ? newSubroutine
-                          : routineItem,
-                      );
-                      setRoutineItems(newRoutineItems);
-                      setSelectedExercise(null);
-                      setSelectedQuantity(null);
-                      setSelectedUnit(meassurementUnits[0]);
-                    }}
-                  >
-                    <Ionicons name="add" size={24} color="green" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Collapsible>
-          </View>
-        )}
+        {isExercise(item)
+          ? renderExercise({ item, drag, isActive })
+          : renderSubroutine({ item, drag, isActive })}
       </ScaleDecorator>
     );
   };
@@ -775,7 +834,7 @@ export default function EditRoutineLayout({
                   },
                 ]}
                 placeholder="Unit"
-                value={selectedUnit}
+                value={selectedUnit ?? ""}
                 onPressIn={() => {
                   setShowUnitSelectModal(true);
                   Keyboard.dismiss();
@@ -786,12 +845,12 @@ export default function EditRoutineLayout({
               <TouchableOpacity
                 onPress={() => {
                   if (!selectedExercise || !selectedQuantity) return;
-                  if (selectedExercise.id === "new_subroutine") {
+                  if (selectedExercise.id === NEW_SUBROUTINE_ID) {
                     if (!selectedQuantity || !selectedUnit) return;
                     createEmptySubroutine(selectedQuantity, selectedUnit);
                     setSelectedExercise(null);
                     setSelectedQuantity(null);
-                    setSelectedUnit(meassurementUnits[0]);
+                    setSelectedUnit(EXERCISE_UNITS[0]);
                     return;
                   }
                   if (!selectedExercise || !selectedQuantity) return;
@@ -805,7 +864,7 @@ export default function EditRoutineLayout({
                   setRoutineItems([...routineItems, newExercise]);
                   setSelectedExercise(null);
                   setSelectedQuantity(null);
-                  setSelectedUnit(meassurementUnits[0]);
+                  setSelectedUnit(EXERCISE_UNITS[0]);
                 }}
               >
                 <Ionicons name="add" size={24} color="green" />
@@ -818,7 +877,7 @@ export default function EditRoutineLayout({
           <SaveButton />
 
           {/* Edit Exercise Modal */}
-          <ExerciseInRoutineModal
+          <EditExerciseModal
             setExercise={setExerciseToEdit}
             exercise={exerciseToEdit}
             isOpen={showEditExerciseModal}
@@ -826,6 +885,17 @@ export default function EditRoutineLayout({
             showUnitSelectModal={() => setShowUnitSelectModal(true)}
             showExerciseSelectModal={() => setShowExerciseSelectModal(true)}
             onSave={saveEditedExercise}
+            isSubroutine={isSubroutine}
+          />
+
+          {/* Edit Subroutine Modal  */}
+          <EditSubroutineModal
+            setSubroutine={setSubroutineToEdit}
+            subroutine={subroutineToEdit}
+            isOpen={showEditSubroutineModal}
+            closeModal={() => setShowEditSubroutineModal(false)}
+            showUnitSelectModal={() => setShowUnitSelectModal(true)}
+            onSave={saveEditedSubroutine}
           />
 
           {/* Exercise Select Modal */}
@@ -854,7 +924,8 @@ export default function EditRoutineLayout({
           <UnitSelectModal
             showModal={showUnitSelectModal}
             closeModal={() => setShowUnitSelectModal(false)}
-            selectedUnit={selectedUnit}
+            selectedUnit={selectedUnit ?? ""}
+            isSubroutine={isSubroutine}
             setSelectedUnit={
               showEditExerciseModal
                 ? (unit: string) => {
@@ -862,7 +933,13 @@ export default function EditRoutineLayout({
                       exerciseToEdit ? { ...exerciseToEdit, unit } : null,
                     );
                   }
-                : setSelectedUnit
+                : showEditSubroutineModal
+                  ? (unit: string) => {
+                      setSubroutineToEdit(
+                        subroutineToEdit ? { ...subroutineToEdit, unit } : null,
+                      );
+                    }
+                  : setSelectedUnit
             }
           />
         </View>

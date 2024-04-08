@@ -3,6 +3,7 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 
 import { useColorScheme } from "./useColorScheme";
 
+import { EXERCISE_UNITS, SUBROUTINE_UNITS } from "@/constants";
 import Colors from "@/constants/Colors";
 
 export default function UnitSelectModal({
@@ -10,15 +11,16 @@ export default function UnitSelectModal({
   closeModal,
   selectedUnit,
   setSelectedUnit,
+  isSubroutine = false,
 }: {
   showModal: boolean;
   closeModal: () => void;
   selectedUnit: string;
   setSelectedUnit: (unit: string) => void;
+  isSubroutine?: boolean;
 }) {
   const colorScheme = useColorScheme();
-
-  const meassurementUnits = ["Reps.", "Secs.", "Mins.", "Meters", "Km"];
+  const UNITS = isSubroutine ? SUBROUTINE_UNITS : EXERCISE_UNITS;
 
   return (
     <Modal
@@ -39,7 +41,7 @@ export default function UnitSelectModal({
         marginBottom={0}
         marginTop="auto"
       >
-        {meassurementUnits.map((unit) => (
+        {UNITS.map((unit) => (
           <TouchableOpacity
             key={unit}
             style={[

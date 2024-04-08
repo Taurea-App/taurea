@@ -28,4 +28,3 @@ export type Routine = {
   description: string;
   routineItems: RoutineItem[];
 };
-

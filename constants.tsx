@@ -1,0 +1,26 @@
+export const EXERCISE_UNITS = [
+  "Reps",
+  "Seconds",
+  "Minutes",
+  "Meters",
+  "Kilometers",
+];
+
+export const SUBROUTINE_UNITS = ["Sets", "Minutes"];
+
+export const NEW_SUBROUTINE_ID = "new_subroutine";
+export const REST_ID = "rest";
+
+export const NEW_SUBROUTINE_ITEM = {
+  id: NEW_SUBROUTINE_ID,
+  name: "New Subroutine",
+  description: "",
+  color: "yellow",
+};
+
+export const REST_ITEM = {
+  id: REST_ID,
+  name: "Rest",
+  description: "",
+  color: "blue",
+};
