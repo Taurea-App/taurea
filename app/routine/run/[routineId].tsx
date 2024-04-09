@@ -13,7 +13,7 @@ import {
 import Timer from "@/components/Timer";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
-import { ExerciseInRoutine, Routine } from "@/types";
+import { ExerciseInRoutine, Routine, RoutineItem, Subroutine } from "@/types";
 
 export default function Page() {
   const { routineId } = useLocalSearchParams<{ routineId: string }>();
@@ -21,11 +21,27 @@ export default function Page() {
   const [currentExercise, setCurrentExercise] =
     useState<ExerciseInRoutine | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  // The index of the current exercise in the current subroutine
+  const [currentSubroutineIndex, setCurrentSubroutineIndex] =
+    useState<number>(-1);
+  // The set of the subroutine that is currently being executed
+  const [currentSubroutineSet, setCurrentSubroutineSet] = useState<number>(-1);
+
   const [waitingForTimer, setWaitingForTimer] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const auth = FIREBASE_AUTH;
 
   const colorScheme = useColorScheme();
+
+  // function to determine if the current exercise is a subroutine or an exercise
+  const isSubroutine = (item: RoutineItem) => {
+    if (!item) {
+      return false;
+    }
+    return (
+      (item as any).exerciseId === "new_subroutine" || !(item as any).exerciseId
+    );
+  };
 
   // Fetch routine from API
   useEffect(() => {
@@ -51,14 +67,33 @@ export default function Page() {
 
   useEffect(() => {
     if (routine && currentIndex !== -1) {
-      setCurrentExercise(routine.routineItems[currentIndex]);
+      // If the current item is a subroutine
+      if (isSubroutine(routine.routineItems[currentIndex])) {
+        const tempCurrentSubroutine = routine.routineItems[
+          currentIndex
+        ] as Subroutine;
+        console.log("Starting subroutine", tempCurrentSubroutine);
+        setCurrentSubroutineIndex(0); // Start the subroutine from the first exercise
+        setCurrentSubroutineSet(0); // Start the subroutine from the first set
+        setCurrentExercise(tempCurrentSubroutine.exercises[0]);
+        // If the current item is an exercise
+      } else {
+        const tempCurrentExercise = routine.routineItems[
+          currentIndex
+        ] as ExerciseInRoutine;
+        setCurrentSubroutineIndex(-1); // Reset the subroutine index
+        setCurrentSubroutineSet(-1); // Reset the subroutine set
+        setCurrentExercise(tempCurrentExercise);
+      }
     }
   }, [routine, currentIndex]);
 
   useEffect(() => {
     if (
       currentExercise &&
-      (["Secs.", "Mins."] as const).includes(currentExercise.unit as any)
+      (["Secs.", "Mins.", "Seconds", "Minutes"] as const).includes(
+        currentExercise.unit as any,
+      )
     ) {
       setWaitingForTimer(true);
     }
@@ -68,10 +103,44 @@ export default function Page() {
     if (waitingForTimer) {
       return;
     }
-    if (routine && currentIndex === routine?.routineItems.length) {
-      setCurrentIndex(-1);
+
+    if (!routine) {
+      return;
+    }
+
+    // If the current item is a subroutine
+    if (
+      routine?.routineItems &&
+      isSubroutine(routine.routineItems[currentIndex])
+    ) {
+      const currentSubroutine = routine?.routineItems[
+        currentIndex
+      ] as Subroutine;
+      if (
+        currentSubroutineIndex === currentSubroutine.exercises.length - 1 &&
+        currentSubroutineSet === currentSubroutine.quantity - 1
+      ) {
+        setCurrentIndex(currentIndex + 1);
+      } else if (
+        currentSubroutineIndex ===
+        currentSubroutine.exercises.length - 1
+      ) {
+        setCurrentSubroutineIndex(0);
+        setCurrentSubroutineSet(currentSubroutineSet + 1);
+        setCurrentExercise(currentSubroutine.exercises[0]);
+      } else {
+        setCurrentSubroutineIndex(currentSubroutineIndex + 1);
+        setCurrentExercise(
+          currentSubroutine.exercises[currentSubroutineIndex + 1],
+        );
+      }
+      // If the current item is an exercise
     } else {
-      setCurrentIndex(currentIndex + 1);
+      if (currentIndex === routine.routineItems.length) {
+        setCurrentIndex(-1);
+      } else {
+        setCurrentIndex(currentIndex + 1);
+      }
     }
   };
 
@@ -208,14 +277,16 @@ export default function Page() {
                   </Text>
 
                   {/* Timer */}
-                  {currentExercise?.unit === "Secs." && (
+                  {(currentExercise?.unit === "Secs." ||
+                    currentExercise?.unit === "Seconds") && (
                     <Timer
                       initialMilliseconds={currentExercise?.quantity * 1000}
                       callback={() => setWaitingForTimer(false)}
                     />
                   )}
 
-                  {currentExercise?.unit === "Mins." && (
+                  {(currentExercise?.unit === "Mins." ||
+                    currentExercise?.unit === "Minutes") && (
                     <Timer
                       initialMilliseconds={currentExercise?.quantity * 60000}
                       callback={() => setWaitingForTimer(false)}
