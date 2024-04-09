@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
@@ -231,6 +231,24 @@ export default function Page() {
                 }}
               >
                 <View>
+                  {/* Current set in case we are in a subroutine */}
+                  {currentSubroutineSet !== -1 && (
+                    <Text
+                      style={[
+                        styles.subtitle,
+                        {
+                          color:
+                            colorScheme === "light"
+                              ? Colors.light.text
+                              : Colors.dark.text,
+                        },
+                      ]}
+                    >
+                      Set {currentSubroutineSet + 1} of{" "}
+                      {routine?.routineItems[currentIndex]?.quantity}
+                    </Text>
+                  )}
+
                   {/* Title */}
                   <Text
                     style={[
@@ -282,6 +300,7 @@ export default function Page() {
                     <Timer
                       initialMilliseconds={currentExercise?.quantity * 1000}
                       callback={() => setWaitingForTimer(false)}
+                      exerciseId={currentExercise?.id}
                     />
                   )}
 
@@ -290,6 +309,7 @@ export default function Page() {
                     <Timer
                       initialMilliseconds={currentExercise?.quantity * 60000}
                       callback={() => setWaitingForTimer(false)}
+                      exerciseId={currentExercise?.id}
                     />
                   )}
                 </View>
@@ -336,6 +356,8 @@ export default function Page() {
               >
                 Routine Completed!
               </Text>
+
+              {/* Restart Button */}
               <Pressable
                 style={[
                   styles.button,
@@ -347,6 +369,20 @@ export default function Page() {
               >
                 <Text style={styles.buttonText}>Restart</Text>
               </Pressable>
+
+              {/* Go Back Button */}
+              <Link href={`/routine/${routineId}`} asChild>
+                <Pressable
+                  style={[
+                    styles.button,
+                    {
+                      backgroundColor: Colors.primary,
+                    },
+                  ]}
+                >
+                  <Text style={styles.buttonText}>Go Back</Text>
+                </Pressable>
+              </Link>
             </View>
           )}
         </View>
@@ -365,6 +401,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     fontWeight: "900",
+  },
+  subtitle: {
+    fontSize: 24,
   },
   button: {
     color: "white",
