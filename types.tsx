@@ -2,7 +2,6 @@ export type Exercise = {
   id: string;
   name: string;
   description: string;
-  measurementType: string;
 };
 
 export type ExerciseInRoutine = Exercise & {

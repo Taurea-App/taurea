@@ -12,26 +12,31 @@ import {
 } from "react-native";
 import KeyboardSpacer from "react-native-keyboard-spacer";
 
+import { NEW_SUBROUTINE_ITEM, REST_ITEM } from "@/constants";
 import Colors from "@/constants/Colors";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise } from "@/types";
-import { NEW_SUBROUTINE_ITEM, REST_ITEM } from "@/constants";
 
 export default function ExerciseSelectModal({
   showModal,
   closeModal,
   setSelectedExercise,
+  isSubroutine = false,
 }: {
   showModal: boolean;
   closeModal: () => void;
   setSelectedExercise: (exercise: Exercise) => void;
+  isSubroutine?: boolean;
 }) {
   const colorScheme = useColorScheme();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [extraItems, setExtraItems] = useState([
+    NEW_SUBROUTINE_ITEM,
+    REST_ITEM,
+  ]);
 
-  const EXTRA_ITEMS = [NEW_SUBROUTINE_ITEM, REST_ITEM];
   // yellow for new subroutines, blue for rest
 
   useEffect(() => {
@@ -49,6 +54,14 @@ export default function ExerciseSelectModal({
     };
     fetchExercises();
   }, []);
+
+  useEffect(() => {
+    if (isSubroutine) {
+      setExtraItems([REST_ITEM]);
+    } else {
+      setExtraItems([NEW_SUBROUTINE_ITEM, REST_ITEM]);
+    }
+  }, [isSubroutine]);
 
   return (
     <Modal
@@ -85,13 +98,14 @@ export default function ExerciseSelectModal({
         />
 
         {/* Extra items */}
-        {EXTRA_ITEMS.map((item) => (
+        {extraItems.map((item) => (
           <TouchableOpacity
             key={item.id}
             style={[
               style.button,
               {
-                backgroundColor: Colors[colorScheme ? colorScheme : "light"][item.color]
+                backgroundColor:
+                  Colors[colorScheme ? colorScheme : "light"][item.color],
               },
             ]}
             onPress={() => {
