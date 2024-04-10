@@ -28,6 +28,11 @@ export default function Page() {
   const [currentSubroutineSet, setCurrentSubroutineSet] = useState<number>(-1);
 
   const [waitingForTimer, setWaitingForTimer] = useState<boolean>(false);
+
+  const [waitingForSubroutineTimer, setWaitingForSubroutineTimer] =
+    useState<boolean>(false);
+  const [subroutineTime, setSubroutineTime] = useState<number>(0);
+
   const [loading, setLoading] = useState(true);
   const auth = FIREBASE_AUTH;
 
@@ -76,6 +81,19 @@ export default function Page() {
         setCurrentSubroutineIndex(0); // Start the subroutine from the first exercise
         setCurrentSubroutineSet(0); // Start the subroutine from the first set
         setCurrentExercise(tempCurrentSubroutine.exercises[0]);
+        if (
+          (["Secs.", "Mins.", "Seconds", "Minutes"] as const).includes(
+            tempCurrentSubroutine.unit as any,
+          )
+        ) {
+          setWaitingForSubroutineTimer(true);
+          setSubroutineTime(
+            (tempCurrentSubroutine.unit === "Mins." ||
+            tempCurrentSubroutine.unit === "Minutes"
+              ? tempCurrentSubroutine.quantity * 60
+              : tempCurrentSubroutine.quantity) as number,
+          );
+        }
         // If the current item is an exercise
       } else {
         const tempCurrentExercise = routine.routineItems[
@@ -96,6 +114,8 @@ export default function Page() {
       )
     ) {
       setWaitingForTimer(true);
+    } else {
+      setWaitingForTimer(false);
     }
   }, [currentExercise]);
 
@@ -117,6 +137,7 @@ export default function Page() {
         currentIndex
       ] as Subroutine;
       if (
+        currentSubroutine.unit === "Sets" &&
         currentSubroutineIndex === currentSubroutine.exercises.length - 1 &&
         currentSubroutineSet === currentSubroutine.quantity - 1
       ) {
@@ -142,6 +163,11 @@ export default function Page() {
         setCurrentIndex(currentIndex + 1);
       }
     }
+  };
+
+  const handleSubroutineTimerEnd = () => {
+    setWaitingForSubroutineTimer(false);
+    setCurrentIndex(currentIndex + 1);
   };
 
   return (
@@ -226,34 +252,62 @@ export default function Page() {
                 style={{
                   alignItems: "center",
                   justifyContent: "center",
-                  width: "100%",
                   gap: 20,
                 }}
               >
-                <View>
+                {/*  */}
+                <View
+                  style={{
+                    gap: 10 ,
+                    width: "100%",
+                    alignItems: "center",
+                  }}
+                >
                   {/* Current set in case we are in a subroutine */}
-                  {currentSubroutineSet !== -1 && (
-                    <Text
-                      style={[
-                        styles.subtitle,
-                        {
-                          color:
-                            colorScheme === "light"
-                              ? Colors.light.text
-                              : Colors.dark.text,
-                        },
-                      ]}
-                    >
-                      Set {currentSubroutineSet + 1} of{" "}
-                      {routine?.routineItems[currentIndex]?.quantity}
-                    </Text>
-                  )}
+                  <View
+                    style={{
+                      height: 40,
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      width: "100%",
+                      alignItems: "flex-end",
+                    }}
+                  >
+                    {currentSubroutineSet !== -1 && (
+                      <Text
+                        style={[
+                          styles.subtitle,
+                          {
+                            color:
+                              colorScheme === "light"
+                                ? Colors.light.text
+                                : Colors.dark.text,
+                          },
+                        ]}
+                      >
+                        Set {currentSubroutineSet + 1}{" "}
+                        {routine?.routineItems[currentIndex].unit === "Sets" &&
+                          `of ${routine?.routineItems[currentIndex].quantity}`}
+                      </Text>
+                    )}
+
+                    {/* Subroutine Timer */}
+                    {waitingForSubroutineTimer && (
+                      <Timer
+                        initialMilliseconds={subroutineTime * 1000}
+                        callback={handleSubroutineTimerEnd}
+                        exerciseId={routine?.routineItems[currentIndex].id}
+                        smallSize
+                      />
+                    )}
+                  </View>
 
                   {/* Title */}
                   <Text
                     style={[
                       styles.title,
                       {
+                        alignSelf: "flex-start",
                         color:
                           colorScheme === "light"
                             ? Colors.light.text
@@ -269,10 +323,12 @@ export default function Page() {
                     style={[
                       styles.description,
                       {
+                        alignSelf: "flex-start",
                         color:
                           colorScheme === "light"
                             ? Colors.light.text
                             : Colors.dark.text,
+                        height: 40,
                       },
                     ]}
                   >
@@ -282,36 +338,41 @@ export default function Page() {
                   {/* Quantity */}
                   <Text
                     style={[
-                      styles.description,
+                      styles.quantity,
                       {
-                        color:
-                          colorScheme === "light"
-                            ? Colors.light.text
-                            : Colors.dark.text,
+                        alignSelf: "flex-start",
+                        color: Colors.primary,
+                        height: 25,
                       },
                     ]}
                   >
                     {currentExercise?.quantity} {currentExercise?.unit}
                   </Text>
 
-                  {/* Timer */}
-                  {(currentExercise?.unit === "Secs." ||
-                    currentExercise?.unit === "Seconds") && (
-                    <Timer
-                      initialMilliseconds={currentExercise?.quantity * 1000}
-                      callback={() => setWaitingForTimer(false)}
-                      exerciseId={currentExercise?.id}
-                    />
-                  )}
-
-                  {(currentExercise?.unit === "Mins." ||
-                    currentExercise?.unit === "Minutes") && (
-                    <Timer
-                      initialMilliseconds={currentExercise?.quantity * 60000}
-                      callback={() => setWaitingForTimer(false)}
-                      exerciseId={currentExercise?.id}
-                    />
-                  )}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      height: 150,
+                    }}
+                  >
+                    {/* Timer */}
+                    {(currentExercise?.unit === "Mins." ||
+                      currentExercise?.unit === "Minutes" ||
+                      currentExercise?.unit === "Secs." ||
+                      currentExercise?.unit === "Seconds") && (
+                      <Timer
+                        initialMilliseconds={
+                          currentExercise?.unit === "Mins." ||
+                          currentExercise?.unit === "Minutes"
+                            ? currentExercise?.quantity * 60 * 1000
+                            : currentExercise?.quantity * 1000
+                        }
+                        callback={() => setWaitingForTimer(false)}
+                        exerciseId={currentExercise?.id}
+                      />
+                    )}
+                  </View>
                 </View>
 
                 {/* Next Button */}
@@ -395,8 +456,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    // alignItems: "center",
+    justifyContent: "space-around",
+    width: "100%",
+    padding: 40,
   },
   title: {
     fontSize: 36,
@@ -421,5 +484,8 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
+  },
+  quantity: {
+    fontSize: 20,
   },
 });

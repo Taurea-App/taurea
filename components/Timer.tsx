@@ -17,10 +17,12 @@ export default function Timer({
   initialMilliseconds = 0,
   callback,
   exerciseId,
+  smallSize = false,
 }: {
   initialMilliseconds: number;
   callback?: () => void;
   exerciseId: string;
+  smallSize?: boolean;
 }) {
   const [timeLeft, setTimeLeft] = useState(initialMilliseconds);
   const [isActive, setIsActive] = useState(false);
@@ -135,7 +137,7 @@ export default function Timer({
       <View style={styles.timeContainer}>
         <Text
           style={[
-            styles.timeChunk,
+            smallSize ? styles.timeChunkSmall : styles.timeChunk,
             {
               color:
                 colorScheme === "light" ? Colors.light.text : Colors.dark.text,
@@ -147,7 +149,7 @@ export default function Timer({
 
         <Text
           style={[
-            styles.timeSep,
+            smallSize ? styles.timeSepSmall : styles.timeSep,
             {
               color:
                 colorScheme === "light" ? Colors.light.text : Colors.dark.text,
@@ -159,7 +161,7 @@ export default function Timer({
 
         <Text
           style={[
-            styles.timeChunk,
+            smallSize ? styles.timeChunkSmall : styles.timeChunk,
             {
               color:
                 colorScheme === "light" ? Colors.light.text : Colors.dark.text,
@@ -171,7 +173,7 @@ export default function Timer({
 
         <Text
           style={[
-            styles.timeSep,
+            smallSize ? styles.timeSepSmall : styles.timeSep,
             {
               color:
                 colorScheme === "light" ? Colors.light.text : Colors.dark.text,
@@ -183,7 +185,7 @@ export default function Timer({
 
         <Text
           style={[
-            styles.timeChunk,
+            smallSize ? styles.timeChunkSmall : styles.timeChunk,
             {
               color:
                 colorScheme === "light" ? Colors.light.text : Colors.dark.text,
@@ -194,13 +196,17 @@ export default function Timer({
         </Text>
       </View>
 
+
+      {/* Buttons */}
       <View style={styles.buttons}>
         {/* Start Button */}
         {!isActive && (
-          <Pressable style={styles.button} onPress={handleStart}>
+          <Pressable
+            style={smallSize ? styles.buttonSmall : styles.button} 
+            onPress={handleStart}>
             <Text
               style={[
-                styles.buttonText,
+                smallSize ? styles.buttonTextSmall : styles.buttonText,
                 {
                   color: Colors.primary,
                 },
@@ -213,10 +219,12 @@ export default function Timer({
 
         {/* Pause/Resume Button */}
         {isActive && (
-          <Pressable style={styles.button} onPress={handlePause}>
+          <Pressable 
+            style={smallSize ? styles.buttonSmall : styles.button} 
+            onPress={handlePause}>
             <Text
               style={[
-                styles.buttonText,
+                smallSize ? styles.buttonTextSmall : styles.buttonText,
                 {
                   color: Colors.primary,
                 },
@@ -229,10 +237,12 @@ export default function Timer({
 
         {/* Reset Button */}
         {(isActive || timeLeft === 0) && (
-          <Pressable style={styles.button} onPress={handleReset}>
+          <Pressable 
+            style={smallSize ? styles.buttonSmall : styles.button} 
+            onPress={handleReset}>
             <Text
               style={[
-                styles.buttonText,
+                smallSize ? styles.buttonTextSmall : styles.buttonText,
                 {
                   color: Colors.primary,
                 },
@@ -246,7 +256,7 @@ export default function Timer({
         {/* Skip Button */}
         {timeLeft > 0 && (
           <Pressable
-            style={styles.button}
+            style={smallSize ? styles.buttonSmall : styles.button}
             onPress={() => {
               setIsActive(false);
               setTimeLeft(0);
@@ -257,7 +267,7 @@ export default function Timer({
           >
             <Text
               style={[
-                styles.buttonText,
+                smallSize ? styles.buttonTextSmall : styles.buttonText,
                 {
                   color: Colors.primary,
                 },
@@ -299,4 +309,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+
+  timeChunkSmall: {
+    fontSize: 30,
+    width: 40,
+    textAlign: "center",
+  },
+  timeSepSmall: {
+    fontSize: 30,
+  },
+  buttonSmall: {
+    margin: 3,
+    padding: 3,
+  },
+  buttonTextSmall: {
+    fontSize: 15,
+  },
+
 });
