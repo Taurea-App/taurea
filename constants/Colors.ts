@@ -17,6 +17,7 @@ export default {
     popupBackground: "#f9f9f9",
     blue: "#88BBFF",
     yellow: "#FFFF88",
+    primaryBackground: "#fcedcf",
   },
   dark: {
     text: "#fff",
@@ -28,5 +29,6 @@ export default {
     popupBackground: "#111",
     blue: "#2288AA",
     yellow: "#FFAA22",
+    primaryBackground: "#211b0d",
   },
 };

@@ -169,10 +169,10 @@ export default function Page() {
           style={{
             backgroundColor:
               Colors[colorScheme === "dark" ? "dark" : "light"]
-                .tabBackgroundColor,
+                .primaryBackground,
             // borderRadius: 10,
-            borderTopWidth: 1,
-            borderTopColor: "#888888",
+            borderBottomWidth: 1,
+            borderBottomColor: "#888888",
           }}
         >
           <Pressable onPress={() => toggleSubroutine(item.id)}>
@@ -180,29 +180,42 @@ export default function Page() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "space-between",
+                // justifyContent: "space-between",
                 padding: 10,
+                gap: 10,
                 marginBottom: 10,
               }}
             >
               <Ionicons
                 name={
                   collapsedSubroutines.get(item.id)
-                    ? "chevron-down"
-                    : "chevron-up"
+                    ? "chevron-forward"
+                    : "chevron-down"
                 }
                 size={24}
-                color={Colors["primary"]}
+                color={Colors[colorScheme === "dark" ? "dark" : "light"].text}
               />
-              <Text
-                style={{
-                  color: Colors["primary"],
-                  fontSize: 18,
-                  fontWeight: "bold",
-                }}
-              >
-                {item.quantity} {item.unit}
-              </Text>
+              <View>
+                <Text
+                  style={{
+                    color:
+                      Colors[colorScheme === "dark" ? "dark" : "light"].text,
+                    fontSize: 18,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {item.exercises.length} Exercises
+                </Text>
+
+                <Text
+                  style={{
+                    color:
+                      Colors[colorScheme === "dark" ? "dark" : "light"].text,
+                  }}
+                >
+                  {item.quantity} {item.unit}
+                </Text>
+              </View>
             </View>
           </Pressable>
 
@@ -214,7 +227,7 @@ export default function Page() {
               data={item.exercises}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderRoutineItem}
-              style={{ marginLeft: 20 }}
+              style={{ marginLeft: 20, marginBottom: 5 }}
             />
           </Collapsible>
         </View>
@@ -339,8 +352,10 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#f0f0f0",
     // borderRadius: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#888888",
+    borderBottomWidth: 1,
+    borderBottomColor: "#888888",
+    borderLeftWidth: 5,
+    borderLeftColor: "#FFA500",
   },
   exerciseName: {
     fontSize: 18,

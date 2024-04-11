@@ -507,6 +507,7 @@ export default function EditRoutineLayout({
                 backgroundColor:
                   Colors[colorScheme ? colorScheme : "light"]
                     .tabBackgroundColor,
+                alignItems: "center",
               },
             ]}
             onLongPress={drag}
@@ -517,6 +518,13 @@ export default function EditRoutineLayout({
               setSubroutineToEdit(item);
             }}
           >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
+              >
             <TouchableOpacity
               onPress={() => {
                 setCollapsedSubroutines((prevState) => {
@@ -526,6 +534,7 @@ export default function EditRoutineLayout({
                 });
               }}
             >
+
               <Ionicons
                 name={
                   collapsedSubroutines.get(item.id)
@@ -548,6 +557,8 @@ export default function EditRoutineLayout({
             >
               {item.exercises.length} Exercises
             </Text>
+            
+            </View>
             <Text
               style={{
                 color: colorScheme

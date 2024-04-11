@@ -150,6 +150,7 @@ export const editRoutineLayoutStyle = StyleSheet.create({
     width: "100%",
     borderRadius: 10,
     borderBottomWidth: 1,
+    gap: 10,
   },
 
   subroutineName: {
