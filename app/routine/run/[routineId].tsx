@@ -258,7 +258,7 @@ export default function Page() {
                 {/*  */}
                 <View
                   style={{
-                    gap: 10 ,
+                    gap: 10,
                     width: "100%",
                     alignItems: "center",
                   }}
@@ -441,7 +441,19 @@ export default function Page() {
                     },
                   ]}
                 >
-                  <Text style={styles.buttonText}>Go Back</Text>
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      {
+                        color:
+                          colorScheme === "light"
+                            ? Colors.light.text
+                            : Colors.dark.text,
+                      },
+                    ]}
+                  >
+                    Go Back
+                  </Text>
                 </Pressable>
               </Link>
             </View>

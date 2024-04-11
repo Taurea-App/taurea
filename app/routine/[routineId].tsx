@@ -252,7 +252,11 @@ export default function Page() {
                   fontWeight: "bold",
                 }}
               >
-                ...
+                <Ionicons
+                  name="ellipsis-horizontal"
+                  size={24}
+                  color={Colors["primary"]}
+                />
               </Text>
             </Pressable>
           ),
@@ -319,12 +323,14 @@ export default function Page() {
           }}
         >
           <Modal.Body>
-            <Button title="Edit" onPress={handleEdit} />
-            <Button
-              title="Delete"
-              onPress={handleDelete}
-              color={Colors["red"]}
-            />
+            <SafeAreaView>
+              <Button title="Edit" onPress={handleEdit} />
+              <Button
+                title="Delete"
+                onPress={handleDelete}
+                color={Colors["red"]}
+              />
+            </SafeAreaView>
           </Modal.Body>
         </Modal.Content>
       </Modal>
