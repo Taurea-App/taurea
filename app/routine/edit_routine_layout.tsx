@@ -30,7 +30,11 @@ import { editRoutineLayoutStyle as style } from "./edit_routine_layout_style";
 
 import ExerciseSelectModal from "@/components/ExerciseSelectmodal";
 import UnitSelectModal from "@/components/UnitSelectModal";
-import { EXERCISE_UNITS, NEW_SUBROUTINE_ID, SUBROUTINE_UNITS } from "@/constants";
+import {
+  EXERCISE_UNITS,
+  NEW_SUBROUTINE_ID,
+  SUBROUTINE_UNITS,
+} from "@/constants";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise, ExerciseInRoutine, RoutineItem, Subroutine } from "@/types";
@@ -524,40 +528,38 @@ export default function EditRoutineLayout({
                 alignItems: "center",
                 gap: 10,
               }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  setCollapsedSubroutines((prevState) => {
+                    const newState = new Map(prevState);
+                    newState.set(item.id, !newState.get(item.id));
+                    return newState;
+                  });
+                }}
               >
-            <TouchableOpacity
-              onPress={() => {
-                setCollapsedSubroutines((prevState) => {
-                  const newState = new Map(prevState);
-                  newState.set(item.id, !newState.get(item.id));
-                  return newState;
-                });
-              }}
-            >
+                <Ionicons
+                  name={
+                    collapsedSubroutines.get(item.id)
+                      ? "chevron-forward"
+                      : "chevron-down"
+                  }
+                  size={24}
+                  color={
+                    colorScheme ? Colors[colorScheme].text : Colors.light.text
+                  }
+                />
+              </TouchableOpacity>
 
-              <Ionicons
-                name={
-                  collapsedSubroutines.get(item.id)
-                    ? "chevron-forward"
-                    : "chevron-down"
-                }
-                size={24}
-                color={
-                  colorScheme ? Colors[colorScheme].text : Colors.light.text
-                }
-              />
-            </TouchableOpacity>
-
-            <Text
-              style={{
-                color: colorScheme
-                  ? Colors[colorScheme].text
-                  : Colors.light.text,
-              }}
-            >
-              {item.exercises.length} Exercises
-            </Text>
-            
+              <Text
+                style={{
+                  color: colorScheme
+                    ? Colors[colorScheme].text
+                    : Colors.light.text,
+                }}
+              >
+                {item.exercises.length} Exercises
+              </Text>
             </View>
             <Text
               style={{

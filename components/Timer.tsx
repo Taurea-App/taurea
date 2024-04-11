@@ -196,19 +196,28 @@ export default function Timer({
         </Text>
       </View>
 
-
       {/* Buttons */}
       <View style={styles.buttons}>
         {/* Start Button */}
         {!isActive && (
           <Pressable
-            style={smallSize ? styles.buttonSmall : styles.button} 
-            onPress={handleStart}>
+            style={[
+              smallSize ? styles.buttonSmall : styles.button,
+              {
+                backgroundColor: Colors.primary,
+                borderRadius: 20,
+              },
+            ]}
+            onPress={handleStart}
+          >
             <Text
               style={[
                 smallSize ? styles.buttonTextSmall : styles.buttonText,
                 {
-                  color: Colors.primary,
+                  color:
+                    colorScheme === "light"
+                      ? Colors.light.text
+                      : Colors.dark.text,
                 },
               ]}
             >
@@ -219,9 +228,10 @@ export default function Timer({
 
         {/* Pause/Resume Button */}
         {isActive && (
-          <Pressable 
-            style={smallSize ? styles.buttonSmall : styles.button} 
-            onPress={handlePause}>
+          <Pressable
+            style={smallSize ? styles.buttonSmall : styles.button}
+            onPress={handlePause}
+          >
             <Text
               style={[
                 smallSize ? styles.buttonTextSmall : styles.buttonText,
@@ -237,9 +247,10 @@ export default function Timer({
 
         {/* Reset Button */}
         {(isActive || timeLeft === 0) && (
-          <Pressable 
-            style={smallSize ? styles.buttonSmall : styles.button} 
-            onPress={handleReset}>
+          <Pressable
+            style={smallSize ? styles.buttonSmall : styles.button}
+            onPress={handleReset}
+          >
             <Text
               style={[
                 smallSize ? styles.buttonTextSmall : styles.buttonText,
@@ -274,6 +285,27 @@ export default function Timer({
               ]}
             >
               Skip
+            </Text>
+          </Pressable>
+        )}
+
+        {/* +10s button */}
+        {!smallSize && (
+          <Pressable
+            style={[smallSize ? styles.buttonSmall : styles.button, {}]}
+            onPress={() => {
+              setTimeLeft((prev) => prev + 10000);
+            }}
+          >
+            <Text
+              style={[
+                smallSize ? styles.buttonTextSmall : styles.buttonText,
+                {
+                  color: Colors.primary,
+                },
+              ]}
+            >
+              +10s
             </Text>
           </Pressable>
         )}
@@ -325,5 +357,4 @@ const styles = StyleSheet.create({
   buttonTextSmall: {
     fontSize: 15,
   },
-
 });
