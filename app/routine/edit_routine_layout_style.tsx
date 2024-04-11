@@ -116,7 +116,7 @@ export const editRoutineLayoutStyle = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  leftAction: {
+  deleteSwipe: {
     backgroundColor: "red",
     alignItems: "flex-start",
     borderRadius: 10,
@@ -126,14 +126,35 @@ export const editRoutineLayoutStyle = StyleSheet.create({
   leftActionText: {
     color: "white",
   },
-  rightAction: {
+  duplicateSwipe: {
     backgroundColor: "blue",
     alignItems: "flex-end",
     borderRadius: 10,
     width: "100%",
     justifyContent: "center",
   },
+  createSwipe: {
+    backgroundColor: "green",
+    alignItems: "flex-start",
+    borderRadius: 10,
+    width: "100%",
+    justifyContent: "center",
+  },
   rightActionText: {
     color: "white",
+  },
+  subroutineListItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+    width: "100%",
+    borderRadius: 10,
+    borderBottomWidth: 1,
+    gap: 10,
+  },
+
+  subroutineName: {
+    fontSize: 16,
+    width: "40%",
   },
 });

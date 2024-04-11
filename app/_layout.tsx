@@ -1,26 +1,25 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { createContext, useEffect, useState } from 'react';
-import { Container, NativeBaseProvider } from 'native-base';
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { ThemeProvider } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack, useGlobalSearchParams } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { User, onAuthStateChanged } from "firebase/auth";
+import { Container, NativeBaseProvider } from "native-base";
+import { createContext, useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { DarkTheme, DefaultTheme } from '@/constants/themes';
 
-import { useColorScheme } from '@/components/useColorScheme';
-import { useGlobalSearchParams } from 'expo-router';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { FIREBASE_AUTH } from '@/firebaseConfig';
+import { useColorScheme } from "@/components/useColorScheme";
+import { DarkTheme, DefaultTheme } from "@/constants/themes";
+import { FIREBASE_AUTH } from "@/firebaseConfig";
 
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
-} from 'expo-router';
+} from "expo-router";
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: "(tabs)",
 };
 
 export const UserContext = createContext<User | null>(null);
@@ -30,7 +29,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
   });
 
@@ -49,7 +48,7 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />; 
+  return <RootLayoutNav />;
 }
 
 function RootLayoutNav() {
@@ -65,11 +64,19 @@ function RootLayoutNav() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NativeBaseProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
           <UserContext.Provider value={user}>
             <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Home' }} />
-              <Stack.Screen name="login" options={{ title: 'Login', headerShown: false }} />
+              <Stack.Screen
+                name="(tabs)"
+                options={{ headerShown: false, title: "Home" }}
+              />
+              <Stack.Screen
+                name="login"
+                options={{ title: "Login", headerShown: false }}
+              />
             </Stack>
           </UserContext.Provider>
         </ThemeProvider>

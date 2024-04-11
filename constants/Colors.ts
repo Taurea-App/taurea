@@ -5,6 +5,8 @@ export default {
   primary: "#FFA500",
   red: "#FF5050",
   grey: "#A9A9A9",
+  blue: "#88BBFF",
+  yellow: "#FFFF88",
   light: {
     text: "#000",
     background: "#eee",
@@ -13,6 +15,9 @@ export default {
     tabIconSelected: tintColorLight,
     tabBackgroundColor: "#fff",
     popupBackground: "#f9f9f9",
+    blue: "#88BBFF",
+    yellow: "#FFFF88",
+    primaryBackground: "#fcedcf",
   },
   dark: {
     text: "#fff",
@@ -22,5 +27,8 @@ export default {
     tabIconSelected: tintColorDark,
     tabBackgroundColor: "#1c1c1c",
     popupBackground: "#111",
+    blue: "#2288AA",
+    yellow: "#FFAA22",
+    primaryBackground: "#211b0d",
   },
 };

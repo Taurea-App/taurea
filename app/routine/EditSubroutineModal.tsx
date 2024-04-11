@@ -11,30 +11,28 @@ import {
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { ExerciseInRoutine } from "@/types";
+import { Subroutine } from "@/types";
 
-export default function ExerciseInRoutineModal({
-  exercise,
-  setExercise,
+export default function EditSubroutineModal({
+  subroutine,
+  setSubroutine,
   isOpen,
   closeModal,
   showUnitSelectModal,
-  showExerciseSelectModal,
   onSave,
 }: {
-  exercise: ExerciseInRoutine | null;
-  setExercise: (exercise: ExerciseInRoutine) => void;
+  subroutine: Subroutine | null;
+  setSubroutine: (subroutine: Subroutine) => void;
   isOpen: boolean;
   closeModal: () => void;
   showUnitSelectModal: () => void;
-  showExerciseSelectModal: () => void;
   onSave: () => void;
 }) {
   const colorScheme = useColorScheme();
 
   return (
     <Modal isOpen={isOpen} onClose={closeModal}>
-      {exercise && (
+      {subroutine && (
         <Modal.Content
           maxWidth="400px"
           style={{
@@ -55,34 +53,15 @@ export default function ExerciseInRoutineModal({
                 },
               ]}
             >
-              Edit Exercise
+              Edit Subroutine!
             </Text>
 
             <View>
               <TextInput
-                value={exercise?.name}
-                onPressIn={() => {
-                  showExerciseSelectModal();
-                  Keyboard.dismiss();
-                }}
-                readOnly
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor:
-                      Colors[colorScheme ? colorScheme : "light"]
-                        .tabBackgroundColor,
-                    color: Colors[colorScheme ? colorScheme : "light"].text,
-                  },
-                ]}
-              />
-            </View>
-            <View>
-              <TextInput
-                value={exercise?.quantity?.toString()}
+                value={subroutine?.quantity?.toString()}
                 onChangeText={(text: string) =>
-                  setExercise({
-                    ...exercise,
+                  setSubroutine({
+                    ...subroutine,
                     quantity: isNaN(parseInt(text, 10))
                       ? 0
                       : parseInt(text, 10),
@@ -103,7 +82,7 @@ export default function ExerciseInRoutineModal({
             </View>
             <View>
               <TextInput
-                value={exercise?.unit}
+                value={subroutine?.unit}
                 onPressIn={() => {
                   showUnitSelectModal();
                   Keyboard.dismiss();
