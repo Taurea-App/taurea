@@ -1,25 +1,71 @@
+import * as AppleAuthentication from "expo-apple-authentication";
 import { Link, Redirect } from "expo-router";
 import {
-  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   signInWithEmailAndPassword,
+  OAuthProvider,
+  OAuthCredential,
+  signInWithCredential,
 } from "firebase/auth";
 import { useContext, useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
-  Touchable,
   View,
   useColorScheme,
 } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 import { UserContext } from "./_layout";
 
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH } from "@/firebaseConfig";
-import { TouchableOpacity } from "react-native-gesture-handler";
+
+const googleProvider = new GoogleAuthProvider();
+const appleProvider = new OAuthProvider("apple.com");
+
+function AppleSignIn() {
+  async function onAppleButtonPress() {
+    // Start the sign-in request
+    try {
+      const appleCredential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      const credentials = appleProvider.credential({
+        idToken: appleCredential.identityToken || "",
+      });
+      // Sign the user in with the credential
+      return signInWithCredential(FIREBASE_AUTH, credentials);
+    } catch (e: any) {
+      if (e.code === "ERR_REQUEST_CANCELED") {
+        // Show alert to the user
+        Alert.alert("Apple Sign-In", "User canceled the sign-in request");
+      } else {
+        Alert.alert("Apple Sign-In", "An error occurred. Please try again or use a different sign-in method.");
+      }
+    }
+  }
+
+  return (
+    <AppleAuthentication.AppleAuthenticationButton
+      buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+      buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE}
+      cornerRadius={5}
+      style={{
+        width: 200,
+        height: 44,
+      }}
+      onPress={onAppleButtonPress}
+    />
+  );
+}
 
 export default function Login() {
   const colorScheme = useColorScheme();
@@ -120,6 +166,7 @@ export default function Login() {
         >
           or
         </Text>
+
         <View
           style={[
             styles.separator,
@@ -129,6 +176,9 @@ export default function Login() {
           ]}
         />
       </View>
+
+      <AppleSignIn />
+
       <Link
         href="/signup"
         style={{
@@ -176,3 +226,4 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
 });
+
