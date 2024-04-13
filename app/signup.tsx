@@ -1,15 +1,16 @@
-import { Link, Redirect, Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
 } from "firebase/auth";
 import { useContext, useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   useColorScheme,
 } from "react-native";
 
@@ -22,6 +23,7 @@ export default function Signup() {
   const colorScheme = useColorScheme();
 
   const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -38,6 +40,15 @@ export default function Signup() {
     setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, {
+          displayName,
+        });
+        await sendEmailVerification(auth.currentUser);
+        auth.signOut();
+      } else {
+        alert("Sign up failed. Please try again.");
+      }
     } catch {
       alert("Sign up failed. Please try again.");
     } finally {
@@ -91,10 +102,26 @@ export default function Signup() {
                 .tabBackgroundColor,
           },
         ]}
+        placeholder="Name"
+        value={displayName}
+        onChangeText={setDisplayName}
+      />
+
+      <TextInput
+        style={[
+          styles.input,
+          {
+            color: Colors[colorScheme === "light" ? "light" : "dark"].text,
+            backgroundColor:
+              Colors[colorScheme === "light" ? "light" : "dark"]
+                .tabBackgroundColor,
+          },
+        ]}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
+        keyboardType="email-address"
       />
 
       <TextInput
@@ -129,7 +156,7 @@ export default function Signup() {
         secureTextEntry
       />
 
-      <Pressable
+      <TouchableOpacity
         onPress={signUp}
         disabled={
           loading ||
@@ -145,7 +172,7 @@ export default function Signup() {
         ]}
       >
         <Text>Register</Text>
-      </Pressable>
+      </TouchableOpacity>
 
       {invalidEmail && <Text style={styles.error}>Invalid email</Text>}
       {passwordMessage !== "" && (
