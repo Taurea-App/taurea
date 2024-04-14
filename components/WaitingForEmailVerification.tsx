@@ -1,4 +1,3 @@
-import { Redirect, useRouter } from "expo-router";
 import { sendEmailVerification } from "firebase/auth";
 import React from "react";
 import {
@@ -15,7 +14,6 @@ import { FIREBASE_AUTH } from "@/firebaseConfig";
 export function WaitingForEmailVerification() {
   const colorScheme = useColorScheme();
   const auth = FIREBASE_AUTH;
-  const router = useRouter();
 
   return (
     <View style={styles.container}>

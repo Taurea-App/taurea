@@ -27,3 +27,8 @@ export type Routine = {
   description: string;
   routineItems: RoutineItem[];
 };
+
+export type DBUser = {
+  uid: string;
+  username: string | null;
+};

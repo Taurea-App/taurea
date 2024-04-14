@@ -7,6 +7,7 @@ export default {
   grey: "#A9A9A9",
   blue: "#88BBFF",
   yellow: "#FFFF88",
+  gray: "#A9A9A9",
   light: {
     text: "#000",
     background: "#eee",
