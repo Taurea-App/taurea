@@ -77,7 +77,6 @@ export default function Page() {
         const tempCurrentSubroutine = routine.routineItems[
           currentIndex
         ] as Subroutine;
-        console.log("Starting subroutine", tempCurrentSubroutine);
         setCurrentSubroutineIndex(0); // Start the subroutine from the first exercise
         setCurrentSubroutineSet(0); // Start the subroutine from the first set
         setCurrentExercise(tempCurrentSubroutine.exercises[0]);

@@ -8,6 +8,7 @@ import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { WaitingForEmailVerification } from "@/components/WaitingForEmailVerification";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -24,6 +25,9 @@ export default function TabLayout() {
 
   if (!user) {
     return <Redirect href="/login" />;
+  }
+  if (user.emailVerified === false) {
+    return <WaitingForEmailVerification />;
   }
 
   return (

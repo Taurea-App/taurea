@@ -110,7 +110,6 @@ export default function ExerciseSelectModal({
             ]}
             onPress={() => {
               setSelectedExercise(item);
-              console.log("Selected exercise", item);
               setSearchTerm("");
               closeModal();
             }}
@@ -163,7 +162,6 @@ export default function ExerciseSelectModal({
                   ]}
                   onPress={() => {
                     setSelectedExercise(exercise);
-                    console.log("Selected exercise", exercise);
                     setSearchTerm("");
                     closeModal();
                   }}
