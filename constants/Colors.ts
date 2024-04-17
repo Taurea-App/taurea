@@ -7,6 +7,7 @@ export default {
   grey: "#A9A9A9",
   blue: "#88BBFF",
   yellow: "#FFFF88",
+  gray: "#A9A9A9",
   light: {
     text: "#000",
     background: "#eee",
@@ -18,6 +19,7 @@ export default {
     blue: "#88BBFF",
     yellow: "#FFFF88",
     primaryBackground: "#fcedcf",
+    greyText : "#A9A9A9",
   },
   dark: {
     text: "#fff",
@@ -30,5 +32,6 @@ export default {
     blue: "#2288AA",
     yellow: "#FFAA22",
     primaryBackground: "#211b0d",
+    greyText : "#A9A9A9",
   },
 };
