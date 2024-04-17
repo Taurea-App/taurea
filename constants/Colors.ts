@@ -19,6 +19,7 @@ export default {
     blue: "#88BBFF",
     yellow: "#FFFF88",
     primaryBackground: "#fcedcf",
+    greyText : "#A9A9A9",
   },
   dark: {
     text: "#fff",
@@ -31,5 +32,6 @@ export default {
     blue: "#2288AA",
     yellow: "#FFAA22",
     primaryBackground: "#211b0d",
+    greyText : "#A9A9A9",
   },
 };

@@ -1,12 +1,16 @@
-import { Button, StyleSheet } from "react-native";
+import { Link } from "expo-router";
+import { doc, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, useColorScheme } from "react-native";
 
 import { Text, View } from "@/components/Themed";
+import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { DBUser } from "@/types";
-import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
 
 export default function ProfileScreen() {
+  const colorScheme = useColorScheme();
+
   const auth = FIREBASE_AUTH;
   const firebaseUser = auth.currentUser;
 
@@ -28,17 +32,59 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+      <View style={{ alignItems: "flex-end" }}>
+        <Link
+          push
+          style={{
+            alignItems: "center",
+            color: Colors[colorScheme ?? "light"].greyText,
+            borderWidth: 1,
+            padding: 10,
+            borderRadius: 20,
+            borderColor: Colors[colorScheme ?? "light"].greyText,
+            marginBottom: 20,
+          }}
+          href="/edit-profile"
+        >
+          Edit profile
+        </Link>
+      </View>
+
+      <Text
+        style={[
+          styles.title,
+          {
+            color: Colors[colorScheme ?? "light"].text,
+          },
+        ]}
+      >
+        {firebaseUser?.displayName}
+      </Text>
+      <Text style={{ color: Colors[colorScheme ?? "light"].greyText }}>
+        @{dbUser?.username}
+      </Text>
+
+      <Text>{firebaseUser?.email}</Text>
+
       <View
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <Text>{firebaseUser?.displayName}</Text>
-      <Text>{firebaseUser?.email}</Text>
-      <Text>{dbUser?.username}</Text>
 
-      <Button title="Sign Out" onPress={() => auth.signOut()} />
+      <Pressable
+        style={{ alignItems: "center" }}
+        onPress={() => auth.signOut()}
+      >
+        <Text
+          style={{
+            color: Colors.primary,
+            marginTop: 20,
+          }}
+        >
+          Sign Out
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -46,11 +92,12 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
+    alignItems: "stretch",
     justifyContent: "center",
+    padding: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
   },
   separator: {
