@@ -363,6 +363,27 @@ export default function EditRoutineLayout({
     }
   };
 
+  // Assume a function to extract the base ID from your specific ID format
+  const getBaseId = (id: string) => {
+    return id.replace(/-open$|-close$/, "");
+  };
+
+  const handleSwipe = (item: FlatRoutineItem, direction: string) => {
+    if (direction === "left") {
+      if (item.exerciseId === "open-sub") {
+        deleteSubroutine(item.id.slice(0, -5));
+      } else if (item.exerciseId === "close-sub") {
+        deleteSubroutine(item.id.slice(0, -6));
+      } else {
+        deleteExercise(item.id);
+      }
+    } else {
+      duplicateExercise(item.id);
+    }
+    // Close the swipeable
+    closeSwipeable(item.id);
+  };
+
   const renderItem = ({
     item,
     drag,
@@ -382,19 +403,7 @@ export default function EditRoutineLayout({
         renderLeftActions={renderDeleteSwipe}
         renderRightActions={renderDuplicateSwipe}
         onSwipeableOpen={(direction) => {
-          if (direction === "left") {
-            if (item.exerciseId === "open-sub") {
-              deleteSubroutine(item.id.slice(0, -5));
-            } else if (item.exerciseId === "close-sub") {
-              deleteSubroutine(item.id.slice(0, -6));
-            } else {
-              deleteExercise(item.id);
-            }
-          } else {
-            duplicateExercise(item.id);
-          }
-          // Close the swipeable
-          closeSwipeable(item.id);
+          handleSwipe(item, direction);
         }}
       >
         {item.exerciseId === "open-sub" &&
