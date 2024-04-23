@@ -11,7 +11,7 @@ import {
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { Subroutine } from "@/types";
+import { FlatRoutineItem, Subroutine } from "@/types";
 
 export default function EditSubroutineModal({
   subroutine,
@@ -21,8 +21,8 @@ export default function EditSubroutineModal({
   showUnitSelectModal,
   onSave,
 }: {
-  subroutine: Subroutine | null;
-  setSubroutine: (subroutine: Subroutine) => void;
+  subroutine: FlatRoutineItem | null;
+  setSubroutine: (subroutine: FlatRoutineItem) => void;
   isOpen: boolean;
   closeModal: () => void;
   showUnitSelectModal: () => void;
@@ -53,7 +53,7 @@ export default function EditSubroutineModal({
                 },
               ]}
             >
-              Edit Subroutine!
+              Edit Subroutine
             </Text>
 
             <View>

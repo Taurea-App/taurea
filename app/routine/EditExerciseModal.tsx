@@ -11,7 +11,7 @@ import {
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { ExerciseInRoutine } from "@/types";
+import { ExerciseInRoutine, FlatRoutineItem } from "@/types";
 
 export default function EditExerciseModal({
   exercise,
@@ -23,8 +23,8 @@ export default function EditExerciseModal({
   onSave,
   isSubroutine = false,
 }: {
-  exercise: ExerciseInRoutine | null;
-  setExercise: (exercise: ExerciseInRoutine) => void;
+  exercise: null | FlatRoutineItem;
+  setExercise: (exercise: FlatRoutineItem) => void;
   isOpen: boolean;
   closeModal: () => void;
   showUnitSelectModal: () => void;

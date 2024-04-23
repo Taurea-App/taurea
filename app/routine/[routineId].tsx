@@ -83,7 +83,7 @@ export default function Page() {
 
       setCollapsedSubroutines((prevState) => {
         const newState = new Map(prevState);
-        newState.set(item.id, true);
+        newState.set(item.id, false);
         return newState;
       });
     });

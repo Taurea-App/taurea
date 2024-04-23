@@ -28,6 +28,11 @@ export type Routine = {
   routineItems: RoutineItem[];
 };
 
+export type FlatRoutineItem = ExerciseInRoutine & {
+  inSubroutine: boolean;
+};
+
+
 export type DBUser = {
   uid: string;
   username: string | null;
