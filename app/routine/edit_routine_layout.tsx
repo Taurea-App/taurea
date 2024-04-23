@@ -3,7 +3,6 @@ import { ParamListBase } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Stack, useNavigation } from "expo-router";
 import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
-import { background } from "native-base/lib/typescript/theme/styled-system";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Text,
@@ -211,6 +210,7 @@ export default function EditRoutineLayout({
       name: routineName,
       description: routineDescription,
       routineItems: nestedRoutine(routineItems),
+      modifyDate: new Date(),
     };
     if (isNewRoutine) {
       await addDoc(
@@ -265,7 +265,7 @@ export default function EditRoutineLayout({
     setRoutineItems(
       routineItems.filter((exercise) => !exercise.id.includes(subroutineId)),
     );
-  }
+  };
 
   const duplicateExercise = (exerciseUniqueId: string) => {
     const exercise = routineItems.find(
@@ -363,10 +363,6 @@ export default function EditRoutineLayout({
     }
   };
 
-  const swipeHandler = (gestureName: string, gestureState: any) => {
-    console.log("swipeHandler", gestureName, gestureState);
-  }
-
   const renderItem = ({
     item,
     drag,
@@ -389,7 +385,7 @@ export default function EditRoutineLayout({
           if (direction === "left") {
             if (item.exerciseId === "open-sub") {
               deleteSubroutine(item.id.slice(0, -5));
-            } else if (item.exerciseId == "close-sub") {
+            } else if (item.exerciseId === "close-sub") {
               deleteSubroutine(item.id.slice(0, -6));
             } else {
               deleteExercise(item.id);
