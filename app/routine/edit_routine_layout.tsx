@@ -278,7 +278,10 @@ export default function EditRoutineLayout({
         name: exercise.name,
         quantity: exercise.quantity,
         unit: exercise.unit,
+        image_url: exercise.image_url,
+        description: exercise.description,
       } as FlatRoutineItem;
+      console.log(newExercise);
       setRoutineItems([...routineItems, newExercise]);
     }
   };
@@ -743,7 +746,11 @@ export default function EditRoutineLayout({
                     name: selectedExercise.name,
                     quantity: selectedQuantity,
                     unit: selectedUnit,
+                    image_url: selectedExercise.image_url ?? null,
+                    description: selectedExercise.description,
                   } as FlatRoutineItem;
+
+                  console.log(newExercise);
 
                   setRoutineItems([...routineItems, newExercise]); // Add the new exercise to the routine
 

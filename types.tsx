@@ -2,6 +2,7 @@ export type Exercise = {
   id: string;
   name: string;
   description: string;
+  image_url?: string;
 };
 
 export type ExerciseInRoutine = Exercise & {

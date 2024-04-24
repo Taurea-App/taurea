@@ -203,9 +203,7 @@ export default function Page() {
                     fontSize: 18,
                     fontWeight: "bold",
                   }}
-                >
-                  {item.exercises.length} Exercises
-                </Text>
+                />
 
                 <Text
                   style={{

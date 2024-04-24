@@ -18,6 +18,7 @@ type ExerciseSelectionItem = {
   name: string;
   description: string;
   color: ItemColor;
+  image_url?: string;
 };
 
 export const NEW_SUBROUTINE_ITEM: ExerciseSelectionItem = {
