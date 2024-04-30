@@ -3,22 +3,20 @@ import {
   View,
   Pressable,
   Text,
-  StyleSheet,
   ColorSchemeName,
 } from "react-native";
 
 import Colors from "@/constants/Colors";
+import { styles } from "./styles";
 
 export default function EndMenu({
   setCurrentIndex,
   routineId,
   colorScheme,
-  styles,
 }: {
   setCurrentIndex: (index: number) => void;
   routineId: string;
   colorScheme: ColorSchemeName;
-  styles: StyleSheet.NamedStyles<any>;
 }) {
   return (
     <View

@@ -2,10 +2,11 @@ import {
   View,
   Text,
   Pressable,
-  StyleSheet,
   ColorSchemeName,
   Dimensions,
 } from "react-native";
+
+import { styles } from "./styles";
 
 import Colors from "@/constants/Colors";
 import { Routine } from "@/types";
@@ -14,12 +15,10 @@ export default function StartMenu({
   routine,
   handleNext,
   colorScheme,
-  styles,
 }: {
   routine: Routine | null;
   handleNext: () => void;
   colorScheme: ColorSchemeName;
-  styles: StyleSheet.NamedStyles<any>;
 }) {
   return (
     <View

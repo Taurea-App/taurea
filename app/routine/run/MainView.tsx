@@ -3,12 +3,13 @@ import {
   View,
   Text,
   Pressable,
-  StyleSheet,
   ColorSchemeName,
   SafeAreaView,
   Dimensions,
   Image,
 } from "react-native";
+
+import { styles } from "./styles";
 
 import Timer from "@/components/Timer";
 import Colors from "@/constants/Colors";
@@ -18,7 +19,6 @@ export default function MainView({
   routine,
   handleNext,
   colorScheme,
-  styles,
   currentExercise,
   currentSubroutineSet,
   currentIndex,
@@ -32,7 +32,6 @@ export default function MainView({
   routine: Routine;
   handleNext: () => void;
   colorScheme: ColorSchemeName;
-  styles: StyleSheet.NamedStyles<any>;
   currentExercise: ExerciseInRoutine | null;
   currentSubroutineSet: number;
   currentIndex: number;

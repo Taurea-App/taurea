@@ -182,5 +182,4 @@ export const editRoutineLayoutStyle = StyleSheet.create({
     borderTopRightRadius: 0,
     marginBottom: 5,
   },
-
 });
