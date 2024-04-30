@@ -1,19 +1,19 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Link, Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
   View,
-  Text,
-  Pressable,
   StyleSheet,
   ActivityIndicator,
   useColorScheme,
-  Image,
-  SafeAreaView,
+  ScrollView,
 } from "react-native";
 
-import Timer from "@/components/Timer";
+import EndMenu from "./EndMenu";
+import FullRoutineView from "./FullRoutineView";
+import MainView from "./MainView";
+import StartMenu from "./StartMenu";
+
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { ExerciseInRoutine, Routine, RoutineItem, Subroutine } from "@/types";
@@ -207,52 +207,13 @@ export default function Page() {
     }
   };
 
-
   const handleSubroutineTimerEnd = () => {
     setWaitingForSubroutineTimer(false);
     setCurrentIndex(currentIndex + 1);
   };
 
-  const StartMenu = ({ routine }: { routine: Routine | null }) => {
-    return (
-      <View
-        style={{
-          alignItems: "center",
-          justifyContent: "center",
-          width: "100%",
-          gap: 20,
-          flex: 1,
-        }}
-      >
-        <Text
-          style={[
-            styles.title,
-            {
-              color:
-                colorScheme === "light" ? Colors.light.text : Colors.dark.text,
-            },
-          ]}
-        >
-          {routine?.name}
-        </Text>
-
-        <Pressable
-          style={[
-            styles.button,
-            {
-              backgroundColor: Colors.primary,
-            },
-          ]}
-          onPress={handleNext}
-        >
-          <Text style={styles.buttonText}>Start</Text>
-        </Pressable>
-      </View>
-    );
-  };
-
   return (
-    <View
+    <ScrollView
       style={[
         styles.container,
         {
@@ -289,280 +250,55 @@ export default function Page() {
           }}
         >
           {/* Start Menu */}
-          {currentIndex === -1 && <StartMenu routine={routine} />}
+          {currentIndex === -1 && (
+            <StartMenu
+              routine={routine}
+              handleNext={handleNext}
+              colorScheme={colorScheme}
+              styles={styles}
+            />
+          )}
 
-          {/* Exercise */}
+          {/* Main View */}
           {routine &&
             currentIndex !== -1 &&
             currentIndex < routine.routineItems.length && (
-              <SafeAreaView
-                style={{
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  // gap: 20,
-                  flex: 1,
-                  // paddingVertical: 40,
-                }}
-              >
-                <View
-                  style={{
-                    width: "100%",
-                    alignItems: "center",
-                    // justifyContent: "space-between",
-                    // flex: 1,
-                  }}
-                >
-                  {/* image in case it exists (url in image_url) */}
-                  {currentExercise?.image_url && (
-                    <View
-                      style={{
-                        width: "100%",
-                        height: 200,
-                        // borderRadius: 20,
-                        overflow: "hidden",
-                        backgroundColor: "grey",
-                      }}
-                    >
-                      <Image
-                        source={{ uri: currentExercise.image_url }}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                        }}
-                      />
-                    </View>
-                  )}
+              <MainView
+                routine={routine}
+                handleNext={handleNext}
+                colorScheme={colorScheme}
+                styles={styles}
+                currentExercise={currentExercise}
+                currentSubroutineSet={currentSubroutineSet}
+                currentIndex={currentIndex}
+                waitingForSubroutineTimer={waitingForSubroutineTimer}
+                subroutineTime={subroutineTime}
+                handleSubroutineTimerEnd={handleSubroutineTimerEnd}
+                setWaitingForTimer={setWaitingForTimer}
+                handlePrevious={handlePrevious}
+                waitingForTimer={waitingForTimer}
+              />
+            )}
 
-                  {/*  */}
-                  <View
-                    style={{
-                      width: "100%",
-                      alignItems: "center",
-                    }}
-                  >
-                    {/* Title */}
-                    <Text
-                      style={[
-                        styles.title,
-                        {
-                          alignSelf: "flex-start",
-                          color:
-                            colorScheme === "light"
-                              ? Colors.light.text
-                              : Colors.dark.text,
-                        },
-                      ]}
-                    >
-                      {currentExercise?.name}
-                    </Text>
-
-                    {/* Current set in case we are in a subroutine */}
-                    <View
-                      style={{
-                        height: 40,
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        width: "100%",
-                        alignItems: "flex-end",
-                      }}
-                    >
-                      {currentSubroutineSet !== -1 && (
-                        <Text
-                          style={[
-                            styles.subtitle,
-                            {
-                              color:
-                                colorScheme === "light"
-                                  ? Colors.light.text
-                                  : Colors.dark.text,
-                            },
-                          ]}
-                        >
-                          Set {currentSubroutineSet + 1}{" "}
-                          {routine?.routineItems[currentIndex].unit ===
-                            "Sets" &&
-                            `of ${routine?.routineItems[currentIndex].quantity}`}
-                        </Text>
-                      )}
-
-                      {/* Subroutine Timer */}
-                      {waitingForSubroutineTimer && (
-                        <Timer
-                          initialMilliseconds={subroutineTime * 1000}
-                          callback={handleSubroutineTimerEnd}
-                          exerciseId={routine?.routineItems[currentIndex].id}
-                          smallSize
-                        />
-                      )}
-                    </View>
-
-                    {/* Description */}
-                    <Text
-                      style={[
-                        styles.description,
-                        {
-                          alignSelf: "flex-start",
-                          color:
-                            colorScheme === "light"
-                              ? Colors.light.text
-                              : Colors.dark.text,
-                          height: 40,
-                        },
-                      ]}
-                    >
-                      {currentExercise?.description}
-                    </Text>
-
-                    {/* Quantity */}
-                    <Text
-                      style={[
-                        styles.quantity,
-                        {
-                          alignSelf: "flex-start",
-                          color: Colors.primary,
-                          height: 25,
-                        },
-                      ]}
-                    >
-                      {currentExercise?.quantity} {currentExercise?.unit}
-                    </Text>
-                  </View>
-                </View>
-
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    height: 150,
-                  }}
-                >
-                  {/* Timer */}
-                  {(currentExercise?.unit === "Mins." ||
-                    currentExercise?.unit === "Minutes" ||
-                    currentExercise?.unit === "Secs." ||
-                    currentExercise?.unit === "Seconds") && (
-                    <Timer
-                      initialMilliseconds={
-                        currentExercise?.unit === "Mins." ||
-                        currentExercise?.unit === "Minutes"
-                          ? currentExercise?.quantity * 60 * 1000
-                          : currentExercise?.quantity * 1000
-                      }
-                      callback={() => setWaitingForTimer(false)}
-                      exerciseId={currentExercise?.id}
-                    />
-                  )}
-                </View>
-
-                {/* Next and Previous Buttons */}
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    paddingHorizontal: 40,
-                  }}
-                >
-                  <Pressable
-                    onPress={handlePrevious}
-                    style={[
-                      styles.nextButton,
-                      {
-                        backgroundColor: Colors.primary,
-                        shadowOpacity: 0.25,
-                      },
-                    ]}
-                  >
-                    {/* Prev icon */}
-                    <Ionicons name="chevron-back" size={40} color="white" />
-                  </Pressable>
-
-                  <Pressable
-                    onPress={handleNext}
-                    style={[
-                      styles.nextButton,
-                      {
-                        backgroundColor: waitingForTimer
-                          ? Colors.grey
-                          : Colors.primary,
-                        shadowOpacity: waitingForTimer ? 0 : 0.25,
-                      },
-                    ]}
-                    disabled={waitingForTimer}
-                  >
-                    <Ionicons name="chevron-forward" size={40} color="white" />
-                  </Pressable>
-                </View>
-              </SafeAreaView>
+          {/* Full Routine View */}
+          {routine &&
+            currentIndex !== -1 &&
+            currentIndex < routine.routineItems.length && (
+              <FullRoutineView currentIndex={currentIndex} routine={routine} />
             )}
 
           {/* End Menu */}
           {routine && currentIndex === routine.routineItems.length && (
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                gap: 20,
-              }}
-            >
-              <Text
-                style={[
-                  styles.title,
-                  {
-                    color:
-                      colorScheme === "light"
-                        ? Colors.light.text
-                        : Colors.dark.text,
-                  },
-                ]}
-              >
-                Routine Completed!
-              </Text>
-
-              {/* Restart Button */}
-              <Pressable
-                style={[
-                  styles.button,
-                  {
-                    backgroundColor: Colors.primary,
-                  },
-                ]}
-                onPress={() => setCurrentIndex(-1)}
-              >
-                <Text style={styles.buttonText}>Restart</Text>
-              </Pressable>
-
-              {/* Go Back Button */}
-              <Link href={`/routine/${routineId}`} asChild>
-                <Pressable
-                  style={[
-                    styles.button,
-                    {
-                      backgroundColor: Colors.primary,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.buttonText,
-                      {
-                        color:
-                          colorScheme === "light"
-                            ? Colors.light.text
-                            : Colors.dark.text,
-                      },
-                    ]}
-                  >
-                    Go Back
-                  </Text>
-                </Pressable>
-              </Link>
-            </View>
+            <EndMenu
+              routineId={routineId}
+              setCurrentIndex={setCurrentIndex}
+              colorScheme={colorScheme}
+              styles={styles}
+            />
           )}
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
