@@ -9,7 +9,6 @@ import {
   useNavigation,
 } from "expo-router";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import { Modal } from "native-base";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -20,9 +19,11 @@ import {
   Pressable,
   SafeAreaView,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 
 import RoutineList from "@/components/RoutineList";
+import SlideUpModal from "@/components/SlideUpModal";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig"; // Adjust the import path as necessary
@@ -163,34 +164,19 @@ export default function Page() {
         </View>
       )}
 
-      <Modal
-        isOpen={showOptions}
-        animationPreset="slide"
+      <SlideUpModal
+        visible={showOptions}
+        // animationType="slide"
         onClose={() => setShowOptions(false)}
-        size="full"
-        avoidKeyboard
+        colorScheme={colorScheme}
+        // transparent
+        // onRequestClose={() => setShowOptions(false)}
+        // size="full"
+        // avoidKeyboard
       >
-        <Modal.Content
-          marginBottom={0}
-          marginTop="auto"
-          style={{
-            backgroundColor:
-              Colors[colorScheme === "dark" ? "dark" : "light"]
-                .tabBackgroundColor,
-          }}
-        >
-          <Modal.Body>
-            <SafeAreaView>
-              <Button title="Edit" onPress={handleEdit} />
-              <Button
-                title="Delete"
-                onPress={handleDelete}
-                color={Colors["red"]}
-              />
-            </SafeAreaView>
-          </Modal.Body>
-        </Modal.Content>
-      </Modal>
+        <Button title="Edit" onPress={handleEdit} />
+        <Button title="Delete" onPress={handleDelete} color={Colors["red"]} />
+      </SlideUpModal>
     </SafeAreaView>
   );
 }
