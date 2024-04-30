@@ -24,6 +24,7 @@ import {
 } from "react-native";
 import Collapsible from "react-native-collapsible";
 
+import RoutineList from "@/components/RoutineList";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig"; // Adjust the import path as necessary
@@ -34,9 +35,8 @@ export default function Page() {
 
   const { routineId } = useLocalSearchParams<{ routineId: string }>();
   const [routine, setRoutine] = useState<Routine | null>(null);
-  const [routineItems, setRoutineItems] = useState<
-    ExerciseInRoutine[] | Subroutine[]
-  >();
+  const [routineItems, setRoutineItems] =
+    useState<(ExerciseInRoutine | Subroutine)[]>();
   const router = useRouter();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
@@ -270,7 +270,7 @@ export default function Page() {
           />
         </View>
       )}
-      {!loading && (
+      {!loading && routineItems && (
         <View
           style={{
             flex: 1,
@@ -280,10 +280,9 @@ export default function Page() {
             {routine?.name}
           </Text>
           <Text style={styles.description}>{routine?.description}</Text>
-          <FlatList
-            data={routineItems}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={renderRoutineItem}
+          <RoutineList
+            routineItems={routineItems}
+            colorScheme={colorScheme}
           />
           {/* Implement navigation or state change for editing here */}
           <View style={styles.buttonsContainer}>

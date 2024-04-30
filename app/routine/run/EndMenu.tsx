@@ -1,13 +1,9 @@
 import { Link } from "expo-router";
-import {
-  View,
-  Pressable,
-  Text,
-  ColorSchemeName,
-} from "react-native";
+import { View, Pressable, Text, ColorSchemeName } from "react-native";
+
+import { styles } from "./styles";
 
 import Colors from "@/constants/Colors";
-import { styles } from "./styles";
 
 export default function EndMenu({
   setCurrentIndex,

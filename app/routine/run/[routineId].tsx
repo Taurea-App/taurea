@@ -6,10 +6,10 @@ import {
   ActivityIndicator,
   useColorScheme,
   ScrollView,
+  Dimensions,
 } from "react-native";
 
 import EndMenu from "./EndMenu";
-import FullRoutineView from "./FullRoutineView";
 import MainView from "./MainView";
 import StartMenu from "./StartMenu";
 import { styles } from "./styles";
@@ -235,7 +235,13 @@ export default function Page() {
       />
 
       {loading && (
-        <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            height: Dimensions.get("window").height,
+          }}
+        >
           <ActivityIndicator
             size="large"
             color={Colors[colorScheme === "dark" ? "dark" : "light"].tint}
@@ -276,13 +282,6 @@ export default function Page() {
                 handlePrevious={handlePrevious}
                 waitingForTimer={waitingForTimer}
               />
-            )}
-
-          {/* Full Routine View */}
-          {routine &&
-            currentIndex !== -1 &&
-            currentIndex < routine.routineItems.length && (
-              <FullRoutineView currentIndex={currentIndex} routine={routine} />
             )}
 
           {/* End Menu */}
