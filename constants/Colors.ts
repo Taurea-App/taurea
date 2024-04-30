@@ -20,6 +20,7 @@ export default {
     yellow: "#FFFF88",
     primaryBackground: "#fcedcf",
     greyText: "#A9A9A9",
+    highlightedTabBackgroundColor: "#FFA500",
   },
   dark: {
     text: "#fff",
@@ -33,5 +34,6 @@ export default {
     yellow: "#FFAA22",
     primaryBackground: "#211b0d",
     greyText : "#A9A9A9",
+    highlightedTabBackgroundColor: "#FFA500",
   },
 };

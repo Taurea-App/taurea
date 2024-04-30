@@ -226,7 +226,7 @@ export default function Page() {
     >
       <Stack.Screen
         options={{
-          title: "",
+          // title: "",
           // headerBackTitleVisible: false,
           // headerTransparent: true,
           // headerBackVisible: false,
@@ -274,6 +274,7 @@ export default function Page() {
                 colorScheme={colorScheme}
                 currentExercise={currentExercise}
                 currentSubroutineSet={currentSubroutineSet}
+                currentSubroutineIndex={currentSubroutineIndex}
                 currentIndex={currentIndex}
                 waitingForSubroutineTimer={waitingForSubroutineTimer}
                 subroutineTime={subroutineTime}

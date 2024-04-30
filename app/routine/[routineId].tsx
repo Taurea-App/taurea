@@ -19,10 +19,8 @@ import {
   TouchableOpacity,
   Pressable,
   SafeAreaView,
-  FlatList,
   ActivityIndicator,
 } from "react-native";
-import Collapsible from "react-native-collapsible";
 
 import RoutineList from "@/components/RoutineList";
 import { useColorScheme } from "@/components/useColorScheme";
@@ -41,9 +39,6 @@ export default function Page() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const [showOptions, setShowOptions] = useState(false);
-  const [collapsedSubroutines, setCollapsedSubroutines] = useState<
-    Map<string, boolean>
-  >(new Map());
 
   const [loading, setLoading] = useState(true);
 
@@ -75,28 +70,6 @@ export default function Page() {
     fetchRoutineDetails();
   }, [routineId]);
 
-  useEffect(() => {
-    if (!routineItems) return;
-
-    routineItems.forEach((item) => {
-      if (!(item as Subroutine).exercises) return;
-
-      setCollapsedSubroutines((prevState) => {
-        const newState = new Map(prevState);
-        newState.set(item.id, false);
-        return newState;
-      });
-    });
-  }, [routineItems]);
-
-  const toggleSubroutine = (subroutineId: string) => {
-    setCollapsedSubroutines((prevState) => {
-      const newState = new Map(prevState);
-      newState.set(subroutineId, !newState.get(subroutineId));
-      return newState;
-    });
-  };
-
   const handleEdit = () => {
     setShowOptions(false);
     // navigate to the edit screen
@@ -122,116 +95,6 @@ export default function Page() {
     // After deletion, navigate back or to another screen as needed
     navigation.navigate("index");
   };
-
-  function isExerciseInRoutine(
-    item: ExerciseInRoutine | Subroutine,
-  ): item is ExerciseInRoutine {
-    return (item as ExerciseInRoutine).exerciseId !== undefined;
-  }
-
-  const renderRoutineItem = ({
-    item,
-  }: {
-    item: ExerciseInRoutine | Subroutine;
-  }) => (
-    <View>
-      {isExerciseInRoutine(item) ? (
-        <View
-          style={[
-            styles.exerciseContainer,
-            {
-              backgroundColor:
-                Colors[colorScheme === "dark" ? "dark" : "light"]
-                  .tabBackgroundColor,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.exerciseName,
-              {
-                color: Colors[colorScheme === "dark" ? "dark" : "light"].text,
-              },
-            ]}
-          >
-            {item.name}
-          </Text>
-          <Text
-            style={{
-              color: Colors[colorScheme === "dark" ? "dark" : "light"].text,
-            }}
-          >
-            {item.quantity} {item.unit}
-          </Text>
-        </View>
-      ) : (
-        <View
-          style={{
-            backgroundColor:
-              Colors[colorScheme === "dark" ? "dark" : "light"]
-                .primaryBackground,
-            // borderRadius: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: "#888888",
-          }}
-        >
-          <Pressable onPress={() => toggleSubroutine(item.id)}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                // justifyContent: "space-between",
-                padding: 10,
-                gap: 10,
-                marginBottom: 10,
-              }}
-            >
-              <Ionicons
-                name={
-                  collapsedSubroutines.get(item.id)
-                    ? "chevron-forward"
-                    : "chevron-down"
-                }
-                size={24}
-                color={Colors[colorScheme === "dark" ? "dark" : "light"].text}
-              />
-              <View>
-                <Text
-                  style={{
-                    color:
-                      Colors[colorScheme === "dark" ? "dark" : "light"].text,
-                    fontSize: 18,
-                    fontWeight: "bold",
-                  }}
-                />
-
-                <Text
-                  style={{
-                    color:
-                      Colors[colorScheme === "dark" ? "dark" : "light"].text,
-                  }}
-                >
-                  {item.quantity} {item.unit}
-                </Text>
-              </View>
-            </View>
-          </Pressable>
-
-          <Collapsible
-            collapsed={collapsedSubroutines.get(item.id)}
-            align="center"
-          >
-            <FlatList
-              data={item.exercises}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={renderRoutineItem}
-              style={{ marginLeft: 20, marginBottom: 5 }}
-            />
-          </Collapsible>
-        </View>
-      )}
-    </View>
-  );
 
   // Consider adding a function for editing that navigates to an edit screen or opens an edit mode
 
@@ -280,10 +143,7 @@ export default function Page() {
             {routine?.name}
           </Text>
           <Text style={styles.description}>{routine?.description}</Text>
-          <RoutineList
-            routineItems={routineItems}
-            colorScheme={colorScheme}
-          />
+          <RoutineList routineItems={routineItems} colorScheme={colorScheme} />
           {/* Implement navigation or state change for editing here */}
           <View style={styles.buttonsContainer}>
             <Link

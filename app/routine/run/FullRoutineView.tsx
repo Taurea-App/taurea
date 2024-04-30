@@ -1,19 +1,22 @@
-import { View, Text } from "react-native";
+import { View, Text, Dimensions, useColorScheme } from "react-native";
 
+import RoutineList from "@/components/RoutineList";
 import Colors from "@/constants/Colors";
-import { Routine } from "@/types";
+import { ExerciseInRoutine, Routine } from "@/types";
 
 export default function FullRoutineView({
-  currentIndex,
   routine,
+  currentExercise,
 }: {
-  currentIndex: number;
   routine: Routine;
+  currentExercise: ExerciseInRoutine | null;
 }) {
+  const colorScheme = useColorScheme();
+
   return (
     <View
       style={{
-        height: 400,
+        height: Dimensions.get("window").height - 100,
         width: "100%",
         // justifyContent: "center",
         alignItems: "center",
@@ -33,11 +36,20 @@ export default function FullRoutineView({
       >
         <Text
           style={{
-            color: "grey",
+            color: Colors.light.text,
+            fontSize: 16,
+            padding: 10,
+            textAlign: "center",
+            height: 70,
           }}
         >
-          {currentIndex + 1}/{routine?.routineItems.length}
+          {routine.name}
         </Text>
+        <RoutineList
+          routineItems={routine.routineItems}
+          colorScheme={colorScheme}
+          currentExercise={currentExercise}
+        />
       </View>
     </View>
   );

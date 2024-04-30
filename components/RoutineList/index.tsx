@@ -11,9 +11,11 @@ import { ExerciseInRoutine, Subroutine } from "@/types";
 export default function RoutineList({
   routineItems,
   colorScheme,
+  currentExercise,
 }: {
   routineItems: (ExerciseInRoutine | Subroutine)[];
   colorScheme: ColorSchemeName;
+  currentExercise?: ExerciseInRoutine | null;
 }) {
   function isExerciseInRoutine(
     item: ExerciseInRoutine | Subroutine,
@@ -59,8 +61,11 @@ export default function RoutineList({
             styles.exerciseContainer,
             {
               backgroundColor:
-                Colors[colorScheme === "dark" ? "dark" : "light"]
-                  .tabBackgroundColor,
+                currentExercise?.id === item.id
+                  ? Colors[colorScheme === "dark" ? "dark" : "light"]
+                      .highlightedTabBackgroundColor
+                  : Colors[colorScheme === "dark" ? "dark" : "light"]
+                      .tabBackgroundColor,
             },
           ]}
         >

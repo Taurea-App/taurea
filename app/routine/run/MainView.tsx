@@ -22,6 +22,7 @@ export default function MainView({
   colorScheme,
   currentExercise,
   currentSubroutineSet,
+  currentSubroutineIndex,
   currentIndex,
   waitingForSubroutineTimer,
   subroutineTime,
@@ -35,6 +36,7 @@ export default function MainView({
   colorScheme: ColorSchemeName;
   currentExercise: ExerciseInRoutine | null;
   currentSubroutineSet: number;
+  currentSubroutineIndex: number;
   currentIndex: number;
   waitingForSubroutineTimer: boolean;
   subroutineTime: number;
@@ -51,7 +53,7 @@ export default function MainView({
           justifyContent: "space-between",
           // gap: 20,
           // flex: 1,
-          height: Dimensions.get("window").height - 50,
+          height: Dimensions.get("window").height - 70,
           // paddingBottom: 20,
         }}
       >
@@ -242,7 +244,7 @@ export default function MainView({
           </Pressable>
         </View>
       </SafeAreaView>
-      <FullRoutineView currentIndex={currentIndex} routine={routine} />
+      <FullRoutineView routine={routine} currentExercise={currentExercise} />
     </View>
   );
 }
