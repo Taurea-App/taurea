@@ -116,7 +116,8 @@ export default function MainView({
                 flexDirection: "row",
                 justifyContent: "space-between",
                 width: "100%",
-                alignItems: "flex-end",
+                alignItems: "flex-start",
+                marginTop: 20,
               }}
             >
               {currentSubroutineSet !== -1 && (

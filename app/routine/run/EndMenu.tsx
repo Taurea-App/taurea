@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { View, Pressable, Text, ColorSchemeName } from "react-native";
+import { View, Pressable, Text, ColorSchemeName, Dimensions } from "react-native";
 
 import { styles } from "./styles";
 
@@ -21,6 +21,7 @@ export default function EndMenu({
         justifyContent: "center",
         width: "100%",
         gap: 20,
+        height: Dimensions.get("window").height,
       }}
     >
       <Text
