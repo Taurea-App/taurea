@@ -73,7 +73,7 @@ export default function MainView({
                 height: 200,
                 // borderRadius: 20,
                 overflow: "hidden",
-                backgroundColor: "grey",
+                backgroundColor: "transparent",
               }}
             >
               <Image
