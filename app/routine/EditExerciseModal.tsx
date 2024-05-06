@@ -84,7 +84,9 @@ export default function EditExerciseModal({
 
             <View>
               <TextInput
-                value={exercise?.quantity?.toString()}
+                value={
+                  exercise?.quantity === 0 ? "" : exercise?.quantity?.toString()
+                }
                 onChangeText={(text: string) =>
                   setExercise({
                     ...exercise,

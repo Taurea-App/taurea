@@ -1,5 +1,12 @@
 import { Link } from "expo-router";
-import { View, Pressable, Text, ColorSchemeName, Dimensions } from "react-native";
+import {
+  View,
+  Pressable,
+  Text,
+  ColorSchemeName,
+  Dimensions,
+} from "react-native";
+import FastImage from "react-native-fast-image";
 
 import { styles } from "./styles";
 
@@ -24,6 +31,23 @@ export default function EndMenu({
         height: Dimensions.get("window").height,
       }}
     >
+      <View
+        style={{
+          width: "100%",
+          height: 200,
+          // borderRadius: 20,
+          overflow: "hidden",
+          backgroundColor: "transparent",
+        }}
+      >
+        <FastImage
+          source={require("../../../assets/images/robot_dance_optimized.gif")}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+        />
+      </View>
       <Text
         style={[
           styles.title,

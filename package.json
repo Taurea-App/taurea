@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "eslint app/**/*.tsx",
-    "lint:fix": "eslint app/**/*.tsx --fix"
+    "lint:fix": "eslint app/**/*.tsx --fix",
+    "postinstall": "patch-package"
   },
   "jest": {
     "preset": "jest-expo"
@@ -39,6 +40,7 @@
     "react-native": "0.73.6",
     "react-native-collapsible": "^1.6.1",
     "react-native-draggable-flatlist": "^4.0.1",
+    "react-native-fast-image": "^8.6.3",
     "react-native-gesture-handler": "~2.14.0",
     "react-native-keyboard-spacer": "^0.4.1",
     "react-native-paper": "^5.12.3",

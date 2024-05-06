@@ -6,7 +6,6 @@ import {
   ColorSchemeName,
   SafeAreaView,
   Dimensions,
-  Image,
 } from "react-native";
 
 import FullRoutineView from "./FullRoutineView";
@@ -15,6 +14,10 @@ import { styles } from "./styles";
 import Timer from "@/components/Timer";
 import Colors from "@/constants/Colors";
 import { Routine, ExerciseInRoutine } from "@/types";
+
+import FastImage from "react-native-fast-image";
+
+const BASE_IMAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/gravitygrit-5768a.appspot.com/o/exercises%2F'
 
 export default function MainView({
   routine,
@@ -66,7 +69,7 @@ export default function MainView({
           }}
         >
           {/* image in case it exists (url in image_url) */}
-          {currentExercise?.image_url && (
+          {currentExercise && (
             <View
               style={{
                 width: "100%",
@@ -76,8 +79,10 @@ export default function MainView({
                 backgroundColor: "transparent",
               }}
             >
-              <Image
-                source={{ uri: currentExercise.image_url }}
+              <FastImage
+                source={{
+                  uri: BASE_IMAGE_URL + currentExercise.exerciseId + ".gif?alt=media",
+                }}
                 style={{
                   width: "100%",
                   height: "100%",
