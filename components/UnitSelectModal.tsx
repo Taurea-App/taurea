@@ -1,5 +1,6 @@
 import { Modal, Text } from "native-base";
 import { StyleSheet, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useColorScheme } from "./useColorScheme";
 
@@ -41,36 +42,43 @@ export default function UnitSelectModal({
         marginBottom={0}
         marginTop="auto"
       >
-        {UNITS.map((unit) => (
-          <TouchableOpacity
-            key={unit}
-            style={[
-              style.button,
-              {
-                backgroundColor: colorScheme
-                  ? Colors[colorScheme].tabBackgroundColor
-                  : Colors.light.tabBackgroundColor,
-              },
-            ]}
-            onPress={() => {
-              setSelectedUnit(unit);
-              closeModal();
-            }}
-          >
-            <Text
+        <SafeAreaView
+          style={{
+            width: "100%",
+            alignItems: "center",
+          }}
+        >
+          {UNITS.map((unit) => (
+            <TouchableOpacity
+              key={unit}
               style={[
-                style.exerciseSelectItem,
+                style.button,
                 {
-                  color: colorScheme
-                    ? Colors[colorScheme].text
-                    : Colors.light.text,
+                  backgroundColor: colorScheme
+                    ? Colors[colorScheme].tabBackgroundColor
+                    : Colors.light.tabBackgroundColor,
                 },
               ]}
+              onPress={() => {
+                setSelectedUnit(unit);
+                closeModal();
+              }}
             >
-              {unit}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  style.exerciseSelectItem,
+                  {
+                    color: colorScheme
+                      ? Colors[colorScheme].text
+                      : Colors.light.text,
+                  },
+                ]}
+              >
+                {unit}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </SafeAreaView>
       </Modal.Content>
     </Modal>
   );

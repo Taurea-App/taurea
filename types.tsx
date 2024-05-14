@@ -2,6 +2,7 @@ export type Exercise = {
   id: string;
   name: string;
   description: string;
+  image_url?: string;
 };
 
 export type ExerciseInRoutine = Exercise & {
@@ -27,6 +28,11 @@ export type Routine = {
   description: string;
   routineItems: RoutineItem[];
 };
+
+export type FlatRoutineItem = ExerciseInRoutine & {
+  inSubroutine: boolean;
+};
+
 
 export type DBUser = {
   uid: string;

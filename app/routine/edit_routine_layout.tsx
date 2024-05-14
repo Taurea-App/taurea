@@ -3,7 +3,7 @@ import { ParamListBase } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Stack, useNavigation } from "expo-router";
 import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Text,
   View,
@@ -13,13 +13,11 @@ import {
   ActivityIndicator,
   useColorScheme,
   Animated,
-  FlatList,
 } from "react-native";
-import Collapsible from "react-native-collapsible";
 import DraggableFlatList, {
   ScaleDecorator,
 } from "react-native-draggable-flatlist";
-import { RectButton } from "react-native-gesture-handler";
+import { FlatList, RectButton } from "react-native-gesture-handler";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -30,14 +28,16 @@ import { editRoutineLayoutStyle as style } from "./edit_routine_layout_style";
 
 import ExerciseSelectModal from "@/components/ExerciseSelectmodal";
 import UnitSelectModal from "@/components/UnitSelectModal";
-import {
-  EXERCISE_UNITS,
-  NEW_SUBROUTINE_ID,
-  SUBROUTINE_UNITS,
-} from "@/constants";
+import { EXERCISE_UNITS, NEW_SUBROUTINE_ID } from "@/constants";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
-import { Exercise, ExerciseInRoutine, RoutineItem, Subroutine } from "@/types";
+import {
+  Exercise,
+  ExerciseInRoutine,
+  FlatRoutineItem,
+  RoutineItem,
+  Subroutine,
+} from "@/types";
 import { idGen } from "@/utils/idGen";
 
 export default function EditRoutineLayout({
@@ -54,7 +54,7 @@ export default function EditRoutineLayout({
   const [routineName, setRoutineName] = useState("");
   const [routineDescription, setRoutineDescription] = useState("");
 
-  const [routineItems, setRoutineItems] = useState<RoutineItem[]>([]);
+  const [routineItems, setRoutineItems] = useState<FlatRoutineItem[]>([]);
 
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
@@ -70,20 +70,18 @@ export default function EditRoutineLayout({
   const [loading, setLoading] = useState(!isNewRoutine);
 
   const [showEditExerciseModal, setShowEditExerciseModal] = useState(false);
-  const [exerciseToEdit, setExerciseToEdit] =
-    useState<ExerciseInRoutine | null>(null);
-
-  const [subroutineToEdit, setSubroutineToEdit] = useState<Subroutine | null>(
+  const [exerciseToEdit, setExerciseToEdit] = useState<FlatRoutineItem | null>(
     null,
   );
 
-  const [collapsedSubroutines, setCollapsedSubroutines] = useState<
-    Map<string, boolean>
-  >(new Map());
+  const [subroutineToEdit, setSubroutineToEdit] =
+    useState<FlatRoutineItem | null>(null);
 
   const auth = FIREBASE_AUTH;
 
   const swipeableRefs = new Map();
+
+  const flatListRef = useRef<FlatList<FlatRoutineItem> | null>(null);
 
   function isExercise(
     item: ExerciseInRoutine | Subroutine,
@@ -96,20 +94,97 @@ export default function EditRoutineLayout({
     setSelectedUnit(null);
   }, [selectedExercise]);
 
-  useEffect(() => {
-    if (!routineItems) return;
+  const manageSubitemsAssignment = (routineItems: FlatRoutineItem[]) => {
+    const formattedItems = [];
+    let inSubroutine = false;
+    for (let i = 0; i < routineItems.length; i++) {
+      const item = routineItems[i];
+      if (item.exerciseId === "open-sub") {
+        if (inSubroutine) {
+          console.log("Error: nested subroutines not allowed");
+          return;
+        }
+        inSubroutine = true;
+        formattedItems.push(item);
+        continue;
+      }
+      if (item.exerciseId === "close-sub") {
+        if (!inSubroutine) {
+          console.log("Error: close sub without open sub");
+          return;
+        }
+        inSubroutine = false;
+        formattedItems.push(item);
+        continue;
+      }
+      formattedItems.push({ ...item, inSubroutine });
+    }
+    return formattedItems;
+  };
 
-    routineItems.forEach((item) => {
-      if (!(item as Subroutine).exercises) return;
+  // Format the routine items to include the open and close subroutines
+  const flatRoutine = (routineItems: RoutineItem[]) => {
+    const formattedItems = [];
+    for (let i = 0; i < routineItems.length; i++) {
+      const item = routineItems[i];
+      if (isExercise(item)) {
+        formattedItems.push(item as FlatRoutineItem);
+      } else {
+        formattedItems.push({
+          id: item.id + "-open",
+          exerciseId: "open-sub",
+          name: " ",
+          quantity: item.quantity,
+          unit: item.unit,
+        } as FlatRoutineItem);
 
-      setCollapsedSubroutines((prevState) => {
-        const newState = new Map(prevState);
-        const value = newState.get(item.id);
-        newState.set(item.id, value ?? true);
-        return newState;
-      });
-    });
-  }, [routineItems]);
+        for (let j = 0; j < item.exercises.length; j++) {
+          const exercise = item.exercises[j];
+          formattedItems.push({
+            ...exercise,
+            inSubroutine: true,
+          } as FlatRoutineItem);
+        }
+
+        formattedItems.push({
+          id: item.id + "-close",
+          exerciseId: "close-sub",
+          name: " ",
+          quantity: 0,
+          unit: "",
+        } as FlatRoutineItem);
+      }
+    }
+    return formattedItems;
+  };
+
+  // Format the routine items to include nested subroutines
+  const nestedRoutine = (routineItems: FlatRoutineItem[]) => {
+    const formattedItems = [];
+    let currentSubroutine: Subroutine | null = null;
+    for (let i = 0; i < routineItems.length; i++) {
+      const item = routineItems[i];
+      if (item.exerciseId !== "open-sub" && item.exerciseId !== "close-sub") {
+        if (currentSubroutine) {
+          currentSubroutine.exercises.push(item);
+        } else {
+          formattedItems.push(item);
+        }
+      } else if (item.exerciseId === "open-sub") {
+        currentSubroutine = {
+          // Remove "-open" from the id
+          id: item.id.slice(0, -5),
+          quantity: item.quantity,
+          unit: item.unit,
+          exercises: [],
+        };
+      } else if (item.exerciseId === "close-sub") {
+        formattedItems.push(currentSubroutine);
+        currentSubroutine = null;
+      }
+    }
+    return formattedItems;
+  };
 
   const loadRoutine = async () => {
     if (!routineId) return;
@@ -122,7 +197,7 @@ export default function EditRoutineLayout({
     if (routineSnap.exists()) {
       setRoutineName(routineSnap.data().name);
       setRoutineDescription(routineSnap.data().description);
-      setRoutineItems(routineSnap.data().routineItems);
+      setRoutineItems(flatRoutine(routineSnap.data().routineItems));
       setLoading(false);
     } else {
       console.log("No such document!");
@@ -134,7 +209,8 @@ export default function EditRoutineLayout({
     const routine = {
       name: routineName,
       description: routineDescription,
-      routineItems,
+      routineItems: nestedRoutine(routineItems),
+      modifyDate: new Date(),
     };
     if (isNewRoutine) {
       await addDoc(
@@ -156,148 +232,58 @@ export default function EditRoutineLayout({
     navigation.navigate("index");
   };
 
-  const isExerciseInRoutine = (
-    exerciseId: string,
-    itemsList: RoutineItem[],
-  ) => {
-    return itemsList.some((exercise) => exercise.id === exerciseId);
-  };
-
   const saveEditedExercise = () => {
     if (!exerciseToEdit) return;
 
-    if (isExerciseInRoutine(exerciseToEdit.id, routineItems)) {
-      setRoutineItems(
-        routineItems.map((exercise) =>
-          isExercise(exercise) && exercise.id === exerciseToEdit.id
-            ? exerciseToEdit
-            : exercise,
-        ),
-      );
-    } else {
-      // Exercise is in a subroutine
-      for (let i = 0; i < routineItems.length; i++) {
-        const item = routineItems[i];
-        if (isExercise(item)) continue;
-        if (isExerciseInRoutine(exerciseToEdit.id, item.exercises)) {
-          const newExercises = item.exercises.map((exercise) =>
-            exercise.id === exerciseToEdit.id ? exerciseToEdit : exercise,
-          );
-          const newSubroutine = { ...item, exercises: newExercises };
-          const newRoutineItems = routineItems.map((routineItem, index) =>
-            index === i ? newSubroutine : routineItem,
-          );
-          setRoutineItems(newRoutineItems);
-        }
-      }
-    }
+    setRoutineItems(
+      routineItems.map((exercise) =>
+        exercise.id === exerciseToEdit.id ? exerciseToEdit : exercise,
+      ),
+    );
+
     setShowEditExerciseModal(false);
   };
 
   const saveEditedSubroutine = () => {
     if (!subroutineToEdit) return;
-
     setRoutineItems(
       routineItems.map((item) =>
         item.id === subroutineToEdit.id ? subroutineToEdit : item,
       ),
     );
+
     setShowEditSubroutineModal(false);
   };
 
   const deleteExercise = (exerciseId: string) => {
-    // Check if the exercise is in the outer routine, if not, check in the subroutines
-    // start iterating over every routine item
-    for (let i = 0; i < routineItems.length; i++) {
-      const item = routineItems[i];
-      if (isExercise(item)) {
-        if (item.id === exerciseId) {
-          setRoutineItems(
-            routineItems.filter((exercise) => exercise.id !== exerciseId),
-          );
-          return;
-        }
-      } else {
-        // If the item is a subroutine, iterate over its exercises
-        for (let j = 0; j < item.exercises.length; j++) {
-          if (item.exercises[j].id === exerciseId) {
-            const newExercises = [...routineItems];
+    setRoutineItems(
+      routineItems.filter((exercise) => exercise.id !== exerciseId),
+    );
+  };
 
-            const newSubroutineExercises = item.exercises.filter(
-              (exercise) => exercise.id !== exerciseId,
-            );
-            const newSubroutine = {
-              ...item,
-              exercises: newSubroutineExercises,
-            };
-            newExercises[i] = newSubroutine;
-            setRoutineItems(newExercises);
-            return;
-          }
-        }
-      }
-    }
+  const deleteSubroutine = (subroutineId: string) => {
+    setRoutineItems(
+      routineItems.filter((exercise) => !exercise.id.includes(subroutineId)),
+    );
   };
 
   const duplicateExercise = (exerciseUniqueId: string) => {
-    let exercise = routineItems.find(
+    const exercise = routineItems.find(
       (exercise) => exercise.id === exerciseUniqueId,
     );
-    if (exercise && isExercise(exercise)) {
+    if (exercise) {
       const newExercise = {
         id: idGen(),
         exerciseId: exercise.exerciseId,
         name: exercise.name,
         quantity: exercise.quantity,
         unit: exercise.unit,
-      } as ExerciseInRoutine;
+        image_url: exercise.image_url,
+        description: exercise.description,
+      } as FlatRoutineItem;
+      console.log(newExercise);
       setRoutineItems([...routineItems, newExercise]);
-    } else {
-      for (let i = 0; i < routineItems.length; i++) {
-        const item = routineItems[i];
-        if (isExercise(item)) continue;
-        if (isExerciseInRoutine(exerciseUniqueId, item.exercises)) {
-          exercise = item.exercises.find(
-            (exercise) => exercise.id === exerciseUniqueId,
-          );
-
-          if (!exercise) return;
-          const newExercise = {
-            id: idGen(),
-            exerciseId: exercise.exerciseId,
-            name: exercise.name,
-            quantity: exercise.quantity,
-            unit: exercise.unit,
-          } as ExerciseInRoutine;
-          let newSubroutineExercises = item.exercises;
-          newSubroutineExercises = [...newSubroutineExercises, newExercise];
-
-          const newSubroutine = { ...item, exercises: newSubroutineExercises };
-          const newRoutineItems = routineItems.map((routineItem, index) =>
-            index === i ? newSubroutine : routineItem,
-          );
-          setRoutineItems(newRoutineItems);
-        }
-      }
     }
-  };
-
-  const deleteSubroutine = (subroutineId: string) => {
-    setRoutineItems(routineItems.filter((item) => item.id !== subroutineId));
-  };
-
-  const duplicateSubroutine = (subroutineId: string) => {
-    const subroutine = routineItems.find(
-      (item) => !isExercise(item) && item.id === subroutineId,
-    ) as Subroutine;
-    if (!subroutine) return;
-    const newSubroutine = {
-      id: idGen(),
-      quantity: subroutine.quantity,
-      unit: subroutine.unit,
-      exercises: subroutine.exercises,
-    } as Subroutine;
-    setRoutineItems([...routineItems, newSubroutine]);
   };
 
   useEffect(() => {
@@ -354,39 +340,23 @@ export default function EditRoutineLayout({
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const renderNewSubroutineSwipe = (
-    _progress: Animated.AnimatedInterpolation<string | number>,
-    dragX: Animated.AnimatedInterpolation<string | number>,
-  ) => {
-    const trans = dragX.interpolate({
-      inputRange: [0, 50, 100, 101],
-      outputRange: [-20, 2, 0, 1],
-    });
-    return (
-      <RectButton style={style.createSwipe}>
-        <Animated.Text
-          style={[
-            style.leftActionText,
-            {
-              transform: [{ translateX: trans }],
-            },
-          ]}
-        >
-          <Text>New Subroutine</Text>
-        </Animated.Text>
-      </RectButton>
-    );
-  };
-
   const createEmptySubroutine = (quantity: number, unit: string) => {
-    const newSubroutine = {
-      id: idGen(),
+    const subroutineId = idGen();
+    const openSubroutine = {
+      id: subroutineId + "-open",
+      exerciseId: "open-sub",
+      name: " ",
       quantity,
       unit,
-      exercises: [],
-    } as Subroutine;
-    setRoutineItems([...routineItems, newSubroutine]);
+    } as FlatRoutineItem;
+    const closeSubroutine = {
+      id: subroutineId + "-close",
+      exerciseId: "close-sub",
+      name: " ",
+      quantity: 0,
+      unit: "",
+    } as FlatRoutineItem;
+    setRoutineItems([...routineItems, openSubroutine, closeSubroutine]);
   };
 
   const closeSwipeable = (exerciseId: string) => {
@@ -396,12 +366,33 @@ export default function EditRoutineLayout({
     }
   };
 
-  const renderExercise = ({
+  // Assume a function to extract the base ID from your specific ID format
+  const getBaseId = (id: string) => {
+    return id.replace(/-open$|-close$/, "");
+  };
+
+  const handleSwipe = (item: FlatRoutineItem, direction: string) => {
+    if (direction === "left") {
+      if (item.exerciseId === "open-sub") {
+        deleteSubroutine(item.id.slice(0, -5));
+      } else if (item.exerciseId === "close-sub") {
+        deleteSubroutine(item.id.slice(0, -6));
+      } else {
+        deleteExercise(item.id);
+      }
+    } else {
+      duplicateExercise(item.id);
+    }
+    // Close the swipeable
+    closeSwipeable(item.id);
+  };
+
+  const renderItem = ({
     item,
     drag,
     isActive,
   }: {
-    item: ExerciseInRoutine;
+    item: FlatRoutineItem;
     drag: any;
     isActive: boolean;
   }) => {
@@ -415,273 +406,126 @@ export default function EditRoutineLayout({
         renderLeftActions={renderDeleteSwipe}
         renderRightActions={renderDuplicateSwipe}
         onSwipeableOpen={(direction) => {
-          if (direction === "left") {
-            deleteExercise(item.id);
-          } else {
-            duplicateExercise(item.id);
-          }
-          // Close the swipeable
-          closeSwipeable(item.id);
+          handleSwipe(item, direction);
         }}
       >
-        <TouchableOpacity
-          style={[
-            style.exerciseListItem,
-            {
-              backgroundColor:
-                Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
-            },
-          ]}
-          onLongPress={drag}
-          disabled={isActive}
-          onPress={() => {
-            setShowEditExerciseModal(true);
-            setIsSubroutine(false);
-            setExerciseToEdit(item);
-          }}
-        >
-          <Text
-            style={[
-              style.exerciseListItemName,
-              {
-                color: colorScheme
-                  ? Colors[colorScheme].text
-                  : Colors.light.text,
-              },
-            ]}
-          >
-            {item.name}
-          </Text>
-          <Text
-            style={[
-              style.exerciseListItemQuantity,
-              {
-                color: colorScheme
-                  ? Colors[colorScheme].text
-                  : Colors.light.text,
-              },
-            ]}
-          >
-            {item.quantity} {item.unit}
-          </Text>
-        </TouchableOpacity>
+        {item.exerciseId === "open-sub" &&
+          renderOpenSubroutine({ item, drag, isActive })}
+        {item.exerciseId === "close-sub" &&
+          renderCloseSubroutine({ item, drag, isActive })}
+        {!item.exerciseId.includes("sub") &&
+          renderExercise({ item, drag, isActive })}
       </Swipeable>
     );
   };
 
-  const renderSubroutine = ({
+  const renderExercise = ({
     item,
     drag,
     isActive,
   }: {
-    item: Subroutine;
+    item: FlatRoutineItem;
     drag: any;
     isActive: boolean;
   }) => {
     return (
-      <View
-        style={{
-          backgroundColor:
-            Colors[colorScheme ? colorScheme : "light"].tabBackgroundColor,
-          borderRadius: 10,
+      <TouchableOpacity
+        style={[
+          style.exerciseListItem,
+          {
+            backgroundColor:
+              item.exerciseId === "open-sub" || item.exerciseId === "close-sub"
+                ? Colors[colorScheme ? colorScheme : "light"].primaryBackground
+                : Colors[colorScheme ? colorScheme : "light"]
+                    .tabBackgroundColor,
+
+            paddingLeft: item.inSubroutine ? 40 : 10,
+            borderRadius: item.inSubroutine ? 0 : 10,
+          },
+        ]}
+        onLongPress={drag}
+        disabled={isActive}
+        onPress={() => {
+          setShowEditExerciseModal(true);
+          setIsSubroutine(false);
+          setExerciseToEdit(item);
         }}
       >
-        <Swipeable
-          ref={(ref) => {
-            if (ref) {
-              swipeableRefs.set(item.id, ref);
-            }
-          }}
-          renderLeftActions={renderDeleteSwipe}
-          renderRightActions={renderDuplicateSwipe}
-          onSwipeableOpen={(direction) => {
-            if (direction === "left") {
-              deleteSubroutine(item.id);
-            } else {
-              duplicateSubroutine(item.id);
-            }
-            // Close the swipeable
-            closeSwipeable(item.id);
-          }}
+        <Text
+          style={[
+            style.exerciseListItemName,
+            {
+              color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+            },
+          ]}
         >
-          <TouchableOpacity
-            style={[
-              style.subroutineListItem,
-              {
-                backgroundColor:
-                  Colors[colorScheme ? colorScheme : "light"]
-                    .tabBackgroundColor,
-                alignItems: "center",
-              },
-            ]}
-            onLongPress={drag}
-            disabled={isActive}
-            onPress={() => {
-              setShowEditSubroutineModal(true);
-              setIsSubroutine(true);
-              setSubroutineToEdit(item);
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  setCollapsedSubroutines((prevState) => {
-                    const newState = new Map(prevState);
-                    newState.set(item.id, !newState.get(item.id));
-                    return newState;
-                  });
-                }}
-              >
-                <Ionicons
-                  name={
-                    collapsedSubroutines.get(item.id)
-                      ? "chevron-forward"
-                      : "chevron-down"
-                  }
-                  size={24}
-                  color={
-                    colorScheme ? Colors[colorScheme].text : Colors.light.text
-                  }
-                />
-              </TouchableOpacity>
-
-              <Text
-                style={{
-                  color: colorScheme
-                    ? Colors[colorScheme].text
-                    : Colors.light.text,
-                }}
-              >
-                {item.exercises.length} Exercises
-              </Text>
-            </View>
-            <Text
-              style={{
-                color: colorScheme
-                  ? Colors[colorScheme].text
-                  : Colors.light.text,
-              }}
-            >
-              {item.quantity} {item.unit}
-            </Text>
-          </TouchableOpacity>
-        </Swipeable>
-
-        <Collapsible collapsed={collapsedSubroutines.get(item.id)}>
-          <View style={{ marginLeft: 20 }}>
-            <FlatList
-              data={item.exercises}
-              renderItem={({ item }) =>
-                renderExercise({ item, drag, isActive })
-              }
-              keyExtractor={(item) => item.id}
-            />
-            {/* Item to add exercise */}
-            <View
-              style={[
-                style.exerciseListItem,
-                {
-                  backgroundColor: colorScheme
-                    ? Colors[colorScheme].tabBackgroundColor
-                    : Colors.light.tabBackgroundColor,
-                },
-              ]}
-            >
-              <TextInput
-                style={[
-                  style.exerciseListItemName,
-                  {
-                    color: colorScheme
-                      ? Colors[colorScheme].text
-                      : Colors.light.text,
-                  },
-                ]}
-                placeholder="Select
-                Exercise"
-                value={selectedExercise?.name}
-                onPressIn={() => {
-                  setShowExerciseSelectModal(true);
-                  // Hide the keyboard
-                  Keyboard.dismiss();
-                }}
-                readOnly
-              />
-              <TextInput
-                style={[
-                  style.exerciseListItemQuantity,
-                  {
-                    color: colorScheme
-                      ? Colors[colorScheme].text
-                      : Colors.light.text,
-                  },
-                ]}
-                placeholder="Quantity"
-                value={selectedQuantity ? selectedQuantity.toString() : ""}
-                onChangeText={(text) =>
-                  setSelectedQuantity(
-                    isNaN(parseInt(text, 10)) ? null : parseInt(text, 10),
-                  )
-                }
-                inputMode="decimal"
-              />
-              <TextInput
-                style={[
-                  style.exerciseListItemQuantity,
-                  {
-                    color: colorScheme
-                      ? Colors[colorScheme].text
-                      : Colors.light.text,
-                  },
-                ]}
-                placeholder="Unit"
-                value={selectedUnit ?? ""}
-                onPressIn={() => {
-                  setShowUnitSelectModal(true);
-                  Keyboard.dismiss();
-                }}
-                readOnly
-              />
-              <TouchableOpacity
-                onPress={() => {
-                  if (!selectedExercise || !selectedQuantity) return;
-                  const newExercise = {
-                    id: idGen(),
-                    exerciseId: selectedExercise.id,
-                    name: selectedExercise.name,
-                    quantity: selectedQuantity,
-                    unit: selectedUnit,
-                  } as ExerciseInRoutine;
-                  const newExercises = [...item.exercises];
-                  newExercises.push(newExercise);
-                  const newSubroutine = {
-                    ...item,
-                    exercises: newExercises,
-                  };
-                  const newRoutineItems = routineItems.map((routineItem) =>
-                    routineItem.id === item.id ? newSubroutine : routineItem,
-                  );
-                  setRoutineItems(newRoutineItems);
-                  setSelectedExercise(null);
-                  setSelectedQuantity(null);
-                  setSelectedUnit(null);
-                }}
-              >
-                <Ionicons name="add" size={24} color="green" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Collapsible>
-      </View>
+          {item.name}
+        </Text>
+        <Text
+          style={[
+            style.exerciseListItemQuantity,
+            {
+              color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+            },
+          ]}
+        >
+          {item.quantity} {item.unit}
+        </Text>
+      </TouchableOpacity>
     );
   };
 
-  const renderRoutineItem = ({
+  const renderOpenSubroutine = ({
+    item,
+    drag,
+    isActive,
+  }: {
+    item: FlatRoutineItem;
+    drag: any;
+    isActive: boolean;
+  }) => {
+    return (
+      <TouchableOpacity
+        style={[
+          style.openSubroutineElement,
+          {
+            backgroundColor:
+              Colors[colorScheme ? colorScheme : "light"].primaryBackground,
+            borderColor: Colors.gray,
+          },
+        ]}
+        onLongPress={drag}
+        disabled={isActive}
+        onPress={() => {
+          setShowEditSubroutineModal(true);
+          setSubroutineToEdit(item);
+        }}
+      >
+        <Text
+          style={[
+            style.exerciseListItemName,
+            {
+              color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+            },
+          ]}
+        >
+          Subroutine
+        </Text>
+        <Text
+          style={[
+            style.exerciseListItemQuantity,
+            {
+              color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
+            },
+          ]}
+        >
+          {item.quantity} {item.unit}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCloseSubroutine = ({
     item,
     drag,
     isActive,
@@ -691,11 +535,32 @@ export default function EditRoutineLayout({
     isActive: boolean;
   }) => {
     return (
-      <ScaleDecorator>
-        {isExercise(item)
-          ? renderExercise({ item, drag, isActive })
-          : renderSubroutine({ item, drag, isActive })}
-      </ScaleDecorator>
+      <TouchableOpacity
+        style={[
+          style.closeSubroutineElement,
+          {
+            backgroundColor:
+              Colors[colorScheme ? colorScheme : "light"].primaryBackground,
+            borderColor: Colors.gray,
+          },
+        ]}
+        onLongPress={drag}
+        disabled={isActive}
+      />
+    );
+  };
+
+  const renderRoutineItem = ({
+    item,
+    drag,
+    isActive,
+  }: {
+    item: FlatRoutineItem;
+    drag: any;
+    isActive: boolean;
+  }) => {
+    return (
+      <ScaleDecorator>{renderItem({ item, drag, isActive })}</ScaleDecorator>
     );
   };
 
@@ -783,7 +648,13 @@ export default function EditRoutineLayout({
             style={style.exerciseList}
             data={routineItems}
             containerStyle={{ flex: 1 }}
-            onDragEnd={({ data }) => setRoutineItems(data)}
+            ref={flatListRef}
+            onDragEnd={({ data }) => {
+              const newRoutineItems = manageSubitemsAssignment(data);
+              if (newRoutineItems) {
+                setRoutineItems(newRoutineItems);
+              }
+            }}
             renderItem={({ item, drag, isActive }) =>
               renderRoutineItem({ item, drag, isActive })
             }
@@ -857,7 +728,10 @@ export default function EditRoutineLayout({
 
               <TouchableOpacity
                 onPress={() => {
+                  // If there's no exercise selected, do nothing
                   if (!selectedExercise || !selectedQuantity) return;
+
+                  // If the selected exercise is a new subroutine, create a new subroutine
                   if (selectedExercise.id === NEW_SUBROUTINE_ID) {
                     if (!selectedQuantity || !selectedUnit) return;
                     createEmptySubroutine(selectedQuantity, selectedUnit);
@@ -866,18 +740,29 @@ export default function EditRoutineLayout({
                     setSelectedUnit(EXERCISE_UNITS[0]);
                     return;
                   }
-                  if (!selectedExercise || !selectedQuantity) return;
                   const newExercise = {
                     id: idGen(),
                     exerciseId: selectedExercise.id,
                     name: selectedExercise.name,
                     quantity: selectedQuantity,
                     unit: selectedUnit,
-                  } as ExerciseInRoutine;
-                  setRoutineItems([...routineItems, newExercise]);
+                    image_url: selectedExercise.image_url ?? null,
+                    description: selectedExercise.description,
+                  } as FlatRoutineItem;
+
+                  console.log(newExercise);
+
+                  setRoutineItems([...routineItems, newExercise]); // Add the new exercise to the routine
+
+                  // Reset the form
                   setSelectedExercise(null);
                   setSelectedQuantity(null);
                   setSelectedUnit(EXERCISE_UNITS[0]);
+
+                  // move the list to the bottom
+                  if (flatListRef.current) {
+                    flatListRef.current.scrollToEnd();
+                  }
                 }}
               >
                 <Ionicons name="add" size={24} color="green" />

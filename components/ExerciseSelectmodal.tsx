@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import KeyboardSpacer from "react-native-keyboard-spacer";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NEW_SUBROUTINE_ITEM, REST_ITEM } from "@/constants";
 import Colors from "@/constants/Colors";
@@ -82,107 +83,118 @@ export default function ExerciseSelectModal({
         marginBottom={0}
         marginTop="auto"
       >
-        <TextInput
-          style={[
-            style.searchBar,
-            {
-              backgroundColor: colorScheme
-                ? Colors[colorScheme].tabBackgroundColor
-                : Colors.light.tabBackgroundColor,
-              color: colorScheme ? Colors[colorScheme].text : Colors.light.text,
-            },
-          ]}
-          placeholder="Search Exercises..."
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-        />
-
-        {/* Extra items */}
-        {extraItems.map((item) => (
-          <TouchableOpacity
-            key={item.id}
+        <SafeAreaView
+          style={{
+            width: "100%",
+            alignItems: "center",
+          }}
+        >
+          <TextInput
             style={[
-              style.button,
+              style.searchBar,
               {
-                backgroundColor:
-                  Colors[colorScheme ? colorScheme : "light"][item.color],
+                backgroundColor: colorScheme
+                  ? Colors[colorScheme].tabBackgroundColor
+                  : Colors.light.tabBackgroundColor,
+                color: colorScheme
+                  ? Colors[colorScheme].text
+                  : Colors.light.text,
               },
             ]}
-            onPress={() => {
-              setSelectedExercise(item);
-              setSearchTerm("");
-              closeModal();
-            }}
-          >
-            <Text
+            placeholder="Search Exercises..."
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+          />
+
+          {/* Extra items */}
+          {extraItems.map((item) => (
+            <TouchableOpacity
+              key={item.id}
               style={[
-                style.exerciseSelectItem,
+                style.button,
                 {
-                  color: colorScheme
-                    ? Colors[colorScheme].text
-                    : Colors.light.text,
+                  backgroundColor:
+                    Colors[colorScheme ? colorScheme : "light"][item.color],
                 },
               ]}
+              onPress={() => {
+                setSelectedExercise(item);
+                setSearchTerm("");
+                closeModal();
+              }}
             >
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  style.exerciseSelectItem,
+                  {
+                    color: colorScheme
+                      ? Colors[colorScheme].text
+                      : Colors.light.text,
+                  },
+                ]}
+              >
+                {item.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
 
-        {/* Separator */}
-        <View
-          style={{
-            borderBottomColor: colorScheme
-              ? Colors[colorScheme].tabBackgroundColor
-              : Colors.light.tabBackgroundColor,
-            // borderBottomWidth: 1,
-            width: "100%",
-            marginVertical: 10,
-          }}
-        />
+          {/* Separator */}
+          <View
+            style={{
+              borderBottomColor: colorScheme
+                ? Colors[colorScheme].tabBackgroundColor
+                : Colors.light.tabBackgroundColor,
+              // borderBottomWidth: 1,
+              width: "100%",
+              marginVertical: 10,
+            }}
+          />
 
-        {loading ? (
-          <ActivityIndicator />
-        ) : (
-          <ScrollView style={{ width: "100%" }}>
-            {exercises
-              .filter((exercise) =>
-                exercise.name.toLowerCase().includes(searchTerm.toLowerCase()),
-              )
-              .map((exercise) => (
-                <TouchableOpacity
-                  key={exercise.id}
-                  style={[
-                    style.button,
-                    {
-                      backgroundColor: colorScheme
-                        ? Colors[colorScheme].tabBackgroundColor
-                        : Colors.light.tabBackgroundColor,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedExercise(exercise);
-                    setSearchTerm("");
-                    closeModal();
-                  }}
-                >
-                  <Text
+          {loading ? (
+            <ActivityIndicator />
+          ) : (
+            <ScrollView style={{ width: "100%" }}>
+              {exercises
+                .filter((exercise) =>
+                  exercise.name
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase()),
+                )
+                .map((exercise) => (
+                  <TouchableOpacity
+                    key={exercise.id}
                     style={[
-                      style.exerciseSelectItem,
+                      style.button,
                       {
-                        color: colorScheme
-                          ? Colors[colorScheme].text
-                          : Colors.light.text,
+                        backgroundColor: colorScheme
+                          ? Colors[colorScheme].tabBackgroundColor
+                          : Colors.light.tabBackgroundColor,
                       },
                     ]}
+                    onPress={() => {
+                      setSelectedExercise(exercise);
+                      setSearchTerm("");
+                      closeModal();
+                    }}
                   >
-                    {exercise.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-          </ScrollView>
-        )}
-        <KeyboardSpacer />
+                    <Text
+                      style={[
+                        style.exerciseSelectItem,
+                        {
+                          color: colorScheme
+                            ? Colors[colorScheme].text
+                            : Colors.light.text,
+                        },
+                      ]}
+                    >
+                      {exercise.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+            </ScrollView>
+          )}
+          <KeyboardSpacer />
+        </SafeAreaView>
       </Modal.Content>
     </Modal>
   );

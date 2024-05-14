@@ -32,8 +32,6 @@ export default function Timer({
   const [seconds, setSeconds] = useState(0);
   const [milliseconds, setMilliseconds] = useState(0);
 
-  const sound = new Audio.Sound();
-
   const colorScheme = useColorScheme();
 
   useEffect(() => {
@@ -106,21 +104,11 @@ export default function Timer({
       });
       await soundObject.setPositionAsync(0);
       await soundObject.playAsync();
-
-      // Your sound is playing!
     } catch (error) {
       console.log("Error playing sound:", error);
+    } finally {
     }
   }
-
-  useEffect(() => {
-    return sound
-      ? () => {
-          console.log("Unloading Sound");
-          // sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
 
   return (
     <View
