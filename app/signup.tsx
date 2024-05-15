@@ -4,7 +4,14 @@ import {
   sendEmailVerification,
   updateProfile,
 } from "firebase/auth";
-import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -23,11 +30,12 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 // Check the name + number with the smaller number available in the database
 async function createUsername(displayName: string) {
   const usersRef = collection(FIRESTORE_DB, "users");
-  // Get all usernames that start with the display name
+  // Get all usernames that start with the formated display name
+  const formatedDisplayName = displayName.toLowerCase().replace(/ /g, "");
   const q = query(
     usersRef,
-    where("username", ">=", displayName),
-    where("username", "<", displayName + "\uf8ff"),
+    where("username", ">=", formatedDisplayName),
+    where("username", "<", formatedDisplayName + "\uf8ff"),
   );
   const querySnapshot = await getDocs(q);
   const usedUsernames: string[] = [];
@@ -35,10 +43,10 @@ async function createUsername(displayName: string) {
     usedUsernames.push(doc.data().username);
   });
   // Find the smallest number that is not used
-  let username = displayName;
+  let username = formatedDisplayName;
   let i = 1;
   while (usedUsernames.includes(username)) {
-    username = displayName + i;
+    username = formatedDisplayName + i;
     i++;
   }
   return username;
@@ -88,9 +96,18 @@ export default function Signup() {
         });
         await sendEmailVerification(auth.currentUser);
         const username = await createUsername(displayName);
-        await setDoc(doc(FIRESTORE_DB, "users", auth.currentUser.uid), {
-          username,
-        });
+        console.log("Username");
+        console.log(username);
+        console.log("User ID");
+        console.log(auth.currentUser.uid);
+        await setDoc(
+          doc(FIRESTORE_DB, "users", auth.currentUser.uid),
+          {
+            username,
+            displayName,
+          },
+          { merge: true },
+        );
         auth.signOut();
       } else {
         alert("Error creating account. Please try again.");

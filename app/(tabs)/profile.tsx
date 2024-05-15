@@ -3,6 +3,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, useColorScheme } from "react-native";
 
+
 import { Text, View } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";

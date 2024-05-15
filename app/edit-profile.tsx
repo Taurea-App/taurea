@@ -67,7 +67,7 @@ export default function EditProfileScreen() {
 
   const usernameExists = async (username: string) => {
     const usersRef = collection(FIRESTORE_DB, "users");
-    const q = query(usersRef, where("username", "==", username));
+    const q = query(usersRef, where("username", "==", username.toLowerCase()));
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
   };
@@ -88,13 +88,14 @@ export default function EditProfileScreen() {
             setError("Username already exists");
             return;
           } else {
-            await setDoc(userRef, { username }, { merge: true });
+            await setDoc(userRef, { username: username.toLowerCase() }, { merge: true });
             router.back();
           }
         }
         // Modify the display name
         if (firebaseUser.displayName !== displayName) {
           await updateProfile(firebaseUser, { displayName });
+          await setDoc(userRef, { displayName }, { merge: true });
           // Go to the last screen
           router.back();
         }

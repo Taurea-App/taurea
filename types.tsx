@@ -33,8 +33,8 @@ export type FlatRoutineItem = ExerciseInRoutine & {
   inSubroutine: boolean;
 };
 
-
 export type DBUser = {
+  id: string;
   uid: string;
   username: string | null;
 };
