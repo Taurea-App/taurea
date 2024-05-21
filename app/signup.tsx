@@ -96,10 +96,6 @@ export default function Signup() {
         });
         await sendEmailVerification(auth.currentUser);
         const username = await createUsername(displayName);
-        console.log("Username");
-        console.log(username);
-        console.log("User ID");
-        console.log(auth.currentUser.uid);
         await setDoc(
           doc(FIRESTORE_DB, "users", auth.currentUser.uid),
           {

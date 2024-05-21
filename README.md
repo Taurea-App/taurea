@@ -7,6 +7,20 @@ Run the following commands to get started:
 npm install
 ```
 
+## Prebuild
+```bash
+npx expo prebuild
+```
+
+or for a specific platform:
+```bash
+npx expo prebuild --platform android
+```
+or 
+```bash
+npx expo prebuild --platform ios
+```
+
 ### Run the code
 ```bash
 npx expo start

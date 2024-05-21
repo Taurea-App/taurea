@@ -35,12 +35,10 @@ export default function SearchScreen() {
   const [searchResults, setSearchResults] = useState<DBUser[]>([]);
 
   const handleSearch = async (text: string) => {
-    console.log(text);
 
     setSearch(text);
     if (text.trim() === "") {
       setSearchResults([]);
-      console.log("empty search");
       return;
     }
     const usersRef = collection(FIRESTORE_DB, "users");
@@ -68,7 +66,6 @@ export default function SearchScreen() {
       const filteredResults = queryResults.filter(
         (user) => user.id !== firebaseUser?.uid,
       );
-      console.log(filteredResults);
       setSearchResults(filteredResults);
       // setSearchResults(queryResults);
     } catch (error) {
@@ -106,12 +103,7 @@ export default function SearchScreen() {
           onChangeText={handleSearch}
           value={search}
         />
-        {/* <Pressable
-          style={styles.searchButton}
-          onPress={() => console.log("search")}
-        >
-          <Text style={styles.searchButtonText}>Search</Text>
-        </Pressable> */}
+
       </View>
 
       <View>
@@ -120,10 +112,23 @@ export default function SearchScreen() {
           data={searchResults}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            // <Link to={`/profile/${item.id}`}>
-            //   <Text>{item.username}</Text>
-            // </Link>
-            <Text>{item.username}</Text>
+            <Link
+              href={{
+                pathname: "/users/[userId]",
+                params: { userId: item.id },
+              }}
+              style={{
+                padding: 10,
+                backgroundColor:
+                  Colors[colorScheme ?? "light"].tabBackgroundColor,
+                marginBottom: 10,
+                borderRadius: 5,
+                color: Colors[colorScheme ?? "light"].text,
+              }}
+            >
+              {item.username}
+            </Link>
+            // <Text>{item.username}</Text>
           )}
         />
       </View>

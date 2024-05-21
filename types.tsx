@@ -27,6 +27,7 @@ export type Routine = {
   name: string;
   description: string;
   routineItems: RoutineItem[];
+  publicRoutineId?: string;
 };
 
 export type FlatRoutineItem = ExerciseInRoutine & {
@@ -37,4 +38,5 @@ export type DBUser = {
   id: string;
   uid: string;
   username: string | null;
+  displayName: string | null;
 };

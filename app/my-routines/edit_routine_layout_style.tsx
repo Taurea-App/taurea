@@ -182,4 +182,12 @@ export const editRoutineLayoutStyle = StyleSheet.create({
     borderTopRightRadius: 0,
     marginBottom: 5,
   },
+  isPublicSwitch: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    // padding: 10,
+    width: "100%",
+    // borderRadius: 10,
+    // borderBottomWidth: 1,
+  },
 });

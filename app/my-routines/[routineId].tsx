@@ -77,7 +77,7 @@ export default function Page() {
     if (!routineId) return;
 
     router.push({
-      pathname: "/routine/edit/[routineId]",
+      pathname: "/my-routines/edit/[routineId]",
       params: { routineId },
     });
   };
@@ -149,7 +149,7 @@ export default function Page() {
           <View style={styles.buttonsContainer}>
             <Link
               href={{
-                pathname: "/routine/run/[routineId]",
+                pathname: "/my-routines/run/[routineId]",
                 params: { routineId },
               }}
               asChild

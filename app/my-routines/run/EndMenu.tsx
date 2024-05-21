@@ -74,7 +74,7 @@ export default function EndMenu({
       </Pressable>
 
       {/* Go Back Button */}
-      <Link href={`/routine/${routineId}`} asChild>
+      <Link href={`/my-routines/${routineId}`} asChild>
         <Pressable
           style={[
             styles.button,

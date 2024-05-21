@@ -58,7 +58,7 @@ export default function MyRoutinesScreen() {
       >
         <Link
           href={{
-            pathname: "/routine/[routineId]",
+            pathname: "/my-routines/[routineId]",
             params: { routineId: item.id },
           }}
           asChild
@@ -113,7 +113,7 @@ export default function MyRoutinesScreen() {
         />
       )}
       {!loading && (
-        <Link href="/routine/new" asChild>
+        <Link href="/my-routines/new" asChild>
           <TouchableHighlight
             style={styles.addRoutineButton}
             underlayColor="darkorange"
