@@ -1,4 +1,5 @@
-import { Link } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import {
   and,
   collection,
@@ -9,20 +10,21 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { FlatList } from "native-base";
+import levenshtein from "js-levenshtein";
 import { useEffect, useState } from "react";
 import {
-  Pressable,
   StyleSheet,
-  Text,
   TextInput,
   View,
   useColorScheme,
+  Text,
+  FlatList,
+  TouchableOpacity,
 } from "react-native";
 
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
-import { DBUser } from "@/types";
+import { DBUser, PublicRoutine, SearchResult } from "@/types";
 
 export default function SearchScreen() {
   const colorScheme = useColorScheme();
@@ -32,41 +34,91 @@ export default function SearchScreen() {
   // dbUser is the user object from Firestore. Ith has the same uid as the firebaseUser
   const [dbUser, setDbUser] = useState<DBUser | null>(null);
   const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<DBUser[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
   const handleSearch = async (text: string) => {
-
     setSearch(text);
     if (text.trim() === "") {
       setSearchResults([]);
       return;
     }
     const usersRef = collection(FIRESTORE_DB, "users");
+    const routinesRef = collection(FIRESTORE_DB, "Routines");
+
     const usernameQuery = query(
       usersRef,
       or(
         and(
-          where("username", ">=", text.toLowerCase()),
-          where("username", "<=", text.toLowerCase() + "\uf8ff"),
+          where("username_lowercase", ">=", text.toLowerCase()),
+          where("username_lowercase", "<=", text.toLowerCase() + "\uf8ff"),
         ),
         and(
-          where("displayName", ">=", text.toLowerCase()),
-          where("displayName", "<=", text.toLowerCase() + "\uf8ff"),
+          where("displayName_lowercase", ">=", text.toLowerCase()),
+          where("displayName_lowercase", "<=", text.toLowerCase() + "\uf8ff"),
+        ),
+      ),
+    );
+
+    const routineQuery = query(
+      routinesRef,
+      or(
+        and(
+          where("name_lowercase", ">=", text.toLowerCase()),
+          where("name_lowercase", "<=", text.toLowerCase() + "\uf8ff"),
+        ),
+        and(
+          where("description_lowercase", ">=", text.toLowerCase()),
+          where("description_lowercase", "<=", text.toLowerCase() + "\uf8ff"),
         ),
       ),
     );
 
     try {
-      const querySnapshot = await getDocs(usernameQuery);
+      const usernameQuerySnapshot = await getDocs(usernameQuery);
+      const routineQuerySnapshot = await getDocs(routineQuery);
 
-      const queryResults = querySnapshot.docs.map((doc) => {
+      const usernameQueryResults = usernameQuerySnapshot.docs.map((doc) => {
         return { ...doc.data(), id: doc.id };
       }) as DBUser[];
       // Filter out the current user
-      const filteredResults = queryResults.filter(
+      const filteredUserResults = usernameQueryResults.filter(
         (user) => user.id !== firebaseUser?.uid,
       );
-      setSearchResults(filteredResults);
+
+      const routineQueryResults = routineQuerySnapshot.docs.map((doc) => {
+        return { ...doc.data(), id: doc.id };
+      }) as PublicRoutine[];
+
+      // Combine results and create SearchResult objects
+      const combinedResults: SearchResult[] = [...filteredUserResults].map(
+        (user) => {
+          return {
+            id: "usr-" + user.id,
+            data: user,
+            type: "user",
+            score: levenshtein(user.username, text),
+            title: user.displayName ?? user.username,
+            subtitle: user.username,
+            href: "/users/" + user.id,
+          };
+        },
+      );
+
+      routineQueryResults.forEach((routine) => {
+        combinedResults.push({
+          id: "rtn-" + routine.id,
+          data: routine,
+          type: "routine",
+          score: levenshtein(routine.name, text),
+          title: routine.name,
+          subtitle: "by @" + routine.user.username,
+          href: "/routines/" + routine.id,
+        });
+      });
+
+      // Sort by score
+      combinedResults.sort((a, b) => a.score - b.score);
+      setSearchResults(combinedResults);
       // setSearchResults(queryResults);
     } catch (error) {
       console.error("Error searching", error);
@@ -103,7 +155,6 @@ export default function SearchScreen() {
           onChangeText={handleSearch}
           value={search}
         />
-
       </View>
 
       <View>
@@ -112,10 +163,9 @@ export default function SearchScreen() {
           data={searchResults}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <Link
-              href={{
-                pathname: "/users/[userId]",
-                params: { userId: item.id },
+            <TouchableOpacity
+              onPress={() => {
+                router.navigate(item.href);
               }}
               style={{
                 padding: 10,
@@ -123,11 +173,44 @@ export default function SearchScreen() {
                   Colors[colorScheme ?? "light"].tabBackgroundColor,
                 marginBottom: 10,
                 borderRadius: 5,
-                color: Colors[colorScheme ?? "light"].text,
+                flexDirection: "row",
+                alignItems: "center",
               }}
             >
-              {item.username}
-            </Link>
+              {/* Icon depending on the type */}
+              <Ionicons
+                name={item.type === "user" ? "person" : "barbell"}
+                size={24}
+                color={Colors[colorScheme ?? "light"].text}
+                style={{
+                  marginRight: 10,
+                }}
+              />
+              <View
+                style={{
+                  flex: 1,
+                }}
+              >
+                <Text
+                  style={{
+                    color: Colors[colorScheme ?? "light"].text,
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {item.title}
+                </Text>
+                <Text
+                  style={{
+                    color: Colors[colorScheme ?? "light"].text,
+                    fontSize: 12,
+                    // marginLeft: 12,
+                  }}
+                >
+                  {item.subtitle}
+                </Text>
+              </View>
+            </TouchableOpacity>
             // <Text>{item.username}</Text>
           )}
         />

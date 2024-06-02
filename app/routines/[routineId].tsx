@@ -1,67 +1,46 @@
 import { Ionicons } from "@expo/vector-icons";
-import { ParamListBase } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import {
-  Link,
-  useLocalSearchParams,
-  useRouter,
-  Stack,
-  useNavigation,
-} from "expo-router";
-import { doc, getDoc, deleteDoc } from "firebase/firestore";
+import { Link, useLocalSearchParams, Stack, router } from "expo-router";
+import { addDoc, collection, doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Button,
   TouchableOpacity,
   Pressable,
   SafeAreaView,
   ActivityIndicator,
-  Modal,
 } from "react-native";
 
 import RoutineList from "@/components/RoutineList";
-import SlideUpModal from "@/components/SlideUpModal";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig"; // Adjust the import path as necessary
-import { Routine, ExerciseInRoutine, Subroutine } from "@/types"; // Adjust the import path as necessary
+import { PublicRoutine, ExerciseInRoutine, Subroutine } from "@/types"; // Adjust the import path as necessary
 
 export default function Page() {
   const colorScheme = useColorScheme();
 
   const { routineId } = useLocalSearchParams<{ routineId: string }>();
-  const [routine, setRoutine] = useState<Routine | null>(null);
+  const [routine, setRoutine] = useState<PublicRoutine | null>(null);
   const [routineItems, setRoutineItems] =
     useState<(ExerciseInRoutine | Subroutine)[]>();
-  const router = useRouter();
-  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-
-  const [showOptions, setShowOptions] = useState(false);
 
   const [loading, setLoading] = useState(true);
-
-  const auth = FIREBASE_AUTH;
 
   useEffect(() => {
     const fetchRoutineDetails = async () => {
       if (!routineId) return;
 
       // Fetch the routine details
-      const routineRef = doc(
-        FIRESTORE_DB,
-        "Routines",
-        routineId,
-      );
+      const routineRef = doc(FIRESTORE_DB, "Routines", routineId);
       const routineSnap = await getDoc(routineRef);
 
       if (routineSnap.exists()) {
         setRoutine({
           id: routineSnap.id,
           ...routineSnap.data(),
-        } as Routine);
+        } as PublicRoutine);
 
         setRoutineItems(routineSnap.data().routineItems);
         setLoading(false);
@@ -71,46 +50,35 @@ export default function Page() {
     fetchRoutineDetails();
   }, [routineId]);
 
-  const handleDelete = async () => {
-    setShowOptions(false);
-    if (!routineId) return;
-
-    await deleteDoc(
-      doc(
-        FIRESTORE_DB,
-        "users/" + auth.currentUser?.uid + "/routines",
-        routineId,
-      ),
-    );
-    // After deletion, navigate back or to another screen as needed
-    navigation.navigate("index");
+  const handleAddToMyRoutines = async () => {
+    // Copy the routine to the user's routines
+    try {
+      const newRoutine = {
+        name: routine?.name,
+        description: routine?.description,
+        isPublic: false,
+        routineItems,
+        modifyDate: new Date(),
+      };
+      await addDoc(
+        collection(
+          FIRESTORE_DB,
+          "users/" + FIREBASE_AUTH.currentUser?.uid + "/routines",
+        ),
+        newRoutine,
+      );
+      // Redirect to the user's routines
+      router.push("/");
+    } catch (error) {
+      console.error("Error adding routine to My Routines: ", error);
+    }
   };
-
-  // Consider adding a function for editing that navigates to an edit screen or opens an edit mode
 
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen
         options={{
           title: "",
-          headerRight: () => (
-            <Pressable onPress={() => setShowOptions(true)}>
-              <Text
-                style={{
-                  color: Colors["primary"],
-                  marginRight: 10,
-                  fontSize: 18,
-                  fontWeight: "bold",
-                }}
-              >
-                <Ionicons
-                  name="ellipsis-horizontal"
-                  size={24}
-                  color={Colors["primary"]}
-                />
-              </Text>
-            </Pressable>
-          ),
         }}
       />
       {loading && (
@@ -129,16 +97,33 @@ export default function Page() {
             flex: 1,
           }}
         >
-          <Text style={[styles.title, { color: Colors["primary"] }]}>
-            {routine?.name}
-          </Text>
-          <Text style={styles.description}>{routine?.description}</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginTop: 10,
+            }}
+          >
+            <View>
+              <Text style={[styles.title, { color: Colors["primary"] }]}>
+                {routine?.name}
+              </Text>
+              <Text style={styles.description}>{routine?.description}</Text>
+            </View>
+            <TouchableOpacity onPress={handleAddToMyRoutines}>
+              <Ionicons
+                name="add-circle-outline"
+                size={32}
+                color={Colors["primary"]}
+              />
+            </TouchableOpacity>
+          </View>
           <RoutineList routineItems={routineItems} colorScheme={colorScheme} />
           {/* Implement navigation or state change for editing here */}
           <View style={styles.buttonsContainer}>
             <Link
               href={{
-                pathname: "/my-routines/run/[routineId]",
+                pathname: "/routines/run/[routineId]",
                 params: { routineId },
               }}
               asChild
@@ -146,13 +131,13 @@ export default function Page() {
               <TouchableOpacity
                 style={{ backgroundColor: Colors["primary"], ...styles.button }}
               >
-                <Text>Run</Text>
+                {/* <Ionicons name="play" size={24} /> */}
+                <Text style={{  fontSize: 18 }}>Run</Text>
               </TouchableOpacity>
             </Link>
           </View>
         </View>
       )}
-
     </SafeAreaView>
   );
 }
@@ -188,12 +173,13 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
   },
   button: {
     padding: 15,
     margin: 10,
-    borderRadius: 20,
+    borderRadius: 30,
     alignItems: "center",
-    width: "30%",
   },
 });
