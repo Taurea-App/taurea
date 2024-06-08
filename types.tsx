@@ -56,6 +56,8 @@ export type DBUser = {
   uid: string;
   username: string | null;
   displayName: string | null;
+  email: string | null;
+  bio: string | null;
 };
 
 export interface SearchResult {

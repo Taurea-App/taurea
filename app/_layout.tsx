@@ -1,16 +1,16 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useGlobalSearchParams } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { User, onAuthStateChanged } from "firebase/auth";
-import { Container, NativeBaseProvider } from "native-base";
-import { createContext, useEffect, useState } from "react";
+import { NativeBaseProvider } from "native-base";
+import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import { UserProvider } from "./context/userContext";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import { DarkTheme, DefaultTheme } from "@/constants/themes";
-import { FIREBASE_AUTH } from "@/firebaseConfig";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -21,8 +21,6 @@ export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: "(tabs)",
 };
-
-export const UserContext = createContext<User | null>(null);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -53,21 +51,13 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    onAuthStateChanged(FIREBASE_AUTH, (authUser) => {
-      setUser(authUser);
-    });
-  }, []);
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NativeBaseProvider>
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
-          <UserContext.Provider value={user}>
+          <UserProvider>
             <Stack>
               <Stack.Screen
                 name="(tabs)"
@@ -78,7 +68,7 @@ function RootLayoutNav() {
                 options={{ title: "Login", headerShown: false }}
               />
             </Stack>
-          </UserContext.Provider>
+          </UserProvider>
         </ThemeProvider>
       </NativeBaseProvider>
     </GestureHandlerRootView>

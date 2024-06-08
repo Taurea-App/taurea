@@ -1,18 +1,15 @@
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { updateProfile } from "firebase/auth";
 import {
   doc,
   setDoc,
-  onSnapshot,
-  getDoc,
   collection,
   query,
   where,
   getDocs,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
-  Pressable,
   StyleSheet,
   TextInput,
   View,
@@ -22,48 +19,36 @@ import {
 } from "react-native";
 import { DataTable } from "react-native-paper";
 
+import { UserContext } from "./context/userContext";
 
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
-import { DBUser } from "@/types";
 
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme();
 
   const auth = FIREBASE_AUTH;
   const firebaseUser = auth.currentUser;
-  const [dbUser, setDbUser] = useState<DBUser | null>(null);
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (firebaseUser) {
-      const userRef = doc(FIRESTORE_DB, "users", firebaseUser.uid);
-      const unsubscribe = onSnapshot(userRef, (doc) => {
-        if (doc.exists()) {
-          setDbUser(doc.data() as DBUser);
-        }
-      });
-
-      setEmail(firebaseUser.email ?? "");
-      setDisplayName(firebaseUser.displayName ?? "");
-      return () => unsubscribe();
-    }
-  }, [firebaseUser]);
+  const { dbUser, refreshUserData } = useContext(UserContext);
 
   useEffect(() => {
     if (dbUser) {
+      console.log(dbUser);
+      setEmail(dbUser.email ?? "");
+      setDisplayName(dbUser.displayName ?? "");
       setUsername(dbUser.username ?? "");
     }
-  }, [dbUser]);
+  }, [firebaseUser]);
 
   const isUsernameValid = (username: string) => {
     // Username must be between 1 and 15 characters long and can only contain letters, numbers and underscores
     return /^[a-zA-Z0-9_]{1,15}$/.test(username);
-  }
+  };
 
   const usernameExists = async (username: string) => {
     const usersRef = collection(FIRESTORE_DB, "users");
@@ -82,13 +67,18 @@ export default function EditProfileScreen() {
         if (dbUser.username !== username) {
           if (!isUsernameValid(username)) {
             setError(
-              "Username must be between 1 and 15 characters long and can only contain letters, numbers and underscores"
+              "Username must be between 1 and 15 characters long and can only contain letters, numbers and underscores",
             );
           } else if (await usernameExists(username)) {
             setError("Username already exists");
             return;
           } else {
-            await setDoc(userRef, { username: username.toLowerCase() }, { merge: true });
+            await setDoc(
+              userRef,
+              { username: username.toLowerCase() },
+              { merge: true },
+            );
+            refreshUserData();
             router.back();
           }
         }
@@ -98,6 +88,7 @@ export default function EditProfileScreen() {
           await setDoc(userRef, { displayName }, { merge: true });
           // Go to the last screen
           router.back();
+          refreshUserData();
         }
         setLoading(false);
       }
