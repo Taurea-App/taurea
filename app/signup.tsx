@@ -22,7 +22,7 @@ import {
   useColorScheme,
 } from "react-native";
 
-import { UserContext } from "./_layout";
+import { UserContext } from "@/app/context/userContext";
 
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
@@ -66,7 +66,7 @@ export default function Signup() {
 
   const auth = FIREBASE_AUTH;
 
-  const user = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
   const signUp = async () => {
     if (displayName === "") {

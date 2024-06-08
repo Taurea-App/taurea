@@ -32,6 +32,7 @@ export default function EditProfileScreen() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { dbUser, refreshUserData } = useContext(UserContext);
@@ -42,6 +43,7 @@ export default function EditProfileScreen() {
       setEmail(dbUser.email ?? "");
       setDisplayName(dbUser.displayName ?? "");
       setUsername(dbUser.username ?? "");
+      setBio(dbUser.bio ?? "");
     }
   }, [firebaseUser]);
 
@@ -79,17 +81,22 @@ export default function EditProfileScreen() {
               { merge: true },
             );
             refreshUserData();
-            router.back();
           }
         }
+        // Modify the bio
+        if (dbUser.bio !== bio) {
+          await setDoc(userRef, { bio }, { merge: true });
+        }
+
         // Modify the display name
         if (firebaseUser.displayName !== displayName) {
           await updateProfile(firebaseUser, { displayName });
           await setDoc(userRef, { displayName }, { merge: true });
           // Go to the last screen
-          router.back();
-          refreshUserData();
         }
+
+        router.back();
+        refreshUserData();
         setLoading(false);
       }
     }
@@ -98,6 +105,7 @@ export default function EditProfileScreen() {
   return (
     <View style={styles.container}>
       <DataTable style={styles.table}>
+        {/* Email */}
         <DataTable.Row>
           <DataTable.Cell
             textStyle={{ color: Colors[colorScheme ?? "light"].text }}
@@ -115,6 +123,7 @@ export default function EditProfileScreen() {
           </DataTable.Cell>
         </DataTable.Row>
 
+        {/* Username */}
         <DataTable.Row>
           <DataTable.Cell
             textStyle={{ color: Colors[colorScheme ?? "light"].text }}
@@ -136,6 +145,7 @@ export default function EditProfileScreen() {
           </DataTable.Cell>
         </DataTable.Row>
 
+        {/* Display Name */}
         <DataTable.Row>
           <DataTable.Cell
             textStyle={{ color: Colors[colorScheme ?? "light"].text }}
@@ -147,6 +157,23 @@ export default function EditProfileScreen() {
               value={displayName}
               onChangeText={setDisplayName}
               placeholder="Display Name"
+              style={{ color: Colors[colorScheme ?? "light"].text }}
+            />
+          </DataTable.Cell>
+        </DataTable.Row>
+
+        {/* Bio */}
+        <DataTable.Row>
+          <DataTable.Cell
+            textStyle={{ color: Colors[colorScheme ?? "light"].text }}
+          >
+            Bio
+          </DataTable.Cell>
+          <DataTable.Cell>
+            <TextInput
+              value={bio}
+              onChangeText={setBio}
+              placeholder="Bio"
               style={{ color: Colors[colorScheme ?? "light"].text }}
             />
           </DataTable.Cell>

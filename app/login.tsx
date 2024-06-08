@@ -15,7 +15,7 @@ import {
   useColorScheme,
 } from "react-native";
 
-import { UserContext } from "./_layout";
+import { UserContext } from "./context/userContext";
 
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH } from "@/firebaseConfig";
@@ -29,7 +29,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const auth = FIREBASE_AUTH;
 
-  const user = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
   if (user) {
     return <Redirect href="/(tabs)" />;

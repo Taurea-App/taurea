@@ -63,6 +63,7 @@ export default function Page() {
       <Text style={{ color: Colors[colorScheme ?? "light"].greyText }}>
         @{dbUser?.username}
       </Text>
+      <Text style={{ paddingTop: 10 }}>{dbUser?.bio}</Text>
       {/* Routine list (from collection of the user) */}
       <Text
         style={[
