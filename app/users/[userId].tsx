@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -64,6 +65,28 @@ export default function Page() {
         @{dbUser?.username}
       </Text>
       <Text style={{ paddingTop: 10 }}>{dbUser?.bio}</Text>
+
+      {/* join Date */}
+      {dbUser?.creationTime && (
+        <Text
+          style={{
+            paddingTop: 10,
+            color: Colors[colorScheme ?? "light"].greyText,
+          }}
+        >
+          <Ionicons
+            name="calendar"
+            size={16}
+            color={Colors[colorScheme ?? "light"].greyText}
+          />{" "}
+          Joined on{" "}
+          {new Date(dbUser.creationTime).toLocaleDateString(undefined, {
+            month: "long",
+            year: "numeric",
+          })}
+        </Text>
+      )}
+
       {/* Routine list (from collection of the user) */}
       <Text
         style={[

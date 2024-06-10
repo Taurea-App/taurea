@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useContext } from "react";
 import { Pressable, StyleSheet, useColorScheme } from "react-native";
@@ -54,6 +55,28 @@ export default function ProfileScreen() {
 
       {/* Bio  */}
       <Text style={{ paddingTop: 10 }}>{dbUser?.bio}</Text>
+
+      {/* Join Date */}
+      {user?.metadata.creationTime && (
+        <Text
+          style={{
+            paddingTop: 10,
+            color: Colors[colorScheme ?? "light"].greyText,
+          }}
+        >
+          <Ionicons
+            name="calendar"
+            size={16}
+            color={Colors[colorScheme ?? "light"].greyText}
+          />{" "}
+          {/* Show month and year */}
+          Joined on{" "}
+          {new Date(user?.metadata.creationTime).toLocaleDateString(undefined, {
+            month: "long",
+            year: "numeric",
+          })}
+        </Text>
+      )}
 
       {/* Separator */}
       <View

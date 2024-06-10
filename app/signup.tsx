@@ -12,7 +12,7 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import {
   KeyboardAvoidingView,
   StyleSheet,
@@ -23,7 +23,6 @@ import {
 } from "react-native";
 
 import { UserContext } from "@/app/context/userContext";
-
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 
