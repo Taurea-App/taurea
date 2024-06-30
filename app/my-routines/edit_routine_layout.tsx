@@ -367,12 +367,6 @@ export default function EditRoutineLayout({
       swipeable.close();
     }
   };
-
-  // Assume a function to extract the base ID from your specific ID format
-  const getBaseId = (id: string) => {
-    return id.replace(/-open$|-close$/, "");
-  };
-
   const handleSwipe = (item: FlatRoutineItem, direction: string) => {
     if (direction === "left") {
       if (item.exerciseId === "open-sub") {

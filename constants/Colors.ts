@@ -1,8 +1,9 @@
-const tintColorLight = "#FFA500";
-const tintColorDark = "#fff";
+const primary = "#fa8320";
+const tintColorLight = primary;
+const tintColorDark = primary;
 
 export default {
-  primary: "#FFA500",
+  primary,
   red: "#FF5050",
   grey: "#A9A9A9",
   blue: "#88BBFF",
@@ -11,6 +12,7 @@ export default {
   light: {
     text: "#000",
     background: "#eee",
+    border: "#d8d8d8",
     tint: tintColorLight,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorLight,
@@ -20,20 +22,21 @@ export default {
     yellow: "#FFFF88",
     primaryBackground: "#fcedcf",
     greyText: "#A9A9A9",
-    highlightedTabBackgroundColor: "#FFA500",
+    highlightedTabBackgroundColor: primary,
   },
   dark: {
     text: "#fff",
-    background: "#000",
+    background: "#111721",
+    border: "#272729",
     tint: tintColorDark,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorDark,
-    tabBackgroundColor: "#1c1c1c",
+    tabBackgroundColor: "#1e2533",
     popupBackground: "#111",
     blue: "#2288AA",
     yellow: "#FFAA22",
-    primaryBackground: "#211b0d",
-    greyText : "#A9A9A9",
-    highlightedTabBackgroundColor: "#FFA500",
+    primaryBackground: "#1e2533",
+    greyText: "#A9A9A9",
+    highlightedTabBackgroundColor: primary,
   },
 };

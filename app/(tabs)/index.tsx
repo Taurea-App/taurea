@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link, Stack } from "expo-router";
 import { collection, onSnapshot } from "firebase/firestore";
+import { color } from "native-base/lib/typescript/theme/styled-system";
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
@@ -64,7 +65,7 @@ export default function MyRoutinesScreen() {
           asChild
         >
           <TouchableOpacity>
-            <Text style={[styles.routineText, { color: Colors["primary"] }]}>
+            <Text style={{ color: Colors[colorScheme ?? "light"].text }}>
               {item.name}
             </Text>
           </TouchableOpacity>
@@ -118,7 +119,11 @@ export default function MyRoutinesScreen() {
             style={styles.addRoutineButton}
             underlayColor="darkorange"
           >
-            <Ionicons name="add" size={24} color="black" />
+            <Ionicons
+              name="add"
+              size={24}
+              color={Colors[colorScheme ?? "light"].tabBackgroundColor}
+            />
           </TouchableHighlight>
         </Link>
       )}
@@ -157,15 +162,12 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#444",
   },
-  routineText: {
-    // color: 'white',
-  },
   exerciseText: {
     color: "lightgrey",
   },
   addRoutineButton: {
     alignSelf: "flex-end",
-    backgroundColor: "orange",
+    backgroundColor: Colors.primary,
     margin: 10,
     borderRadius: 24,
     width: 48,
