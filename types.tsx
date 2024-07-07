@@ -27,14 +27,46 @@ export type Routine = {
   name: string;
   description: string;
   routineItems: RoutineItem[];
+  isPublic: boolean;
+  publicRoutineId?: string;
+  originalPublicRoutineId?: string;
+  originalCreator?: {
+    email: string;
+    username: string;
+    displayName: string;
+  };
+};
+
+export type PublicRoutine = Routine & {
+  ownerRef: string;
+  user: {
+    email: string;
+    username: string;
+    displayName: string;
+  };
+  routineRef: string;
 };
 
 export type FlatRoutineItem = ExerciseInRoutine & {
   inSubroutine: boolean;
 };
 
-
 export type DBUser = {
+  id: string;
   uid: string;
   username: string | null;
+  displayName: string | null;
+  email: string | null;
+  bio: string | null;
+  creationTime: string;
 };
+
+export interface SearchResult {
+  id: string;
+  data: DBUser | PublicRoutine;
+  title: string;
+  subtitle: string;
+  type: "user" | "routine";
+  score: number;
+  href: string;
+}

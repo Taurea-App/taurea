@@ -1,14 +1,13 @@
+import { FontAwesome5 } from "@expo/vector-icons";
 import { Link, Redirect, Tabs } from "expo-router";
 import React, { useContext } from "react";
 import { Pressable } from "react-native";
 
-import { UserContext } from "../_layout";
-
+import { UserContext } from "@/app/context/userContext";
+import { WaitingForEmailVerification } from "@/components/WaitingForEmailVerification";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { WaitingForEmailVerification } from "@/components/WaitingForEmailVerification";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -20,7 +19,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const user = useContext(UserContext);
+  const { user } = useContext(UserContext);
   const headerShown = useClientOnlyValue(true, false);
 
   if (!user) {
@@ -40,10 +39,19 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
+        name="search"
+        options={{
+          title: "Search",
+          tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="index"
         options={{
           title: "My Routines",
-          tabBarIcon: ({ color }) => <TabBarIcon name="dumbbell" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="dumbbell" color={color} />
+          ),
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -64,7 +72,9 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => <TabBarIcon name="user-alt" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="user-alt" color={color} />
+          ),
         }}
       />
     </Tabs>

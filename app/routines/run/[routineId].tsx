@@ -9,13 +9,12 @@ import {
   Dimensions,
 } from "react-native";
 
-import EndMenu from "./EndMenu";
-import MainView from "./MainView";
-import StartMenu from "./StartMenu";
-import { styles } from "./styles";
-
+import EndMenu from "@/components/RunRoutine/EndMenu";
+import MainView from "@/components/RunRoutine/MainView";
+import StartMenu from "@/components/RunRoutine/StartMenu";
+import { styles } from "@/components/RunRoutine/styles";
 import Colors from "@/constants/Colors";
-import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
+import { FIRESTORE_DB } from "@/firebaseConfig";
 import { ExerciseInRoutine, Routine, RoutineItem, Subroutine } from "@/types";
 
 export default function Page() {
@@ -37,7 +36,6 @@ export default function Page() {
   const [subroutineTime, setSubroutineTime] = useState<number>(0);
 
   const [loading, setLoading] = useState(true);
-  const auth = FIREBASE_AUTH;
 
   const colorScheme = useColorScheme();
 
@@ -55,11 +53,7 @@ export default function Page() {
   useEffect(() => {
     const fetchRoutine = async () => {
       // Fetch the routine details
-      const routineRef = doc(
-        FIRESTORE_DB,
-        "users/" + auth.currentUser?.uid + "/routines",
-        routineId,
-      );
+      const routineRef = doc(FIRESTORE_DB, "Routines", routineId);
       const routineSnap = await getDoc(routineRef);
 
       if (routineSnap.exists()) {

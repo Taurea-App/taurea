@@ -1,25 +1,20 @@
 import { Link, Redirect } from "expo-router";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useContext, useState } from "react";
 import {
   KeyboardAvoidingView,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
-  Touchable,
   View,
   useColorScheme,
 } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
-import { UserContext } from "./_layout";
+import { UserContext } from "./context/userContext";
 
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH } from "@/firebaseConfig";
-import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function Login() {
   const colorScheme = useColorScheme();
@@ -29,7 +24,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const auth = FIREBASE_AUTH;
 
-  const user = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
   if (user) {
     return <Redirect href="/(tabs)" />;

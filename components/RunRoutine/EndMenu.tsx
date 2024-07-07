@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { router } from "expo-router";
 import {
   View,
   Pressable,
@@ -41,7 +41,7 @@ export default function EndMenu({
         }}
       >
         <FastImage
-          source={require("../../../assets/images/robot_dance_optimized.gif")}
+          source={require("@/assets/images/robot_dance_optimized.gif")}
           style={{
             width: "100%",
             height: "100%",
@@ -74,30 +74,29 @@ export default function EndMenu({
       </Pressable>
 
       {/* Go Back Button */}
-      <Link href={`/routine/${routineId}`} asChild>
-        <Pressable
+      {/* <Link href={`/my-routines/${routineId}`} asChild> */}
+      <Pressable
+        style={[
+          styles.button,
+          {
+            backgroundColor: Colors.primary,
+          },
+        ]}
+        onPress={() => router.back()}
+      >
+        <Text
           style={[
-            styles.button,
+            styles.buttonText,
             {
-              backgroundColor: Colors.primary,
+              color:
+                colorScheme === "light" ? Colors.light.text : Colors.dark.text,
             },
           ]}
         >
-          <Text
-            style={[
-              styles.buttonText,
-              {
-                color:
-                  colorScheme === "light"
-                    ? Colors.light.text
-                    : Colors.dark.text,
-              },
-            ]}
-          >
-            Go Back
-          </Text>
-        </Pressable>
-      </Link>
+          Go Back
+        </Text>
+      </Pressable>
+      {/* </Link> */}
     </View>
   );
 }

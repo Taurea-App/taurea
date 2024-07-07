@@ -1,34 +1,20 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { doc, onSnapshot } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useContext } from "react";
 import { Pressable, StyleSheet, useColorScheme } from "react-native";
+
+import { UserContext } from "../context/userContext";
 
 import { Text, View } from "@/components/Themed";
 import Colors from "@/constants/Colors";
-import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
-import { DBUser } from "@/types";
+import { FIREBASE_AUTH } from "@/firebaseConfig";
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
 
   const auth = FIREBASE_AUTH;
-  const firebaseUser = auth.currentUser;
 
-  // dbUser is the user object from Firestore. Ith has the same uid as the firebaseUser
-  const [dbUser, setDbUser] = useState<DBUser | null>(null);
-
-  useEffect(() => {
-    if (firebaseUser) {
-      const userRef = doc(FIRESTORE_DB, "users", firebaseUser.uid);
-      const unsubscribe = onSnapshot(userRef, (doc) => {
-        if (doc.exists()) {
-          setDbUser(doc.data() as DBUser);
-        }
-      });
-
-      return () => unsubscribe();
-    }
-  }, [firebaseUser]);
+  const { user, dbUser } = useContext(UserContext);
 
   return (
     <View style={styles.container}>
@@ -50,6 +36,7 @@ export default function ProfileScreen() {
         </Link>
       </View>
 
+      {/* Title */}
       <Text
         style={[
           styles.title,
@@ -58,18 +45,44 @@ export default function ProfileScreen() {
           },
         ]}
       >
-        {firebaseUser?.displayName}
+        {user?.displayName}
       </Text>
+
+      {/* Username */}
       <Text style={{ color: Colors[colorScheme ?? "light"].greyText }}>
         @{dbUser?.username}
       </Text>
 
-      <Text>{firebaseUser?.email}</Text>
+      {/* Bio  */}
+      <Text style={{ paddingTop: 10 }}>{dbUser?.bio}</Text>
 
+      {/* Join Date */}
+      {user?.metadata.creationTime && (
+        <Text
+          style={{
+            paddingTop: 10,
+            color: Colors[colorScheme ?? "light"].greyText,
+          }}
+        >
+          <Ionicons
+            name="calendar"
+            size={16}
+            color={Colors[colorScheme ?? "light"].greyText}
+          />{" "}
+          {/* Show month and year */}
+          Joined on{" "}
+          {new Date(user?.metadata.creationTime).toLocaleDateString(undefined, {
+            month: "long",
+            year: "numeric",
+          })}
+        </Text>
+      )}
+
+      {/* Separator */}
       <View
         style={styles.separator}
-        lightColor="#eee"
-        darkColor="rgba(255,255,255,0.1)"
+        lightColor={Colors.light.border}
+        darkColor={Colors.dark.border}
       />
 
       <Pressable

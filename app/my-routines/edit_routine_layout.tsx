@@ -53,6 +53,7 @@ export default function EditRoutineLayout({
 
   const [routineName, setRoutineName] = useState("");
   const [routineDescription, setRoutineDescription] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
 
   const [routineItems, setRoutineItems] = useState<FlatRoutineItem[]>([]);
 
@@ -198,6 +199,7 @@ export default function EditRoutineLayout({
       setRoutineName(routineSnap.data().name);
       setRoutineDescription(routineSnap.data().description);
       setRoutineItems(flatRoutine(routineSnap.data().routineItems));
+      setIsPublic(routineSnap.data().isPublic);
       setLoading(false);
     } else {
       console.log("No such document!");
@@ -209,6 +211,7 @@ export default function EditRoutineLayout({
     const routine = {
       name: routineName,
       description: routineDescription,
+      isPublic,
       routineItems: nestedRoutine(routineItems),
       modifyDate: new Date(),
     };
@@ -281,7 +284,6 @@ export default function EditRoutineLayout({
         image_url: exercise.image_url,
         description: exercise.description,
       } as FlatRoutineItem;
-      console.log(newExercise);
       setRoutineItems([...routineItems, newExercise]);
     }
   };
@@ -365,12 +367,6 @@ export default function EditRoutineLayout({
       swipeable.close();
     }
   };
-
-  // Assume a function to extract the base ID from your specific ID format
-  const getBaseId = (id: string) => {
-    return id.replace(/-open$|-close$/, "");
-  };
-
   const handleSwipe = (item: FlatRoutineItem, direction: string) => {
     if (direction === "left") {
       if (item.exerciseId === "open-sub") {
@@ -643,6 +639,28 @@ export default function EditRoutineLayout({
             />
           </View>
 
+          {/* isPublic Switch */}
+          <View style={style.isPublicSwitch}>
+            <Text
+              style={{
+                color: colorScheme
+                  ? Colors[colorScheme].text
+                  : Colors.light.text,
+              }}
+            >
+              Public
+            </Text>
+            <TouchableOpacity onPress={() => setIsPublic(!isPublic)}>
+              <Ionicons
+                name={isPublic ? "checkbox-outline" : "square-outline"}
+                size={24}
+                color={
+                  colorScheme ? Colors[colorScheme].text : Colors.light.text
+                }
+              />
+            </TouchableOpacity>
+          </View>
+
           {/* Exercise List */}
           <DraggableFlatList
             style={style.exerciseList}
@@ -749,8 +767,6 @@ export default function EditRoutineLayout({
                     image_url: selectedExercise.image_url ?? null,
                     description: selectedExercise.description,
                   } as FlatRoutineItem;
-
-                  console.log(newExercise);
 
                   setRoutineItems([...routineItems, newExercise]); // Add the new exercise to the routine
 
