@@ -1,10 +1,12 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { ThemeProvider } from "@react-navigation/native";
+import algoliasearch from "algoliasearch/lite";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { NativeBaseProvider } from "native-base";
 import { useEffect } from "react";
+import { InstantSearch } from "react-instantsearch-core";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { UserProvider } from "./context/userContext";
@@ -51,6 +53,13 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  // Initialize Algolia search client with environment variables.
+  const appId = process.env.EXPO_PUBLIC_ALGOLIA_APP_ID as string;
+  const apiKey = process.env.EXPO_PUBLIC_ALGOLIA_SEARCH_API_KEY as string;
+  const searchClient = algoliasearch(appId, apiKey);
+  console.log("appId", appId);
+  console.log("apiKey", apiKey);
+  console.log("searchClient", searchClient);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NativeBaseProvider>
@@ -58,16 +67,18 @@ function RootLayoutNav() {
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
           <UserProvider>
-            <Stack>
-              <Stack.Screen
-                name="(tabs)"
-                options={{ headerShown: false, title: "Home" }}
-              />
-              <Stack.Screen
-                name="login"
-                options={{ title: "Login", headerShown: false }}
-              />
-            </Stack>
+            <InstantSearch searchClient={searchClient} indexName="search_index">
+              <Stack>
+                <Stack.Screen
+                  name="(tabs)"
+                  options={{ headerShown: false, title: "Home" }}
+                />
+                <Stack.Screen
+                  name="login"
+                  options={{ title: "Login", headerShown: false }}
+                />
+              </Stack>
+            </InstantSearch>
           </UserProvider>
         </ThemeProvider>
       </NativeBaseProvider>

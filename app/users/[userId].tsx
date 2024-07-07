@@ -21,6 +21,7 @@ export default function Page() {
 
   useEffect(() => {
     if (firebaseUser && userId) {
+      console.log("userId", userId);
       const userRef = doc(FIRESTORE_DB, "users", userId);
       const unsubscribe = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {
