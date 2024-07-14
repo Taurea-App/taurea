@@ -1,0 +1,11 @@
+{
+	"hello": "Hello %{name}!",
+	"settings": {
+		"language": "Language",
+		"theme": {
+			"title": "Theme",
+			"light": "Light",
+			"dark": "Dark"
+		}
+	}
+}

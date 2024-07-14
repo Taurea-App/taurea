@@ -1,8 +1,11 @@
+// src/screens/ProfileScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 import { Link } from "expo-router";
 import { useContext } from "react";
 import { Pressable, StyleSheet, useColorScheme } from "react-native";
 
+import { TranslationContext } from "../context/translationProvider";
 import { UserContext } from "../context/userContext";
 
 import { Text, View } from "@/components/Themed";
@@ -11,10 +14,10 @@ import { FIREBASE_AUTH } from "@/firebaseConfig";
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
-
   const auth = FIREBASE_AUTH;
-
   const { user, dbUser } = useContext(UserContext);
+  const { translate, language, setLanguage, availableLanguages } =
+    useContext(TranslationContext);
 
   return (
     <View style={styles.container}>
@@ -36,6 +39,24 @@ export default function ProfileScreen() {
         </Link>
       </View>
 
+      {/* Settings button, redirects to settings page */}
+      <Link
+        push
+        style={{
+          alignItems: "center",
+          color: Colors[colorScheme ?? "light"].greyText,
+          borderWidth: 1,
+          padding: 10,
+          borderRadius: 20,
+          borderColor: Colors[colorScheme ?? "light"].greyText,
+          marginBottom: 20,
+        }}
+        href="/settings"
+      >
+        Settings
+      </Link>
+
+
       {/* Title */}
       <Text
         style={[
@@ -45,7 +66,7 @@ export default function ProfileScreen() {
           },
         ]}
       >
-        {user?.displayName}
+        {translate("hello", { name: user?.displayName })}
       </Text>
 
       {/* Username */}

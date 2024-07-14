@@ -1,0 +1,11 @@
+{
+	"hello": "Hola %{name}!",
+	"settings": {
+		"language": "Idioma",
+		"theme": {
+			"title": "Tema",
+			"light": "Claro",
+			"dark": "Oscuro"
+		}
+	}
+}

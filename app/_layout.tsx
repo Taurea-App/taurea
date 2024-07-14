@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { InstantSearch } from "react-instantsearch-core";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { TranslationProvider } from "./context/translationProvider";
 import { UserProvider } from "./context/userContext";
 
 import { useColorScheme } from "@/components/useColorScheme";
@@ -61,27 +62,32 @@ function RootLayoutNav() {
   console.log("apiKey", apiKey);
   console.log("searchClient", searchClient);
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NativeBaseProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <UserProvider>
-            <InstantSearch searchClient={searchClient} indexName="search_index">
-              <Stack>
-                <Stack.Screen
-                  name="(tabs)"
-                  options={{ headerShown: false, title: "Home" }}
-                />
-                <Stack.Screen
-                  name="login"
-                  options={{ title: "Login", headerShown: false }}
-                />
-              </Stack>
-            </InstantSearch>
-          </UserProvider>
-        </ThemeProvider>
-      </NativeBaseProvider>
-    </GestureHandlerRootView>
+    <TranslationProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <NativeBaseProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <UserProvider>
+              <InstantSearch
+                searchClient={searchClient}
+                indexName="search_index"
+              >
+                <Stack>
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{ headerShown: false, title: "Home" }}
+                  />
+                  <Stack.Screen
+                    name="login"
+                    options={{ title: "Login", headerShown: false }}
+                  />
+                </Stack>
+              </InstantSearch>
+            </UserProvider>
+          </ThemeProvider>
+        </NativeBaseProvider>
+      </GestureHandlerRootView>
+    </TranslationProvider>
   );
 }
