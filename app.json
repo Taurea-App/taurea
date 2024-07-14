@@ -17,14 +17,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "gravity-grit"
+      "bundleIdentifier": "taurea"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.nacho_urrutia.gravity_grit"
+      "package": "com.nacho_urrutia.taurea"
     },
     "web": {
       "bundler": "metro",
@@ -42,7 +42,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "e96702f7-8219-48a0-9400-e708c04da50b"
+        "projectId": "e7133e38-c1d3-4ffa-8e47-dab757316de3"
       }
     }
   }

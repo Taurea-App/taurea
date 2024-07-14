@@ -8,16 +8,29 @@
       "distribution": "internal",
       "ios": {
         "simulator":true
+      },
+      "env": {
+        "EXPO_PUBLIC_ALGOLIA_APP_ID": "W4IMLS2WBC",
+        "EXPO_PUBLIC_ALGOLIA_SEARCH_API_KEY":"1e92d9fbbe46e1463f617e5afc23ff90"
       }
     },
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ALGOLIA_APP_ID": "W4IMLS2WBC",
+        "EXPO_PUBLIC_ALGOLIA_SEARCH_API_KEY":"1e92d9fbbe46e1463f617e5afc23ff90"
+      }
     },
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_ALGOLIA_APP_ID": "W4IMLS2WBC",
+        "EXPO_PUBLIC_ALGOLIA_SEARCH_API_KEY":"1e92d9fbbe46e1463f617e5afc23ff90"
+      }
+    }
   },
   "submit": {
     "production": {}
