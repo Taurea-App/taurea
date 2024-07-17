@@ -1,8 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link, Stack } from "expo-router";
 import { collection, onSnapshot } from "firebase/firestore";
-import { color } from "native-base/lib/typescript/theme/styled-system";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   StyleSheet,
   FlatList,
@@ -13,6 +12,8 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from "react-native";
+
+import { TranslationContext } from "../context/translationProvider";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -25,6 +26,8 @@ export default function MyRoutinesScreen() {
 
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { translate } = useContext(TranslationContext);
 
   useEffect(() => {
     // Load routines from Firestore, routines, userid, routines
@@ -85,7 +88,7 @@ export default function MyRoutinesScreen() {
           },
         ]}
       >
-        My Routines
+        {translate("tabs.myRoutines.title")}
       </Text>
       {loading && (
         <ActivityIndicator
@@ -97,10 +100,10 @@ export default function MyRoutinesScreen() {
       {!loading && routines.length === 0 && (
         <View>
           <Text style={{ color: Colors[colorScheme ?? "light"].text }}>
-            You have no routines yet
+            {translate("myRoutines.noRoutines1")}
           </Text>
           <Text style={{ color: Colors[colorScheme ?? "light"].text }}>
-            Click the + button to add one.
+            {translate("myRoutines.no_Routines2")}
           </Text>
         </View>
       )}

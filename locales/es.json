@@ -1,11 +1,39 @@
 {
-	"hello": "Hola %{name}!",
 	"settings": {
+		"title": "Configuración",
 		"language": "Idioma",
 		"theme": {
 			"title": "Tema",
 			"light": "Claro",
 			"dark": "Oscuro"
+		}
+	},
+	"tabs": {
+		"myRoutines": {
+			"title": "Mis Rutinas",
+			"noRoutines1": "Aún no tienes ninguna rutina",
+			"noRoutines2": "Crea una haciendo clic en el botón +"
+		},
+		"search": {
+			"title": "Buscar"
+		},
+		"profile": {
+			"title": "Perfil",
+			"hello": "¡Hola %{name}!",
+			"editProfile": "Editar perfil",
+			"joined": "Se unió el",
+			"signOut": "Cerrar sesión"
+		}
+	},
+	"myRoutines": {
+		"editRoutine": {
+			"name": "Nombre de la rutina",
+			"description": "Descripción de la rutina",
+			"isPublic": "Pública",
+			"selectExercise": "Seleccionar ejercicio",
+			"quantity": "Cantidad",
+			"unit": "Unidad",
+			"save": "Guardar"
 		}
 	}
 }

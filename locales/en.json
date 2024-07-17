@@ -1,11 +1,39 @@
 {
-	"hello": "Hello %{name}!",
 	"settings": {
+		"title": "Settings",
 		"language": "Language",
 		"theme": {
 			"title": "Theme",
 			"light": "Light",
 			"dark": "Dark"
+		}
+	},
+	"tabs": {
+		"myRoutines": {
+			"title": "My Routines",
+			"noRoutines1": "You don't have any routines yet",
+			"noRoutines2": "Create one by clicking the + button"
+		},
+		"search": {
+			"title": "Search"
+		},
+		"profile": {
+			"title": "Profile",
+			"hello": "Hello %{name}!",
+			"editProfile": "Edit profile",
+			"joined": "Joined on",
+			"signOut": "Sign out"
+		}
+	},
+	"myRoutines": {
+		"editRoutine": {
+			"name": "Routine name",
+			"description": "Routine description",
+			"isPublic": "Public",
+			"selectExercise": "Select exercise",
+			"quantity": "Quantity",
+			"unit": "Unit",
+			"save": "Save"
 		}
 	}
 }

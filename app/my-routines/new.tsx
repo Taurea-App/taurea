@@ -1,4 +1,4 @@
-import EditRoutineLayout from "./edit_routine_layout";
+import EditRoutineLayout from "./editRoutineLayout";
 
 export default function Page() {
   return <EditRoutineLayout isNewRoutine />;

@@ -94,7 +94,7 @@ export default function Page() {
       ),
     );
     // After deletion, navigate back or to another screen as needed
-    navigation.navigate("index");
+    navigation.navigate("my-routines");
   };
 
   // Consider adding a function for editing that navigates to an edit screen or opens an edit mode

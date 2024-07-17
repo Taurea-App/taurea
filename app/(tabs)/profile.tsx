@@ -1,6 +1,5 @@
 // src/screens/ProfileScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 import { Link } from "expo-router";
 import { useContext } from "react";
 import { Pressable, StyleSheet, useColorScheme } from "react-native";
@@ -16,8 +15,7 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const auth = FIREBASE_AUTH;
   const { user, dbUser } = useContext(UserContext);
-  const { translate, language, setLanguage, availableLanguages } =
-    useContext(TranslationContext);
+  const { translate } = useContext(TranslationContext);
 
   return (
     <View style={styles.container}>
@@ -31,31 +29,32 @@ export default function ProfileScreen() {
             padding: 10,
             borderRadius: 20,
             borderColor: Colors[colorScheme ?? "light"].greyText,
-            marginBottom: 20,
+            marginBottom: 5,
           }}
           href="/edit-profile"
         >
-          Edit profile
+          {translate("tabs.profile.editProfile")}
         </Link>
       </View>
 
       {/* Settings button, redirects to settings page */}
-      <Link
-        push
-        style={{
-          alignItems: "center",
-          color: Colors[colorScheme ?? "light"].greyText,
-          borderWidth: 1,
-          padding: 10,
-          borderRadius: 20,
-          borderColor: Colors[colorScheme ?? "light"].greyText,
-          marginBottom: 20,
-        }}
-        href="/settings"
-      >
-        Settings
-      </Link>
-
+      <View style={{ alignItems: "flex-end" }}>
+        <Link
+          push
+          style={{
+            alignItems: "center",
+            color: Colors[colorScheme ?? "light"].greyText,
+            borderWidth: 1,
+            padding: 10,
+            borderRadius: 20,
+            borderColor: Colors[colorScheme ?? "light"].greyText,
+            marginBottom: 20,
+          }}
+          href="/settings/"
+        >
+          {translate("settings.title")}
+        </Link>
+      </View>
 
       {/* Title */}
       <Text
@@ -66,7 +65,7 @@ export default function ProfileScreen() {
           },
         ]}
       >
-        {translate("hello", { name: user?.displayName })}
+        {translate("tabs.profile.hello", { name: user?.displayName })}
       </Text>
 
       {/* Username */}
@@ -91,7 +90,7 @@ export default function ProfileScreen() {
             color={Colors[colorScheme ?? "light"].greyText}
           />{" "}
           {/* Show month and year */}
-          Joined on{" "}
+          {translate("tabs.profile.joined")}{" "}
           {new Date(user?.metadata.creationTime).toLocaleDateString(undefined, {
             month: "long",
             year: "numeric",
@@ -116,7 +115,7 @@ export default function ProfileScreen() {
             marginTop: 20,
           }}
         >
-          Sign Out
+          {translate("tabs.profile.signOut")}
         </Text>
       </Pressable>
     </View>
