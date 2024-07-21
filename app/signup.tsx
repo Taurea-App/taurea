@@ -25,6 +25,7 @@ import {
 import { UserContext } from "@/app/context/userContext";
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
+import { TranslationContext } from "./context/translationProvider";
 
 // Check the name + number with the smaller number available in the database
 async function createUsername(displayName: string) {
@@ -66,22 +67,23 @@ export default function Signup() {
   const auth = FIREBASE_AUTH;
 
   const { user } = useContext(UserContext);
+  const { translate } = useContext(TranslationContext);
 
   const signUp = async () => {
     if (displayName === "") {
-      setError("Name cannot be empty");
+      setError(translate("signUp.error.emptyName"));
       return;
     }
     if (email === "") {
-      setError("Email cannot be empty");
+      setError(translate("signUp.error.emptyEmail"));
       return;
     }
     if (password === "") {
-      setError("Password cannot be empty");
+      setError(translate("signUp.error.emptyPassword"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(translate("signUp.error.passwordMismatch"));
       return;
     }
     setError("");
@@ -105,19 +107,19 @@ export default function Signup() {
         );
         auth.signOut();
       } else {
-        alert("Error creating account. Please try again.");
+        alert(translate("signUp.error.general"));
       }
     } catch (e: any) {
       if (e.code === "auth/email-already-in-use") {
-        setError("Email already in use");
+        setError(translate("signUp.error.emailInUse"));
       } else if (e.code === "auth/weak-password") {
-        setError("Password is too weak");
+        setError(translate("signUp.error.weakPassword"));
       } else if (e.code === "auth/invalid-email") {
-        setError("Invalid email");
+        setError(translate("signUp.error.invalidEmail"));
       } else if (e.code === "auth/operation-not-allowed") {
-        setError("Operation not allowed");
+        setError(translate("signUp.error.operationNotAllowed"));
       } else {
-        setError("Error creating account. Please try again.");
+        setError(translate("signUp.error.general"));
       }
     } finally {
       setLoading(false);
@@ -130,7 +132,7 @@ export default function Signup() {
 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
-      <Stack.Screen options={{ title: "Register" }} />
+      <Stack.Screen options={{ title: translate("signUp.title") }} />
 
       <Text
         style={[
@@ -140,7 +142,7 @@ export default function Signup() {
           },
         ]}
       >
-        Enter your details
+        {translate("signUp.enterDetails")}
       </Text>
 
       <TextInput
@@ -153,7 +155,7 @@ export default function Signup() {
                 .tabBackgroundColor,
           },
         ]}
-        placeholder="Name"
+        placeholder={translate("signUp.displayName")}
         value={displayName}
         onChangeText={setDisplayName}
       />
@@ -168,7 +170,7 @@ export default function Signup() {
                 .tabBackgroundColor,
           },
         ]}
-        placeholder="Email"
+        placeholder={translate("signUp.email")}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -185,7 +187,7 @@ export default function Signup() {
                 .tabBackgroundColor,
           },
         ]}
-        placeholder="Password"
+        placeholder={translate("signUp.password")}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -201,7 +203,7 @@ export default function Signup() {
                 .tabBackgroundColor,
           },
         ]}
-        placeholder="Repeat Password"
+        placeholder={translate("signUp.confirmPassword")}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
@@ -222,7 +224,7 @@ export default function Signup() {
           },
         ]}
       >
-        <Text>Register</Text>
+        <Text>{translate("signUp.register")}</Text>
       </TouchableOpacity>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}

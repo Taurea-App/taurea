@@ -1,4 +1,10 @@
 {
+	"general": {
+		"edit": "Editar",
+		"delete": "Eliminar",
+		"save": "Guardar",
+		"loading": "Cargando..."
+	},
 	"settings": {
 		"title": "Configuración",
 		"language": "Idioma",
@@ -21,7 +27,7 @@
 			"title": "Perfil",
 			"hello": "¡Hola %{name}!",
 			"editProfile": "Editar perfil",
-			"joined": "Se unió el",
+			"joined": "Se unió en",
 			"signOut": "Cerrar sesión"
 		}
 	},
@@ -33,7 +39,48 @@
 			"selectExercise": "Seleccionar ejercicio",
 			"quantity": "Cantidad",
 			"unit": "Unidad",
-			"save": "Guardar"
+			"save": "Guardar",
+			"newRoutine": "Nueva rutina",
+			"editRoutine": "Editar rutina"
 		}
+	},
+	"editProfile": {
+		"title": "Editar perfil",
+		"email": "Correo electrónico",
+		"username": "Nombre de usuario",
+		"displayName": "Nombre para mostrar",
+		"bio": "Biografía",
+		"saveChanges": "Guardar cambios"
+	},
+	"signUp" : {
+		"error": {
+			"emptyName": "El nombre no puede estar vacío",
+			"emptyEmail": "El correo electrónico no puede estar vacío",
+			"emptyPassword": "La contraseña no puede estar vacía",
+			"passwordMismatch": "Las contraseñas no coinciden",
+			"general": "Error al crear la cuenta. Por favor, inténtalo de nuevo",
+			"emailInUse": "El correo electrónico ya está en uso",
+			"weakPassword": "La contraseña es débil",
+			"invalidEmail": "Correo electrónico inválido",
+			"operationNotAllowed": "Operación no permitida"
+		},
+		"title": "Registrarse",
+		"enterDetails": "Ingresa tus datos",
+		"displayName": "Nombre",
+		"email": "Correo electrónico",
+		"password": "Contraseña",
+		"confirmPassword": "Confirmar contraseña",
+		"register": "Registrarse"
+	},
+	"login": {
+		"title": "Iniciar sesión",
+		"failed": "Falló el inicio de sesión. Por favor, inténtalo de nuevo",
+		"email": "Correo electrónico",
+		"password": "Contraseña",
+		"login": "Iniciar sesión",
+		"forgotPassword": "¿Olvidaste tu contraseña?",
+		"noAccount": "¿No tienes una cuenta?",
+		"signUp": "Regístrate",
+		"or": "o"
 	}
 }

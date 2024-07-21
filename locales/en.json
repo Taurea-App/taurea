@@ -1,4 +1,9 @@
 {
+	"general": {
+		"edit": "Edit",
+		"delete": "Delete",
+		"save": "Save"
+	},
 	"settings": {
 		"title": "Settings",
 		"language": "Language",
@@ -33,7 +38,37 @@
 			"selectExercise": "Select exercise",
 			"quantity": "Quantity",
 			"unit": "Unit",
-			"save": "Save"
+			"save": "Save",
+			"newRoutine": "New routine",
+			"editRoutine": "Edit routine"
 		}
+	},
+	"editProfile": {
+		"title": "Edit profile",
+		"email": "Email",
+		"username": "Username",
+		"displayName": "Display name",
+		"bio": "Bio",
+		"saveChanges": "Save changes"
+	},
+	"signUp" : {
+		"error": {
+			"emptyName": "Name cannot be empty",
+			"emptyEmail": "Email cannot be empty",
+			"emptyPassword": "Password cannot be empty",
+			"passwordMismatch": "Passwords do not match",
+			"general": "Error creating account. Please try again",
+			"emailInUse": "Email is already in use",
+			"weakPassword": "Password is too weak",
+			"invalidEmail": "Invalid email",
+			"operationNotAllowed": "Operation not allowed"
+		},
+		"title": "Sign Up",
+		"enterDetails": "Enter your details",
+		"displayName": "Name",
+		"email": "Email",
+		"password": "Password",
+		"confirmPassword": "Confirm password",
+		"register": "Register"
 	}
 }

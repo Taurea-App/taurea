@@ -15,9 +15,11 @@ import { UserContext } from "./context/userContext";
 
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH } from "@/firebaseConfig";
+import { TranslationContext } from "./context/translationProvider";
 
 export default function Login() {
   const colorScheme = useColorScheme();
+  const { translate } = useContext(TranslationContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +37,7 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch {
-      alert("Sign in failed. Please try again.");
+      alert(translate("login.failed"));
     } finally {
       setLoading(false);
     }
@@ -51,7 +53,7 @@ export default function Login() {
           },
         ]}
       >
-        Login
+        {translate("login.title")}
       </Text>
 
       <TextInput
@@ -64,7 +66,7 @@ export default function Login() {
                 .tabBackgroundColor,
           },
         ]}
-        placeholder="Email"
+        placeholder={translate("login.email")}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -80,7 +82,7 @@ export default function Login() {
                 .tabBackgroundColor,
           },
         ]}
-        placeholder="Password"
+        placeholder={translate("login.password")}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -96,7 +98,7 @@ export default function Login() {
           },
         ]}
       >
-        <Text>Login</Text>
+        <Text>{translate("login.login")}</Text>
       </TouchableOpacity>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <View
@@ -113,7 +115,7 @@ export default function Login() {
             marginHorizontal: 10,
           }}
         >
-          or
+          {translate("login.or")}
         </Text>
         <View
           style={[
@@ -130,7 +132,7 @@ export default function Login() {
           color: Colors.primary,
         }}
       >
-        Register
+        {translate("login.signUp")}
       </Link>
     </KeyboardAvoidingView>
   );

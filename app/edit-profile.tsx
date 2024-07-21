@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { updateProfile } from "firebase/auth";
 import {
   doc,
@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { DataTable } from "react-native-paper";
 
+import { TranslationContext } from "./context/translationProvider";
 import { UserContext } from "./context/userContext";
 
 import Colors from "@/constants/Colors";
@@ -26,6 +27,7 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme();
+  const { translate } = useContext(TranslationContext);
 
   const auth = FIREBASE_AUTH;
   const firebaseUser = auth.currentUser;
@@ -104,13 +106,14 @@ export default function EditProfileScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ title: translate("editProfile.title") }} />
       <DataTable style={styles.table}>
         {/* Email */}
         <DataTable.Row>
           <DataTable.Cell
             textStyle={{ color: Colors[colorScheme ?? "light"].text }}
           >
-            Email
+            {translate("editProfile.email")}
           </DataTable.Cell>
           <DataTable.Cell>
             <TextInput
@@ -128,7 +131,7 @@ export default function EditProfileScreen() {
           <DataTable.Cell
             textStyle={{ color: Colors[colorScheme ?? "light"].text }}
           >
-            Username
+            {translate("editProfile.username")}
           </DataTable.Cell>
           <DataTable.Cell>
             <View style={{ flexDirection: "row" }}>
@@ -150,7 +153,7 @@ export default function EditProfileScreen() {
           <DataTable.Cell
             textStyle={{ color: Colors[colorScheme ?? "light"].text }}
           >
-            Display Name
+            {translate("editProfile.displayName")}
           </DataTable.Cell>
           <DataTable.Cell>
             <TextInput
@@ -167,7 +170,7 @@ export default function EditProfileScreen() {
           <DataTable.Cell
             textStyle={{ color: Colors[colorScheme ?? "light"].text }}
           >
-            Bio
+            {translate("editProfile.bio")}
           </DataTable.Cell>
           <DataTable.Cell>
             <TextInput
@@ -188,8 +191,14 @@ export default function EditProfileScreen() {
         onPress={saveChanges}
         disabled={loading}
       >
-        {loading && <Text style={{ color: "black" }}>Loading...</Text>}
-        {!loading && <Text style={{ color: "black" }}>Save changes</Text>}
+        {loading && (
+          <Text style={{ color: "black" }}>{translate("general.loading")}</Text>
+        )}
+        {!loading && (
+          <Text style={{ color: "black" }}>
+            {translate("editProfile.saveChanges")}
+          </Text>
+        )}
       </TouchableOpacity>
 
       {error && <Text style={{ color: "red" }}>{error}</Text>}

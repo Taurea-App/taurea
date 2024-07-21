@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EditExerciseModal from "./EditExerciseModal";
 import EditSubroutineModal from "./EditSubroutineModal";
 import { editRoutineLayoutStyle as style } from "./editRoutineLayoutStyle";
+import { TranslationContext } from "../context/translationProvider";
 
 import ExerciseSelectModal from "@/components/ExerciseSelectmodal";
 import UnitSelectModal from "@/components/UnitSelectModal";
@@ -39,7 +40,6 @@ import {
   Subroutine,
 } from "@/types";
 import { idGen } from "@/utils/idGen";
-import { TranslationContext } from "../context/translationProvider";
 
 export default function EditRoutineLayout({
   isNewRoutine,
@@ -234,7 +234,7 @@ export default function EditRoutineLayout({
       );
       await setDoc(routineRef, routine);
     }
-    navigation.navigate("my-routines");
+    navigation.navigate("index");
   };
 
   const saveEditedExercise = () => {
@@ -593,7 +593,11 @@ export default function EditRoutineLayout({
       ]}
     >
       <Stack.Screen
-        options={{ title: isNewRoutine ? "New Routine" : "Edit Routine" }}
+        options={{
+          title: isNewRoutine
+            ? translate("myRoutines.editRoutine.newRoutine")
+            : translate("myRoutines.editRoutine.editRoutine"),
+        }}
       />
 
       {loading && (

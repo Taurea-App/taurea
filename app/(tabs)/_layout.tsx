@@ -49,7 +49,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="my-routines"
+        name="index"
         options={{
           title: translate("tabs.myRoutines.title"),
           tabBarIcon: ({ color }) => (

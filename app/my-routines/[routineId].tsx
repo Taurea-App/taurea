@@ -9,7 +9,7 @@ import {
   useNavigation,
 } from "expo-router";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,8 +19,9 @@ import {
   Pressable,
   SafeAreaView,
   ActivityIndicator,
-  Modal,
 } from "react-native";
+
+import { TranslationContext } from "../context/translationProvider";
 
 import RoutineList from "@/components/RoutineList";
 import SlideUpModal from "@/components/SlideUpModal";
@@ -31,6 +32,7 @@ import { Routine, ExerciseInRoutine, Subroutine } from "@/types"; // Adjust the 
 
 export default function Page() {
   const colorScheme = useColorScheme();
+  const { translate } = useContext(TranslationContext);
 
   const { routineId } = useLocalSearchParams<{ routineId: string }>();
   const [routine, setRoutine] = useState<Routine | null>(null);
@@ -94,7 +96,7 @@ export default function Page() {
       ),
     );
     // After deletion, navigate back or to another screen as needed
-    navigation.navigate("my-routines");
+    navigation.navigate("index");
   };
 
   // Consider adding a function for editing that navigates to an edit screen or opens an edit mode
@@ -174,8 +176,12 @@ export default function Page() {
         // size="full"
         // avoidKeyboard
       >
-        <Button title="Edit" onPress={handleEdit} />
-        <Button title="Delete" onPress={handleDelete} color={Colors["red"]} />
+        <Button title={translate("general.edit")} onPress={handleEdit} />
+        <Button
+          title={translate("general.delete")}
+          onPress={handleDelete}
+          color={Colors["red"]}
+        />
       </SlideUpModal>
     </SafeAreaView>
   );
