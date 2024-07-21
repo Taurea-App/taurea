@@ -1,5 +1,5 @@
 import { Modal } from "native-base";
-import React from "react";
+import React, { useContext } from "react";
 import {
   Button,
   Keyboard,
@@ -12,6 +12,7 @@ import {
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { ExerciseInRoutine, FlatRoutineItem } from "@/types";
+import { TranslationContext } from "../context/translationProvider";
 
 export default function EditExerciseModal({
   exercise,
@@ -33,6 +34,7 @@ export default function EditExerciseModal({
   isSubroutine?: boolean;
 }) {
   const colorScheme = useColorScheme();
+  const { translate } = useContext(TranslationContext);
 
   return (
     <Modal isOpen={isOpen} onClose={closeModal}>
@@ -135,7 +137,7 @@ export default function EditExerciseModal({
                 Colors[colorScheme ? colorScheme : "light"].popupBackground,
             }}
           >
-            <Button title="Save" onPress={onSave} />
+            <Button title={translate("general.save")} onPress={onSave} />
           </Modal.Footer>
         </Modal.Content>
       )}

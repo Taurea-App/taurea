@@ -3,7 +3,7 @@ import { ParamListBase } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Stack, useNavigation } from "expo-router";
 import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   Text,
   View,
@@ -24,7 +24,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import EditExerciseModal from "./EditExerciseModal";
 import EditSubroutineModal from "./EditSubroutineModal";
-import { editRoutineLayoutStyle as style } from "./edit_routine_layout_style";
+import { editRoutineLayoutStyle as style } from "./editRoutineLayoutStyle";
+import { TranslationContext } from "../context/translationProvider";
 
 import ExerciseSelectModal from "@/components/ExerciseSelectmodal";
 import UnitSelectModal from "@/components/UnitSelectModal";
@@ -47,6 +48,7 @@ export default function EditRoutineLayout({
   isNewRoutine: boolean;
   routineId?: string;
 }) {
+  const { translate } = useContext(TranslationContext);
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -591,7 +593,11 @@ export default function EditRoutineLayout({
       ]}
     >
       <Stack.Screen
-        options={{ title: isNewRoutine ? "New Routine" : "Edit Routine" }}
+        options={{
+          title: isNewRoutine
+            ? translate("myRoutines.editRoutine.newRoutine")
+            : translate("myRoutines.editRoutine.editRoutine"),
+        }}
       />
 
       {loading && (
@@ -627,13 +633,13 @@ export default function EditRoutineLayout({
               ]}
               onChangeText={setRoutineName}
               value={routineName}
-              placeholder="Routine Name"
+              placeholder={translate("myRoutines.editRoutine.name")}
             />
             <TextInput
               style={style.description}
               onChangeText={setRoutineDescription}
               value={routineDescription}
-              placeholder="Routine Description"
+              placeholder={translate("myRoutines.editRoutine.description")}
               blurOnSubmit
               multiline
             />
@@ -648,7 +654,7 @@ export default function EditRoutineLayout({
                   : Colors.light.text,
               }}
             >
-              Public
+              {translate("myRoutines.editRoutine.isPublic")}
             </Text>
             <TouchableOpacity onPress={() => setIsPublic(!isPublic)}>
               <Ionicons
@@ -699,7 +705,7 @@ export default function EditRoutineLayout({
                       : Colors.light.text,
                   },
                 ]}
-                placeholder="Select Exercise"
+                placeholder={translate("myRoutines.editRoutine.selectExercise")}
                 value={selectedExercise?.name}
                 onPressIn={() => {
                   setShowExerciseSelectModal(true);
@@ -717,7 +723,7 @@ export default function EditRoutineLayout({
                       : Colors.light.text,
                   },
                 ]}
-                placeholder="Quantity"
+                placeholder={translate("myRoutines.editRoutine.quantity")}
                 value={selectedQuantity ? selectedQuantity.toString() : ""}
                 onChangeText={(text) =>
                   setSelectedQuantity(
@@ -735,7 +741,7 @@ export default function EditRoutineLayout({
                       : Colors.light.text,
                   },
                 ]}
-                placeholder="Unit"
+                placeholder={translate("myRoutines.editRoutine.unit")}
                 value={selectedUnit ?? ""}
                 onPressIn={() => {
                   setShowUnitSelectModal(true);

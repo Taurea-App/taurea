@@ -8,6 +8,7 @@ import { WaitingForEmailVerification } from "@/components/WaitingForEmailVerific
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { TranslationContext } from "../context/translationProvider";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -21,6 +22,8 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { user } = useContext(UserContext);
   const headerShown = useClientOnlyValue(true, false);
+
+  const { translate } = useContext(TranslationContext);
 
   if (!user) {
     return <Redirect href="/login" />;
@@ -41,14 +44,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: "Search",
+          title: translate("tabs.search.title"),
           tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
         }}
       />
       <Tabs.Screen
         name="index"
         options={{
-          title: "My Routines",
+          title: translate("tabs.myRoutines.title"),
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="dumbbell" color={color} />
           ),
@@ -71,7 +74,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: translate("tabs.profile.title"),
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="user-alt" color={color} />
           ),

@@ -8,7 +8,7 @@ import { DBUser } from "@/types";
 export const UserContext = createContext<{
   user: User | null;
   dbUser: DBUser | null;
-  refreshUserData: () => void;
+  refreshUserData: React.Dispatch<React.SetStateAction<void>>;
 }>({
   user: null,
   dbUser: null,
