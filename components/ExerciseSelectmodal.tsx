@@ -1,6 +1,6 @@
 import { collection, getDocs } from "firebase/firestore";
 import { Modal, ScrollView } from "native-base";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   TextInput,
@@ -17,6 +17,7 @@ import { NEW_SUBROUTINE_ITEM, REST_ITEM } from "@/constants";
 import Colors from "@/constants/Colors";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise } from "@/types";
+import { TranslationContext } from "@/app/context/translationProvider";
 
 export default function ExerciseSelectModal({
   showModal,
@@ -37,6 +38,7 @@ export default function ExerciseSelectModal({
     NEW_SUBROUTINE_ITEM,
     REST_ITEM,
   ]);
+  const { language } = useContext(TranslationContext);
 
   // yellow for new subroutines, blue for rest
 
@@ -133,7 +135,7 @@ export default function ExerciseSelectModal({
                   },
                 ]}
               >
-                {item.name}
+                {item[language].name ?? item.name}
               </Text>
             </TouchableOpacity>
           ))}
@@ -156,7 +158,7 @@ export default function ExerciseSelectModal({
             <ScrollView style={{ width: "100%" }}>
               {exercises
                 .filter((exercise) =>
-                  exercise.name
+                  (exercise[language].name ?? exercise.name)
                     .toLowerCase()
                     .includes(searchTerm.toLowerCase()),
                 )
@@ -187,7 +189,7 @@ export default function ExerciseSelectModal({
                         },
                       ]}
                     >
-                      {exercise.name}
+                      {exercise[language].name ?? exercise.name}
                     </Text>
                   </TouchableOpacity>
                 ))}

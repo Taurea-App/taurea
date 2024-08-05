@@ -5,6 +5,7 @@ import React, { createContext, useState, useMemo } from "react";
 
 import en from "../../locales/en.json";
 import es from "../../locales/es.json";
+import { language } from "@/types";
 
 const availableLanguagesValues = { en, es };
 const availableLanguages = {
@@ -14,7 +15,7 @@ const availableLanguages = {
 
 // Define the context with the proper types
 export const TranslationContext = createContext<{
-  language: string;
+  language: language;
   setLanguage: React.Dispatch<React.SetStateAction<string>>;
   availableLanguages: Record<string, string>;
   translate: I18n["t"];

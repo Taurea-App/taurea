@@ -3,7 +3,13 @@
 		"edit": "Editar",
 		"delete": "Eliminar",
 		"save": "Guardar",
-		"loading": "Cargando..."
+		"loading": "Cargando...",
+		"run": "Ejecutar",
+		"cancel": "Cancelar",
+		"start": "Comenzar"
+	},
+	"routines": {
+		"subroutine": "Subrutina"
 	},
 	"settings": {
 		"title": "Configuración",

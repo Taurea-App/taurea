@@ -10,6 +10,8 @@ import { styles } from "./styles";
 
 import Colors from "@/constants/Colors";
 import { Routine } from "@/types";
+import { useContext } from "react";
+import { TranslationContext } from "@/app/context/translationProvider";
 
 export default function StartMenu({
   routine,
@@ -20,6 +22,7 @@ export default function StartMenu({
   handleNext: () => void;
   colorScheme: ColorSchemeName;
 }) {
+  const { translate } = useContext(TranslationContext);
   return (
     <View
       style={{
@@ -52,7 +55,7 @@ export default function StartMenu({
         ]}
         onPress={handleNext}
       >
-        <Text style={styles.buttonText}>Start</Text>
+        <Text style={styles.buttonText}>{translate("general.start")}</Text>
       </Pressable>
     </View>
   );

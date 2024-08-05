@@ -1,16 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useLocalSearchParams, Stack, router } from "expo-router";
 import { addDoc, collection, doc, getDoc } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Pressable,
   SafeAreaView,
   ActivityIndicator,
 } from "react-native";
+
+import { TranslationContext } from "../context/translationProvider";
 
 import RoutineList from "@/components/RoutineList";
 import { useColorScheme } from "@/components/useColorScheme";
@@ -20,6 +21,7 @@ import { PublicRoutine, ExerciseInRoutine, Subroutine } from "@/types"; // Adjus
 
 export default function Page() {
   const colorScheme = useColorScheme();
+  const { translate } = useContext(TranslationContext);
 
   const { routineId } = useLocalSearchParams<{ routineId: string }>();
   const [routine, setRoutine] = useState<PublicRoutine | null>(null);
@@ -132,7 +134,7 @@ export default function Page() {
                 style={{ backgroundColor: Colors["primary"], ...styles.button }}
               >
                 {/* <Ionicons name="play" size={24} /> */}
-                <Text style={{  fontSize: 18 }}>Run</Text>
+                <Text style={{ fontSize: 18 }}>{translate("general.run")}</Text>
               </TouchableOpacity>
             </Link>
           </View>

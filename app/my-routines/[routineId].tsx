@@ -32,7 +32,7 @@ import { Routine, ExerciseInRoutine, Subroutine } from "@/types"; // Adjust the 
 
 export default function Page() {
   const colorScheme = useColorScheme();
-  const { translate } = useContext(TranslationContext);
+  const { translate, language } = useContext(TranslationContext);
 
   const { routineId } = useLocalSearchParams<{ routineId: string }>();
   const [routine, setRoutine] = useState<Routine | null>(null);
@@ -159,7 +159,7 @@ export default function Page() {
               <TouchableOpacity
                 style={{ backgroundColor: Colors["primary"], ...styles.button }}
               >
-                <Text>Run</Text>
+                <Text>{translate("general.run")}</Text>
               </TouchableOpacity>
             </Link>
           </View>

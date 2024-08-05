@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { View, Pressable, FlatList, ColorSchemeName, Text } from "react-native";
 import Collapsible from "react-native-collapsible";
 
@@ -7,6 +7,7 @@ import { styles } from "./styles";
 
 import Colors from "@/constants/Colors";
 import { ExerciseInRoutine, Subroutine } from "@/types";
+import { TranslationContext } from "@/app/context/translationProvider";
 
 export default function RoutineList({
   routineItems,
@@ -26,6 +27,8 @@ export default function RoutineList({
   const [collapsedSubroutines, setCollapsedSubroutines] = useState<
     Map<string, boolean>
   >(new Map());
+
+  const { language } = useContext(TranslationContext);
 
   useEffect(() => {
     if (!routineItems) return;
@@ -77,7 +80,7 @@ export default function RoutineList({
               },
             ]}
           >
-            {item.name}
+            {item[language]?.name ?? item.name}
           </Text>
           <Text
             style={{

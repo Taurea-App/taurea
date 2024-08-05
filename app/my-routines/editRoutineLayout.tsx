@@ -48,7 +48,7 @@ export default function EditRoutineLayout({
   isNewRoutine: boolean;
   routineId?: string;
 }) {
-  const { translate } = useContext(TranslationContext);
+  const { translate, language } = useContext(TranslationContext);
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -457,7 +457,7 @@ export default function EditRoutineLayout({
             },
           ]}
         >
-          {item.name}
+          {item[language]?.name ?? item.name}
         </Text>
         <Text
           style={[
@@ -507,7 +507,7 @@ export default function EditRoutineLayout({
             },
           ]}
         >
-          Subroutine
+          {translate("routines.subroutine")}
         </Text>
         <Text
           style={[
@@ -570,7 +570,7 @@ export default function EditRoutineLayout({
           saveRoutine();
         }}
       >
-        <Text>Save</Text>
+        <Text>{translate("general.save")}</Text>
       </TouchableOpacity>
     );
   };
@@ -772,6 +772,8 @@ export default function EditRoutineLayout({
                     unit: selectedUnit,
                     image_url: selectedExercise.image_url ?? null,
                     description: selectedExercise.description,
+                    en: selectedExercise.en,
+                    es: selectedExercise.es,
                   } as FlatRoutineItem;
 
                   setRoutineItems([...routineItems, newExercise]); // Add the new exercise to the routine
@@ -830,8 +832,7 @@ export default function EditRoutineLayout({
                         ? {
                             ...exerciseToEdit,
                             exerciseId: exercise.id,
-                            name: exercise.name,
-                            description: exercise.description,
+                            ...exercise,
                           }
                         : null,
                     );
