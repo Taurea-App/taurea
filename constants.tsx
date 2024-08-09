@@ -19,13 +19,11 @@ type ExerciseSelectionItem = {
   description: string;
   color: ItemColor;
   image_url?: string;
-  en: {
-    name: string;
-    description: string;
-  };
-  es: {
-    name: string;
-    description: string;
+  translations: {
+    [key: string]: {
+      name: string;
+      description: string;
+    };
   };
 };
 
@@ -34,13 +32,15 @@ export const NEW_SUBROUTINE_ITEM: ExerciseSelectionItem = {
   name: "New Subroutine",
   description: "",
   color: "yellow",
-  en: {
-    name: "New Subroutine",
-    description: "",
-  },
-  es: {
-    name: "Nueva Subrutina",
-    description: "",
+  translations: {
+    en: {
+      name: "New Subroutine",
+      description: "",
+    },
+    es: {
+      name: "Nueva Subrutina",
+      description: "",
+    },
   },
 };
 
@@ -49,12 +49,14 @@ export const REST_ITEM: ExerciseSelectionItem = {
   name: "Rest",
   description: "",
   color: "blue",
-  en: {
-    name: "Rest",
-    description: "",
-  },
-  es: {
-    name: "Descanso",
-    description: "",
+  translations: {
+    en: {
+      name: "Rest",
+      description: "",
+    },
+    es: {
+      name: "Descanso",
+      description: "",
+    },
   },
 };

@@ -18,6 +18,7 @@ import Colors from "@/constants/Colors";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise } from "@/types";
 import { TranslationContext } from "@/app/context/translationProvider";
+import { getName } from "@/utils/exercises";
 
 export default function ExerciseSelectModal({
   showModal,
@@ -135,7 +136,7 @@ export default function ExerciseSelectModal({
                   },
                 ]}
               >
-                {item[language].name ?? item.name}
+                {item["translations"][language]["name"] ?? item.name}
               </Text>
             </TouchableOpacity>
           ))}
@@ -158,7 +159,7 @@ export default function ExerciseSelectModal({
             <ScrollView style={{ width: "100%" }}>
               {exercises
                 .filter((exercise) =>
-                  (exercise[language].name ?? exercise.name)
+                  getName(exercise, language)
                     .toLowerCase()
                     .includes(searchTerm.toLowerCase()),
                 )
@@ -189,7 +190,7 @@ export default function ExerciseSelectModal({
                         },
                       ]}
                     >
-                      {exercise[language].name ?? exercise.name}
+                      {getName(exercise, language)}
                     </Text>
                   </TouchableOpacity>
                 ))}

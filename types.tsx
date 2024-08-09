@@ -1,20 +1,17 @@
-export type language = "en" | "es";
+export type Ilanguage = "en" | "es";
 
 export type Exercise = {
   id: string;
   name: string;
   description: string;
   image_url?: string;
-  en: {
-    name: string;
-    description: string;
-  };
-  es: {
-    name: string;
-    description: string;
+  translations: {
+    [key in Ilanguage]?: {
+      name: string;
+      description: string;
+    };
   };
 };
-
 
 export type ExerciseInRoutine = Exercise & {
   quantity: number;

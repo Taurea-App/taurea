@@ -40,6 +40,7 @@ import {
   Subroutine,
 } from "@/types";
 import { idGen } from "@/utils/idGen";
+import { getName } from "@/utils/exercises";
 
 export default function EditRoutineLayout({
   isNewRoutine,
@@ -457,7 +458,7 @@ export default function EditRoutineLayout({
             },
           ]}
         >
-          {item[language]?.name ?? item.name}
+          {getName(item, language)}
         </Text>
         <Text
           style={[
@@ -772,8 +773,7 @@ export default function EditRoutineLayout({
                     unit: selectedUnit,
                     image_url: selectedExercise.image_url ?? null,
                     description: selectedExercise.description,
-                    en: selectedExercise.en,
-                    es: selectedExercise.es,
+                    translations: selectedExercise.translations,
                   } as FlatRoutineItem;
 
                   setRoutineItems([...routineItems, newExercise]); // Add the new exercise to the routine

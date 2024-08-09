@@ -8,6 +8,7 @@ import { styles } from "./styles";
 import Colors from "@/constants/Colors";
 import { ExerciseInRoutine, Subroutine } from "@/types";
 import { TranslationContext } from "@/app/context/translationProvider";
+import { getName } from "@/utils/exercises";
 
 export default function RoutineList({
   routineItems,
@@ -80,7 +81,7 @@ export default function RoutineList({
               },
             ]}
           >
-            {item[language]?.name ?? item.name}
+            {getName(item, language)}
           </Text>
           <Text
             style={{
