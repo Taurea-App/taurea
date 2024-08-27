@@ -5,9 +5,9 @@ import Collapsible from "react-native-collapsible";
 
 import { styles } from "./styles";
 
+import { TranslationContext } from "@/app/context/translationProvider";
 import Colors from "@/constants/Colors";
 import { ExerciseInRoutine, Subroutine } from "@/types";
-import { TranslationContext } from "@/app/context/translationProvider";
 import { getName } from "@/utils/exercises";
 
 export default function RoutineList({
@@ -97,7 +97,6 @@ export default function RoutineList({
             backgroundColor:
               Colors[colorScheme === "dark" ? "dark" : "light"]
                 .primaryBackground,
-            // borderRadius: 10,
             borderBottomWidth: 1,
             borderBottomColor: "#888888",
           }}
@@ -107,7 +106,6 @@ export default function RoutineList({
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                // justifyContent: "space-between",
                 padding: 10,
                 gap: 10,
                 marginBottom: 10,

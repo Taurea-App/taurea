@@ -16,6 +16,9 @@ import Colors from "@/constants/Colors";
 import { Routine, ExerciseInRoutine } from "@/types";
 
 import FastImage from "react-native-fast-image";
+import { getDescription, getName } from "@/utils/exercises";
+import { useContext } from "react";
+import { TranslationContext } from "@/app/context/translationProvider";
 
 const BASE_IMAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/gravitygrit-5768a.appspot.com/o/exercises%2F'
 
@@ -48,6 +51,7 @@ export default function MainView({
   handlePrevious: () => void;
   waitingForTimer: boolean;
 }) {
+  const { language } = useContext(TranslationContext);
   return (
     <View>
       <SafeAreaView
@@ -111,7 +115,7 @@ export default function MainView({
                 },
               ]}
             >
-              {currentExercise?.name}
+              {currentExercise ? getName(currentExercise, language) : ""}
             </Text>
 
             {/* Current set in case we are in a subroutine */}
@@ -168,7 +172,7 @@ export default function MainView({
                 },
               ]}
             >
-              {currentExercise?.description}
+              {currentExercise ? getDescription(currentExercise, language) : ""}
             </Text>
 
             {/* Quantity */}

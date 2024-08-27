@@ -39,8 +39,8 @@ import {
   RoutineItem,
   Subroutine,
 } from "@/types";
-import { idGen } from "@/utils/idGen";
 import { getName } from "@/utils/exercises";
+import { idGen } from "@/utils/idGen";
 
 export default function EditRoutineLayout({
   isNewRoutine,
@@ -707,7 +707,9 @@ export default function EditRoutineLayout({
                   },
                 ]}
                 placeholder={translate("myRoutines.editRoutine.selectExercise")}
-                value={selectedExercise?.name}
+                value={
+                  selectedExercise ? getName(selectedExercise, language) : ""
+                }
                 onPressIn={() => {
                   setShowExerciseSelectModal(true);
                   // Hide the keyboard

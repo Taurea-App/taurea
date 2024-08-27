@@ -13,6 +13,7 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { ExerciseInRoutine, FlatRoutineItem } from "@/types";
 import { TranslationContext } from "../context/translationProvider";
+import { getName } from "@/utils/exercises";
 
 export default function EditExerciseModal({
   exercise,
@@ -34,7 +35,7 @@ export default function EditExerciseModal({
   isSubroutine?: boolean;
 }) {
   const colorScheme = useColorScheme();
-  const { translate } = useContext(TranslationContext);
+  const { translate, language } = useContext(TranslationContext);
 
   return (
     <Modal isOpen={isOpen} onClose={closeModal}>
@@ -65,7 +66,7 @@ export default function EditExerciseModal({
             {!isSubroutine && (
               <View>
                 <TextInput
-                  value={exercise?.name}
+                  value={exercise ? getName(exercise, language) : ""}
                   onPressIn={() => {
                     showExerciseSelectModal();
                     Keyboard.dismiss();

@@ -13,11 +13,11 @@ import {
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { TranslationContext } from "@/app/context/translationProvider";
 import { NEW_SUBROUTINE_ITEM, REST_ITEM } from "@/constants";
 import Colors from "@/constants/Colors";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 import { Exercise } from "@/types";
-import { TranslationContext } from "@/app/context/translationProvider";
 import { getName } from "@/utils/exercises";
 
 export default function ExerciseSelectModal({
@@ -136,7 +136,7 @@ export default function ExerciseSelectModal({
                   },
                 ]}
               >
-                {item["translations"][language]["name"] ?? item.name}
+                {getName(item, language)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -147,7 +147,6 @@ export default function ExerciseSelectModal({
               borderBottomColor: colorScheme
                 ? Colors[colorScheme].tabBackgroundColor
                 : Colors.light.tabBackgroundColor,
-              // borderBottomWidth: 1,
               width: "100%",
               marginVertical: 10,
             }}
