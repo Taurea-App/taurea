@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useContext } from "react";
 import {
   View,
   Text,
@@ -7,20 +8,19 @@ import {
   SafeAreaView,
   Dimensions,
 } from "react-native";
+import FastImage from "react-native-fast-image";
 
 import FullRoutineView from "./FullRoutineView";
 import { styles } from "./styles";
 
+import { TranslationContext } from "@/app/context/translationProvider";
 import Timer from "@/components/Timer";
 import Colors from "@/constants/Colors";
 import { Routine, ExerciseInRoutine } from "@/types";
-
-import FastImage from "react-native-fast-image";
 import { getDescription, getName } from "@/utils/exercises";
-import { useContext } from "react";
-import { TranslationContext } from "@/app/context/translationProvider";
 
-const BASE_IMAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/gravitygrit-5768a.appspot.com/o/exercises%2F'
+const BASE_IMAGE_URL =
+  "https://firebasestorage.googleapis.com/v0/b/gravitygrit-5768a.appspot.com/o/exercises%2F";
 
 export default function MainView({
   routine,
@@ -58,18 +58,13 @@ export default function MainView({
         style={{
           alignItems: "center",
           justifyContent: "space-between",
-          // gap: 20,
-          // flex: 1,
-          height: Dimensions.get("window").height - 70,
-          // paddingBottom: 20,
+          height: Dimensions.get("window").height - 70, // 70 is the height of the bottom bar
         }}
       >
         <View
           style={{
             width: "100%",
             alignItems: "center",
-            // justifyContent: "space-between",
-            // flex: 1,
           }}
         >
           {/* image in case it exists (url in image_url) */}
@@ -85,7 +80,10 @@ export default function MainView({
             >
               <FastImage
                 source={{
-                  uri: BASE_IMAGE_URL + currentExercise.exerciseId + ".gif?alt=media",
+                  uri:
+                    BASE_IMAGE_URL +
+                    currentExercise.exerciseId +
+                    ".gif?alt=media",
                 }}
                 style={{
                   width: "100%",
@@ -121,7 +119,7 @@ export default function MainView({
             {/* Current set in case we are in a subroutine */}
             <View
               style={{
-                height: 40,
+                // height: 40,
                 flexDirection: "row",
                 justifyContent: "space-between",
                 width: "100%",
@@ -168,7 +166,7 @@ export default function MainView({
                     colorScheme === "light"
                       ? Colors.light.text
                       : Colors.dark.text,
-                  height: 40,
+                  // height: 40,
                 },
               ]}
             >
@@ -182,7 +180,7 @@ export default function MainView({
                 {
                   alignSelf: "flex-start",
                   color: Colors.primary,
-                  height: 25,
+                  // height: 25,
                 },
               ]}
             >
@@ -195,7 +193,7 @@ export default function MainView({
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
-            height: 150,
+            // height: 150,
           }}
         >
           {/* Timer */}

@@ -11,9 +11,8 @@ import {
 
 import EndMenu from "@/components/RunRoutine/EndMenu";
 import MainView from "@/components/RunRoutine/MainView";
-import StartMenu from "@/components/RunRoutine/StartMenu"
+import StartMenu from "@/components/RunRoutine/StartMenu";
 import { styles } from "@/components/RunRoutine/styles";
-
 import Colors from "@/constants/Colors";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "@/firebaseConfig";
 import { ExerciseInRoutine, Routine, RoutineItem, Subroutine } from "@/types";

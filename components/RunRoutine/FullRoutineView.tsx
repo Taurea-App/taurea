@@ -28,8 +28,6 @@ export default function FullRoutineView({
         style={{
           backgroundColor: Colors.primary,
           borderRadius: 20,
-          // flexDirection: "row",
-          // justifyContent: "space-between",
           width: "100%",
           flex: 1,
         }}
