@@ -17,14 +17,15 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "taurea"
+      "bundleIdentifier": "com.nachourrutia.taurea",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.nacho_urrutia.taurea"
+      "package": "com.nachourrutia.taurea"
     },
     "web": {
       "bundler": "metro",
@@ -32,7 +33,8 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
